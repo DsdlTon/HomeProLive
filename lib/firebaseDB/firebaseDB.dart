@@ -1,0 +1,199 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+class FireStoreClass {
+  static final Firestore _db = Firestore.instance;
+  FirebaseMessaging firebaseMessaging = FirebaseMessaging();
+  static final chatCollection = 'chats';
+  String url = '';
+
+// ---Chat In Live-----------------------------------------------------------------
+
+  static void saveChat(username, chatText, channelName) {
+    _db
+        .collection("CurrentLive")
+        .document(channelName)
+        .collection("Chats")
+        .add({
+      'username': username, //username is defined in foreground
+
+      'msg': chatText, //chatText is TextController in Foreground
+      'timeStamp': Timestamp.now(),
+    });
+  }
+
+  static Stream<QuerySnapshot> getChat(channelName) {
+    return _db
+        .collection("CurrentLive")
+        .document(channelName)
+        .collection("Chats")
+        .orderBy("timeStamp", descending: true)
+        .snapshots();
+  }
+
+// ---Viewer in Live---------------------------------------------------------------------------
+
+  static void saveViewer(username, liveUser, channelName) {
+    _db
+        .collection("CurrentLive")
+        .document(channelName)
+        .collection("Viewers")
+        .document(username)
+        .setData({
+      'liveUser': liveUser,
+    });
+
+    print(
+        '-------------- save username $username in $liveUser channal -------------------');
+  }
+
+  static Stream<QuerySnapshot> getViewer(liveUser, channelName) {
+    return _db
+        .collection("CurrentLive")
+        .document(channelName)
+        .collection("Viewers")
+        .snapshots();
+  }
+
+  static void deleteViewers({username, channelName}) async {
+    await _db
+        .collection("CurrentLive")
+        .document(channelName)
+        .collection('Viewers')
+        .document(username)
+        .delete();
+    print('-------------- delete username $username ----------------');
+  }
+
+// ---All Live List----------------------------------------------------------------------------------------
+
+  static Stream<QuerySnapshot> getCurrentLive() {
+    var snapshot = _db
+        .collection("CurrentLive")
+        .where("onLive", isEqualTo: true)
+        .snapshots();
+    return snapshot;
+  }
+
+  static Stream<QuerySnapshot> getRecentlyLive() {
+    var snapshot = _db
+        .collection("CurrentLive")
+        .where("onLive", isEqualTo: false)
+        .snapshots();
+    return snapshot;
+  }
+
+  // ---Chatroom List--------------------------------------------------------------------------------------
+
+  static Stream<QuerySnapshot> getChatroom() {
+    var snapshot = _db
+        .collection("Chatroom")
+        .orderBy("timeStamp", descending: true)
+        .snapshots();
+    return snapshot;
+  }
+
+  static void setupChatroom(channelName, username, title) {
+    _db.collection("Chatroom").document(channelName + username).setData({
+      'channelName': channelName,
+      'chatWith': username,
+      'title': title,
+      'isUserRead': true,
+      'isAdminRead': false,
+    });
+    print(
+        '------------------- Setup Chatroom channelName: $channelName$username success --------------------------');
+  }
+
+  static void deleteChatroom({channelName, username}) async {
+    await _db.collection("Chatroom").document(channelName + username).delete();
+    print(
+        '-------------------- delete Chatroom channelName: $channelName$username --------------------------------');
+  }
+
+  // ---Chat In ChatRoom with Admin-----------------------------------------------------------------
+
+  static void saveChatMessage({username, chatText, channelName, url}) {
+    _db.collection("Chatroom").document(channelName + username).updateData(
+      {
+        'lastMsg': chatText,
+        'timeStamp': Timestamp.now(),
+        'isAdminRead': false,
+      },
+    ).then(
+      (value) => _db
+          .collection("Chatroom")
+          .document(channelName + username)
+          .collection("ChatMessage")
+          .add(
+        {
+          'username': username, //username is defined in foreground
+          'msg': chatText, //chatText is TextController in Foreground,
+          'url': url,
+          'timeStamp': Timestamp.now(),
+          'role': "user",
+        },
+      ),
+    );
+
+    print(
+        '---------------- save $chatText in $channelName+$username success --------------------------');
+  }
+
+  static Stream<QuerySnapshot> getChatMessage(channelName, username) {
+    return _db
+        .collection("Chatroom")
+        .document(channelName + username)
+        .collection("ChatMessage")
+        .orderBy("timeStamp", descending: true)
+        .snapshots();
+  }
+
+  static void setLastMsgWhenSentImage(channelName, username) {
+    _db
+        .collection("Chatroom")
+        .document(channelName + username)
+        .updateData({'lastMsg': '$username is sent a photo'});
+    print(
+        '--------------- $channelName+$username is readed by User --------------------');
+  }
+
+  // ---Read Status----------------------------------------------------------------------------
+  static void userReaded(channelName, username) {
+    _db
+        .collection("Chatroom")
+        .document(channelName + username)
+        .updateData({'isUserRead': true});
+    print(
+        '--------------- $channelName+$username is readed by User --------------------');
+  }
+
+  static Stream<QuerySnapshot> getChatroomData() {
+    return _db.collection("Chatroom").snapshots();
+  }
+
+  // ---Notification---------------------------------------------------------------------------------------
+
+  // void initFirebaseMessaging() {
+  //   firebaseMessaging.configure(
+  //       onMessage: (Map<String, dynamic> message) async {
+  //     print('onMessage: $message');
+  //   }, onLaunch: (Map<String, dynamic> message) async {
+  //     print('onLaunch: $message');
+  //   }, onResume: (Map<String, dynamic> message) async {
+  //     print('onResume: $message');
+  //   });
+
+  //   firebaseMessaging.requestNotificationPermissions(
+  //       const IosNotificationSettings(sound: true, badge: true, alert: true));
+  //   firebaseMessaging.onIosSettingsRegistered
+  //       .listen((IosNotificationSettings settings) {
+  //     print("Settings registered: $settings");
+  //   });
+
+  //   firebaseMessaging.getToken().then((String token) {
+  //     assert(token != null);
+  //     print("Token : $token");
+  //   });
+  // }
+}
