@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:test_live_app/firebaseDB/notification.dart';
+import 'package:test_live_app/services/notification.dart';
 
 import 'package:test_live_app/pages/InitialPage.dart';
 import 'package:test_live_app/providers/CategoryCardChange.dart';
 
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  PushNotificationsManager().init();
-  runApp(MyApp());
-}
+// Future<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   PushNotificationsManager().init();
+//   runApp(MyApp());
+// }
+
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:test_live_app/firebaseDB/firebaseDB.dart';
+import 'package:test_live_app/services/firebaseDB.dart';
 import 'package:intl/intl.dart';
 
 class ChatRoomPage extends StatefulWidget {

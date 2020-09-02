@@ -6,7 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:test_live_app/firebaseDB/firebaseDB.dart';
+import 'package:test_live_app/services/firebaseDB.dart';
 import 'package:test_live_app/pages/showFullImage.dart';
 
 class ChatPage extends StatefulWidget {

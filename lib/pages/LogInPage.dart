@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/pages/ForgotPassword.dart';
 import 'package:test_live_app/pages/HomePage.dart';
+import 'package:test_live_app/services/api.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -18,15 +19,24 @@ class _LoginPageState extends State<LoginPage> {
     final form = _formKey.currentState;
     if (form.validate()) {
       form.save();
-      print('email: $email');
+      print('username: $username');
       print('password: $password');
       // checkAuthen();
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ),
-      );
+
+      final body = {
+        "username": username,
+        "password": password,
+      };
+
+      UserService.login(body).then((success) {
+        if (success) {
+          print('Login Success as $username');
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext context) => HomePage());
+          Navigator.of(context).pushAndRemoveUntil(
+              materialPageRoute, (Route<dynamic> route) => false);
+        }
+      });
     }
   }
 
@@ -116,15 +126,25 @@ class _LoginPageState extends State<LoginPage> {
                     key: _formKey,
                     child: Column(
                       children: <Widget>[
+                        // fullTextFormField(
+                        //   label: 'Email',
+                        //   hint: 'Your email',
+                        //   keyboardType: TextInputType.emailAddress,
+                        //   obscureText: false,
+                        //   onSaved: (String value) {
+                        //     email = value.trim();
+                        //   },
+                        //   validator: _emailValidator,
+                        // ),
                         fullTextFormField(
-                          label: 'Email',
-                          hint: 'Your email',
-                          keyboardType: TextInputType.emailAddress,
+                          label: 'Username',
+                          hint: 'Your Username',
+                          keyboardType: TextInputType.text,
                           obscureText: false,
                           onSaved: (String value) {
-                            email = value.trim();
+                            username = value.trim();
                           },
-                          validator: _emailValidator,
+                          validator: _usernameValidator,
                         ),
                         fullTextFormField(
                           label: 'Password',
@@ -271,23 +291,31 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  String _emailValidator(String value) {
-    if (value.isEmpty) {
-      return "Please Enter your Email Address";
-    }
-    String p = "[a-zA-Z0-9\+\.\_\%\-\+]{1,256}" +
-        "\\@" +
-        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-        "(" +
-        "\\." +
-        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-        ")+";
-    RegExp regExp = new RegExp(p);
+  // String _emailValidator(String value) {
+  //   if (value.isEmpty) {
+  //     return "Please Enter your Email Address";
+  //   }
+  //   String p = "[a-zA-Z0-9\+\.\_\%\-\+]{1,256}" +
+  //       "\\@" +
+  //       "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+  //       "(" +
+  //       "\\." +
+  //       "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+  //       ")+";
+  //   RegExp regExp = new RegExp(p);
 
-    if (regExp.hasMatch(value)) {
+  //   if (regExp.hasMatch(value)) {
+  //     return null;
+  //   }
+  //   return 'Email is not valid';
+  // }
+
+  String _usernameValidator(String value) {
+    if (value.isEmpty) {
+      return "Please Enter Your Username";
+    } else {
       return null;
     }
-    return 'Email is not valid';
   }
 
   String _passwordValidator(String value) {

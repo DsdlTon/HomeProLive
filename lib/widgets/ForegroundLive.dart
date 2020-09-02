@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:keyboard_visibility/keyboard_visibility.dart';
-import 'package:test_live_app/firebaseDB/firebaseDB.dart';
+import 'package:test_live_app/services/firebaseDB.dart';
 import 'package:test_live_app/pages/ChatRoomPage.dart';
 import 'package:test_live_app/pages/ChatPage.dart';
 

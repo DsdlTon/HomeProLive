@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test_live_app/pages/HomePage.dart';
 
 import 'package:test_live_app/pages/LogInPage.dart';
 import 'package:test_live_app/pages/Register.dart';
+import 'package:test_live_app/services/api.dart';
 
 class InitialPage extends StatefulWidget {
   @override
@@ -14,6 +14,7 @@ class _InitialPageState extends State<InitialPage> {
   @override
   void initState() {
     super.initState();
+    UserService.getAllUser();
     // checkStatus();
   }
 
