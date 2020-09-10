@@ -1,7 +1,7 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:test_live_app/services/firebaseDB.dart';
+import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
 
 import 'package:test_live_app/pages/LivePage.dart';

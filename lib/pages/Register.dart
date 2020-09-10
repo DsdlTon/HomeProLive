@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/pages/HomePage.dart';
-import 'package:test_live_app/services/api.dart';
+import 'package:test_live_app/controllers/api.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -31,54 +31,79 @@ class _RegisterPageState extends State<RegisterPage> {
       print('email: $email');
       print('phone: $phone');
 
-      final body = {
-        "name": name,
-        "surname": surname,
-        "username": username,
-        "password": password,
-        "email": email,
-        "phone": phone,
-      };
-      createAccount(body);
+      // final body = {
+      //   "name": name,
+      //   "surname": surname,
+      //   "username": username,
+      //   "password": password,
+      //   "email": email,
+      //   "phone": phone,
+      // };
+      // UserService.createUserInDB(body).then((success) {
+      //   print('Enter createUserInDB Method');
+      //   if (success) {
+      //     print('Add User Info in DB Success!!');
+      //     showDialog(
+      //       context: context,
+      //       builder: (context) => AlertDialog(
+      //         title: Text('Your Account has been Created.'),
+      //         actions: <Widget>[
+      //           FlatButton(
+      //             child: Text('OK'),
+      //             onPressed: () {
+      //               username = '';
+      //               password = '';
+      //               MaterialPageRoute materialPageRoute = MaterialPageRoute(
+      //                   builder: (BuildContext context) => HomePage());
+      //               Navigator.of(context).pushAndRemoveUntil(
+      //                   materialPageRoute, (Route<dynamic> route) => false);
+      //             },
+      //           )
+      //         ],
+      //       ),
+      //     );
+      //   }
+      // });
+      
       // registerThread();
     }
   }
 
-  void createAccount(body) {
-    UserService.createUserInDB(body).then(
-      (success) {
-        print('Enter createUserInDB Method');
-        if (success) {
-          print('Add User Info in DB Success!!');
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Your Account has been Created.'),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    username = '';
-                    password = '';
-                    MaterialPageRoute materialPageRoute = MaterialPageRoute(
-                        builder: (BuildContext context) => HomePage());
-                    Navigator.of(context).pushAndRemoveUntil(
-                        materialPageRoute, (Route<dynamic> route) => false);
-                  },
-                )
-              ],
-            ),
-          );
-        }
-      },
-    );
-    // UserService.createUserInFirebase(body).then((success) {
-    //   print('Enter createUserInFirebase Method');
-    //   if (success) {
-    //     print('Add User Info in Firebase Success!!');
-    //   }
-    // });
-  }
+  // void createAccount(body) {
+  //   UserService.createUserInDB(body).then(
+  //     (success) {
+  //       print('Enter createUserInDB Method');
+  //       if (success) {
+  //         print('Add User Info in DB Success!!');
+  //         showDialog(
+  //           context: context,
+  //           builder: (context) => AlertDialog(
+  //             title: Text('Your Account has been Created.'),
+  //             actions: <Widget>[
+  //               FlatButton(
+  //                 child: Text('OK'),
+  //                 onPressed: () {
+  //                   username = '';
+  //                   password = '';
+  //                   MaterialPageRoute materialPageRoute = MaterialPageRoute(
+  //                       builder: (BuildContext context) => HomePage());
+  //                   Navigator.of(context).pushAndRemoveUntil(
+  //                       materialPageRoute, (Route<dynamic> route) => false);
+  //                 },
+  //               )
+  //             ],
+  //           ),
+  //         );
+  //       }
+  //     },
+  //   );
+  // UserService.createUserInFirebase(body).then((success) {
+  //   print('Enter createUserInFirebase Method');
+  //   if (success) {
+  //     print('Add User Info in Firebase Success!!');
+  //   }
+  // });
+  // }
 
   // void showAlert(String title, String message) {
   //   showDialog(

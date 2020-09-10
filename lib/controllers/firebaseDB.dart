@@ -2,23 +2,63 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 class FireStoreClass {
+  static FireStoreClass get instanace => FireStoreClass();
+
   static final Firestore _db = Firestore.instance;
   FirebaseMessaging firebaseMessaging = FirebaseMessaging();
   static final chatCollection = 'chats';
   String url = '';
+  List<String> allUserToken = [];
+
+  // ---Token----------------------------------------------------------------------
+
+  // Problem here. How to return List in Firebase and add it to userToken List and pass it to saveUserToken
+  // Expected: return List of token / Result: return null
+  Future<List<String>> getOldUserToken(username) async {
+    print('ENTER getUserToken FUNCTION');
+    return await _db
+        .collection('Users')
+        .document(username)
+        .get()
+        .then((snapshot) {
+      List<String> oldToken = List.from(snapshot['FCMToken']);
+      print('oldToken: $oldToken');
+      return oldToken;
+    });
+  }
+
+  //userToken that pass in here Included both oldToken and newToken already
+  Future<void> saveUserToken(username, userToken) async {
+    print('ENTER SAVEUSERTOKEN FUNCTION');
+    getUserTokenList(userToken);
+    print('SAVE $username, $allUserToken, ${allUserToken.runtimeType}');
+    await Firestore.instance.collection('Users').document(username).setData({
+      'FCMToken': allUserToken,
+    });
+  }
+
+  List<String> getUserTokenList(userToken) {
+    userToken.forEach((token) {
+      print('Enter forEach!!!!!!!!!!!!!!!');
+      print('$token');
+      allUserToken.add(token.toString());
+      print('allUserToken: $allUserToken');
+    });
+    return allUserToken.toList();
+  }
 
 // ---Chat In Live-----------------------------------------------------------------
 
-  static void saveChat(username, chatText, channelName) {
+  static void saveChat(username, chatText, channelName, token) {
     _db
         .collection("CurrentLive")
         .document(channelName)
         .collection("Chats")
         .add({
       'username': username, //username is defined in foreground
-
       'msg': chatText, //chatText is TextController in Foreground
       'timeStamp': Timestamp.now(),
+      'FCMToken': token,
     });
   }
 

@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:keyboard_visibility/keyboard_visibility.dart';
-import 'package:test_live_app/services/firebaseDB.dart';
+import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/ChatRoomPage.dart';
 import 'package:test_live_app/pages/ChatPage.dart';
 
@@ -27,19 +28,33 @@ class ForegroundLive extends StatefulWidget {
 class _ForegroundLiveState extends State<ForegroundLive> {
   TextEditingController chatController = TextEditingController();
   String chatText;
-
   FocusNode focusNode;
+  int _keyboardVisibilitySubscriberId;
+  bool _keyboardState;
+  var token;
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
 
-  int _keyboardVisibilitySubscriberId;
-  bool _keyboardState;
-
   @protected
   void initState() {
     super.initState();
-    FireStoreClass.saveViewer(widget.username, widget.liveUser, widget.channelName);
+    FireStoreClass.saveViewer(
+      widget.username,
+      widget.liveUser,
+      widget.channelName,
+    );
+
+    Firestore.instance
+        .collection("Users")
+        .document(widget.username)
+        .get()
+        .then((snapshot) {
+      token = snapshot['FCMToken'];
+      assert(token is String);
+      print('Retrived Token: $token');
+      return token;
+    });
 
     _keyboardState = _keyboardVisibility.isKeyboardVisible;
     _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
@@ -66,7 +81,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     FireStoreClass.deleteViewers(
         username: widget.username, channelName: widget.channelName);
     _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
-    
+
     FocusScope.of(context).unfocus();
   }
 
@@ -184,12 +199,15 @@ class _ForegroundLiveState extends State<ForegroundLive> {
             icon: Icon(Icons.send, color: Colors.white),
             onPressed: () {
               chatText = chatController.text;
-              
               if (chatText == null || chatText.isEmpty) {
                 return print('Enter null');
               } else {
                 FireStoreClass.saveChat(
-                    widget.username, chatText, widget.channelName);
+                  widget.username,
+                  chatText,
+                  widget.channelName,
+                  token,
+                );
               }
               FocusScope.of(context).unfocus();
               chatController.clear();

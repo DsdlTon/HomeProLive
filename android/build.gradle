@@ -30,3 +30,13 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+// subprojects {
+//     project.configuration.all {
+//         resolutionStrategy.eachDependency [ details ->
+//             if (details.requested.group == 'com.android.support' && !details.requseted.name.contains('multidex')) {
+//                 details.useVersion "26.1.0"
+//             }
+//         ]
+//     }
+// }

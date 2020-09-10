@@ -6,7 +6,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:test_live_app/services/firebaseDB.dart';
+import 'package:test_live_app/controllers/firebaseDB.dart';
+import 'package:test_live_app/controllers/notification.dart';
 import 'package:test_live_app/pages/showFullImage.dart';
 
 class ChatPage extends StatefulWidget {
@@ -26,7 +27,6 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   TextEditingController chatroomController = new TextEditingController();
   bool isNewChatRoom = true;
-  String chatId;
 
   File _image;
   String _uploadedFileURL = '';
@@ -39,6 +39,15 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     FireStoreClass.userReaded(widget.channelName, widget.username);
+  }
+
+  Future sendNotification() async {
+    String chatRoomId = widget.channelName+widget.username;
+    try {
+      // await NotificationController.instance.sendNotificationMessage('text', msg, "${widget.title}'s Admin", chatRoomId, targetUserToken)
+    } catch(e) {
+      print(e.message);
+    }
   }
 
   Future getImageFromGallery() async {

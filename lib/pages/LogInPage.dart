@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/pages/ForgotPassword.dart';
 import 'package:test_live_app/pages/HomePage.dart';
-import 'package:test_live_app/services/api.dart';
+import 'package:test_live_app/controllers/api.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -23,20 +23,25 @@ class _LoginPageState extends State<LoginPage> {
       print('password: $password');
       // checkAuthen();
 
-      final body = {
-        "username": username,
-        "password": password,
-      };
+      MaterialPageRoute materialPageRoute =
+          MaterialPageRoute(builder: (BuildContext context) => HomePage());
+      Navigator.of(context).pushAndRemoveUntil(
+          materialPageRoute, (Route<dynamic> route) => false);
 
-      UserService.login(body).then((success) {
-        if (success) {
-          print('Login Success as $username');
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext context) => HomePage());
-          Navigator.of(context).pushAndRemoveUntil(
-              materialPageRoute, (Route<dynamic> route) => false);
-        }
-      });
+      // final body = {
+      //   "username": username,
+      //   "password": password,
+      // };
+
+      // UserService.login(body).then((success) {
+      //   if (success) {
+      //     print('Login Success as $username');
+      //     MaterialPageRoute materialPageRoute =
+      //         MaterialPageRoute(builder: (BuildContext context) => HomePage());
+      //     Navigator.of(context).pushAndRemoveUntil(
+      //         materialPageRoute, (Route<dynamic> route) => false);
+      //   }
+      // });
     }
   }
 
