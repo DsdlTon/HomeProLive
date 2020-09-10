@@ -33,8 +33,11 @@ class NotificationController {
           prefs.setString('FCMToken', token);
           print('********** FCMToken: ' + token + '**********');
           // check if it has oldToken List in DB?
-          if (Firestore.instance.collection('Users').document(username) !=
-              null) {
+          final snapShot = await Firestore.instance
+              .collection('Users')
+              .document(username)
+              .get();
+          if (snapShot.exists) {
             print('YES!!!!');
             // if Yes
             // get oldUserToken List from DB (name as userToken List)
@@ -50,13 +53,11 @@ class NotificationController {
             // make oldToken = userToken
             userToken = oldToken;
           }
-          print(
-              '!! userToken before: $userToken !!');
+          print('!! userToken before: $userToken !!');
           // if No
           // add newUserToken in userTokenList
           userToken.add(token);
-          print(
-              '!! userToken after: $userToken !!');
+          print('!! userToken after: $userToken !!');
           //if Username is Existed in system
           if (username != null) {
             // save userTokenList to DB
