@@ -91,8 +91,6 @@ class NotificationController {
               sendLocalNotification(name, msg);
             }
           }
-
-          // FireStoreClass.instanace.getUnreadMSGCount();
         },
 
         // onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
@@ -168,7 +166,6 @@ class NotificationController {
           'notification': <String, dynamic>{
             'body': messageType == 'text' ? '$msg' : '(Photo)',
             'title': '$senderName',
-            // 'badge': '$unReadMSGCount' //'$unReadMSGCount'
           },
           'priority': 'high',
           'data': <String, dynamic>{

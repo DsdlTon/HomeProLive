@@ -70,8 +70,8 @@ class _ListLivePageState extends State<ListLivePage> {
       body: SingleChildScrollView(
         child: Container(
           width: double.infinity,
-          height: MediaQuery.of(context).size.height * 0.9,
-          padding: EdgeInsets.fromLTRB(5, 5, 5, 33),
+          height: MediaQuery.of(context).size.height * 0.79,
+          padding: EdgeInsets.fromLTRB(5, 5, 5, 3),
           decoration: BoxDecoration(
             color: Colors.white,
           ),
@@ -83,25 +83,25 @@ class _ListLivePageState extends State<ListLivePage> {
                   child: CircularProgressIndicator(),
                 );
               } else if (snapshot.data.documents.length == 0) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: availableHeight,
-                  child: Center(
-                    child: Text(
-                      'No Current Streaming',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.0,
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
+                      SizedBox(height: 10),
+                      Text(
+                        'No Current Streaming',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 18.0,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 );
               } else {
-                // returnn doc.dat['role'] == 'admin ? widget 1 : widget2
                 return Container(
-                  margin: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).size.height / 17,
-                  ),
                   child: GridView.builder(
                     itemCount: snapshot.data.documents.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

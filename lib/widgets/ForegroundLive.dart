@@ -51,7 +51,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
         .get()
         .then((snapshot) {
       token = snapshot['FCMToken'];
-      assert(token is String);
+      // assert(token is String);
       print('Retrived Token: $token');
       return token;
     });
@@ -255,6 +255,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                 channelName: widget.channelName,
                 username: widget.username,
                 liveUser: widget.liveUser,
+                fcmToken: token,
               ),
             ),
             // MaterialPageRoute(

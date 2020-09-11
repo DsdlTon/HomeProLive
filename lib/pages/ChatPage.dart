@@ -15,9 +15,15 @@ class ChatPage extends StatefulWidget {
   final String channelName;
   final String username;
   final String liveUser;
+  final List fcmToken;
 
   const ChatPage(
-      {Key key, this.title, this.channelName, this.username, this.liveUser})
+      {Key key,
+      this.title,
+      this.channelName,
+      this.username,
+      this.liveUser,
+      this.fcmToken})
       : super(key: key);
 
   @override
@@ -41,11 +47,14 @@ class _ChatPageState extends State<ChatPage> {
     FireStoreClass.userReaded(widget.channelName, widget.username);
   }
 
-  Future sendNotification() async {
-    String chatRoomId = widget.channelName+widget.username;
+  Future sendNotification(messageType, msg) async {
+    String chatRoomID = widget.channelName + widget.username;
     try {
-      // await NotificationController.instance.sendNotificationMessage('text', msg, "${widget.title}'s Admin", chatRoomId, targetUserToken)
-    } catch(e) {
+      print(
+          "messageType: $messageType \n msg: $msg \n sender: ${widget.title}'s Admin \n chatRoomID: $chatRoomID \n sentTo: ${widget.fcmToken}");
+      await NotificationController.instance.sendNotificationMessage(messageType,
+          msg, "${widget.title}'s Admin", chatRoomID, widget.fcmToken);
+    } catch (e) {
       print(e.message);
     }
   }
