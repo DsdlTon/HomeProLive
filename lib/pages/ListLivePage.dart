@@ -15,27 +15,11 @@ class _ListLivePageState extends State<ListLivePage> {
   String username = 'tester1';
 
   @override
-  void initState() {
-    super.initState();
-    // findUsername();
-  }
-
-  // Future<void> findUsername() async {
-  //   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-  //   FirebaseUser firebaseUser = await firebaseAuth.currentUser();
-  //   setState(() {
-  //     username = firebaseUser.displayName;
-  //     print(username);
-  //   });
-  // }
-
-  @override
   Widget build(BuildContext context) {
-    // ignore: unused_local_variable
-    final availableHeight = MediaQuery.of(context).size.height -
-        AppBar().preferredSize.height -
-        MediaQuery.of(context).padding.top -
-        MediaQuery.of(context).padding.bottom;
+    // final availableHeight = MediaQuery.of(context).size.height -
+    //     AppBar().preferredSize.height -
+    //     MediaQuery.of(context).padding.top -
+    //     MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       appBar: AppBar(
@@ -200,7 +184,7 @@ class _ListLivePageState extends State<ListLivePage> {
               begin: Alignment.bottomRight,
               colors: [
                 Colors.black.withOpacity(0.5),
-                Colors.black.withOpacity(0.1),
+                Colors.transparent,
               ],
             ),
             borderRadius: BorderRadius.circular(5.0),
@@ -389,12 +373,5 @@ class _ListLivePageState extends State<ListLivePage> {
         MaterialPageRoute(builder: (BuildContext context) => InitialPage());
     Navigator.of(context)
         .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
-    // FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    // await firebaseAuth.signOut().then((response) {
-    //   MaterialPageRoute materialPageRoute =
-    //       MaterialPageRoute(builder: (BuildContext context) => InitialPage());
-    //   Navigator.of(context).pushAndRemoveUntil(
-    //       materialPageRoute, (Route<dynamic> route) => false);
-    // });
   }
 }

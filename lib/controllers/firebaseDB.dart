@@ -12,8 +12,6 @@ class FireStoreClass {
 
   // ---Token----------------------------------------------------------------------
 
-  // Problem here. How to return List in Firebase and add it to userToken List and pass it to saveUserToken
-  // Expected: return List of token / Result: return null
   Future<List<String>> getOldUserToken(username) async {
     print('ENTER getUserToken FUNCTION');
     return await _db
@@ -212,28 +210,4 @@ class FireStoreClass {
     return _db.collection("Chatroom").snapshots();
   }
 
-  // ---Notification---------------------------------------------------------------------------------------
-
-  // void initFirebaseMessaging() {
-  //   firebaseMessaging.configure(
-  //       onMessage: (Map<String, dynamic> message) async {
-  //     print('onMessage: $message');
-  //   }, onLaunch: (Map<String, dynamic> message) async {
-  //     print('onLaunch: $message');
-  //   }, onResume: (Map<String, dynamic> message) async {
-  //     print('onResume: $message');
-  //   });
-
-  //   firebaseMessaging.requestNotificationPermissions(
-  //       const IosNotificationSettings(sound: true, badge: true, alert: true));
-  //   firebaseMessaging.onIosSettingsRegistered
-  //       .listen((IosNotificationSettings settings) {
-  //     print("Settings registered: $settings");
-  //   });
-
-  //   firebaseMessaging.getToken().then((String token) {
-  //     assert(token != null);
-  //     print("Token : $token");
-  //   });
-  // }
 }

@@ -28,7 +28,6 @@ class RecentForegroundLive extends StatefulWidget {
 
 class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   var token;
-
   var querySnapshot;
 
   int commentIndex = 0; //yes
@@ -43,10 +42,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   List<String> allUsername = [];
   List<String> pushedUsername = [];
 
-  KeyboardVisibilityNotification _keyboardVisibility =
-      KeyboardVisibilityNotification();
-
   Future<void> getDataFromFirebase() async {
+    startLiveTime = int.parse(widget.channelName);
+
     var totalComment = Firestore.instance
         .collection("CurrentLive")
         .document(widget.channelName)
@@ -78,15 +76,14 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
 
     commentIndex = commentLen - 1;
 
-    print('////////////////commentLen: $commentLen');
-    print('////////////////allComment: $allComment');
-    print('////////////////startLiveTime: $startLiveTime');
-    print('////////////////lastComment: $lastCommentTime');
-    print('////////////////Initial commentIndex: $commentIndex');
-    print('////////////////currentCommentTime: $currentCommentTime');
+    print('START commentLen: $commentLen');
+    print('START allComment: $allComment');
+    print('START startLiveTime: $startLiveTime');
+    print('START lastComment: $lastCommentTime');
+    print('START commentIndex: $commentIndex');
+    print('START currentCommentTime: $currentCommentTime');
   }
 
-// Replay Comment
   void replayComment() {
     const milliSec = const Duration(milliseconds: 100);
     _timer = new Timer.periodic(
@@ -98,9 +95,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           } else {
             startLiveTime += 100;
             if (startLiveTime > currentCommentTime) {
-              //push currentComment
               pushComment();
-              //set nextCommentTime-
               setNextCommentTime();
             }
           }
@@ -131,20 +126,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     } else {
       commentIndex = 0;
     }
-    // if (commentIndex < commentLen - 1) {
-    //   commentIndex += 1;
-    //   print('NEW commentIndex: $commentIndex');
-
-    //   Timestamp ctimestamp = querySnapshot.documents[commentIndex]['timeStamp'];
-    //   var cdate = ctimestamp.toDate();
-    //   currentCommentTime = cdate.millisecondsSinceEpoch;
-
-    //   String comment = querySnapshot.documents[commentIndex]['msg'];
-    //   print('NEXT commentTime: $currentCommentTime');
-    //   print('NEXT comment: $comment');
-    // } else {
-    //   commentIndex = commentLen;
-    // }
   }
 
 // -------------------------------------------------------
@@ -152,7 +133,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   void initState() {
     super.initState();
     getDataFromFirebase();
-    startLiveTime = int.parse(widget.channelName);
     replayComment();
     FireStoreClass.saveViewer(
       widget.username,
@@ -275,22 +255,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           ),
           bottomBar(),
         ],
-      ),
-    );
-  }
-
-  Widget favIcon({icon, onPressed}) {
-    return Container(
-      width: 40,
-      height: 40,
-      margin: EdgeInsets.only(left: 5),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.2),
-      ),
-      child: IconButton(
-        icon: Icon(Icons.favorite, color: Colors.white),
-        onPressed: () {},
       ),
     );
   }

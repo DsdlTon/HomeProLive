@@ -200,7 +200,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
               begin: Alignment.bottomRight,
               colors: [
                 Colors.black.withOpacity(0.5),
-                Colors.black.withOpacity(0.2),
+                Colors.transparent,
               ],
             ),
             borderRadius: BorderRadius.circular(5.0),

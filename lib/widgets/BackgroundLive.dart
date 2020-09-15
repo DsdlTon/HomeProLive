@@ -22,7 +22,7 @@ class BackgroundLive extends StatefulWidget {
 class _BackgroundLiveState extends State<BackgroundLive> {
   static final _users = <int>[]; //host
   final _infoStrings = <String>[]; //for showing in log msg
-  
+
   bool muted = false;
   int userView = 0;
   var userMap;
@@ -169,9 +169,20 @@ class _BackgroundLiveState extends State<BackgroundLive> {
     }
     return Container(
       child: Center(
-        child: Text(
-          'Live is Off',
-          style: TextStyle(color: Colors.white),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Icon(Icons.sentiment_dissatisfied, color: Colors.grey[600], size: 60),
+            SizedBox(height: 10),
+            Text(
+              'Live is Ended.',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 18.0,
+              ),
+            ),
+          ],
         ),
       ),
     );

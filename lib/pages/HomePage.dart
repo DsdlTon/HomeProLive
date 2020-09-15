@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
             ),
             BottomNavigationBarItem(
               icon: Icon(
-                Icons.live_tv,
+                Icons.history,
                 size: 20,
               ),
               title: Text(
