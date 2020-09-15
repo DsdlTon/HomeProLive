@@ -34,23 +34,22 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   bool _keyboardState;
   var token;
 
+  var querySnapshot;
+
   int commentIndex = 0; //yes
   int commentLen; //yes
   int startLiveTime; //yes
-  int firstCommentTime; //commentTime[commentIndex]
-  int lastCommentTime = 1599640062717;
+  int currentCommentTime; //currentCommentTime[commentIndex]
+  int lastCommentTime;
   int timer = 100; //yes
-
+  Timer _timer;
   List<String> allComment = []; //yes
   List<String> pushedComment = []; //wait for allComment to push data in.
+  List<String> allUsername = [];
+  List<String> pushedUsername = [];
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
-
-  void getDatatoPlaybackComment() {
-    startLiveTime = int.parse(widget.channelName);
-    getDataFromFirebase();
-  }
 
   Future<void> getDataFromFirebase() async {
     var totalComment = Firestore.instance
@@ -58,44 +57,95 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         .document(widget.channelName)
         .collection("Chats")
         .orderBy("timeStamp", descending: false);
-    var querySnapshot = await totalComment.getDocuments();
+    querySnapshot = await totalComment.getDocuments();
+
     //get commentLen
     commentLen = querySnapshot.documents.length;
+
     //get allComment[]
     for (int i = 0; i < commentLen; i++) {
       allComment.add(querySnapshot.documents[i]['msg']);
     }
-    print('commentLen: $commentLen');
-    print('allComment: $allComment');
+
+    //get FirstUsername
+    for (int i = 0; i < commentLen; i++) {
+      allUsername.add(querySnapshot.documents[i]['username']);
+    }
+
+    // get firstCommentTime
+    Timestamp ftimestamp = querySnapshot.documents[0]['timeStamp'];
+    var fdate = ftimestamp.toDate();
+    currentCommentTime = fdate.millisecondsSinceEpoch;
+
+    Timestamp ltimestamp = querySnapshot.documents[commentLen - 1]['timeStamp'];
+    var ldate = ltimestamp.toDate();
+    lastCommentTime = ldate.millisecondsSinceEpoch;
+
+    print('////////////////commentLen: $commentLen');
+    print('////////////////allComment: $allComment');
+    print('////////////////startLiveTime: $startLiveTime');
+    print('////////////////lastComment: $lastCommentTime');
+    print('////////////////Initial commentIndex: $commentIndex');
+    print('////////////////currentCommentTime: $currentCommentTime');
   }
 
-// --------------------------------------------------------
-
-  Timer _timer;
-  int _start = 10;
-
-  void counter() {
+// Replay Comment
+  void replayComment() {
     const milliSec = const Duration(milliseconds: 100);
     _timer = new Timer.periodic(
       milliSec,
       (Timer timer) => setState(
         () {
-          if (_start < 1) {
+          if (startLiveTime > lastCommentTime) {
             timer.cancel();
           } else {
-            _start = _start + 1;
+            startLiveTime += 100;
+            if (startLiveTime > currentCommentTime) {
+              //push currentComment
+              pushComment();
+              //set nextCommentTime-
+              setNextCommentTime();
+            }
           }
         },
       ),
     );
   }
 
+  void pushComment() {
+    pushedComment.add(allComment[commentIndex]);
+    pushedUsername.add(allUsername[commentIndex]);
+    print('pushComment: $pushedComment');
+    print('pushUsername: $pushedUsername');
+  }
+
+  void setNextCommentTime() async {
+    if (commentIndex < commentLen - 1) {
+      commentIndex += 1;
+      print('NEW commentIndex: $commentIndex');
+
+      Timestamp ctimestamp = querySnapshot.documents[commentIndex]['timeStamp'];
+      var cdate = ctimestamp.toDate();
+      currentCommentTime = cdate.millisecondsSinceEpoch;
+
+      String comment = querySnapshot.documents[commentIndex]['msg'];
+      print('NEXT commentTime: $currentCommentTime');
+      print('NEXT comment: $comment');
+    } else {
+      commentIndex = commentLen;
+    }
+  }
+
+  // void pushComment() {
+  // }
+
 // -------------------------------------------------------
   @protected
   void initState() {
     super.initState();
-    getDatatoPlaybackComment();
-    counter();
+    getDataFromFirebase();
+    startLiveTime = int.parse(widget.channelName);
+    replayComment();
     FireStoreClass.saveViewer(
       widget.username,
       widget.liveUser,
@@ -138,7 +188,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     FireStoreClass.deleteViewers(
         username: widget.username, channelName: widget.channelName);
     _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
-
+    _timer.cancel();
     FocusScope.of(context).unfocus();
   }
 
@@ -418,10 +468,27 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   Widget chatPanel() {
     return Container(
       width: MediaQuery.of(context).size.height / 2.7,
-      child: Text(
-        "$_start",
-        style: TextStyle(color: Colors.white),
-      ),
+      child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: pushedComment.length,
+          itemBuilder: (BuildContext context, index) {
+            return RichText(
+              text: TextSpan(
+                children: <TextSpan>[
+                  TextSpan(
+                    text: '${pushedUsername[index]}: ',
+                    style: TextStyle(
+                      color: Colors.blue[800],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '${pushedComment[index]}',
+                  ),
+                ],
+              ),
+            );
+          }),
     );
   }
 
