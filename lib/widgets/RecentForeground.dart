@@ -56,7 +56,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         .collection("CurrentLive")
         .document(widget.channelName)
         .collection("Chats")
-        .orderBy("timeStamp", descending: false);
+        .orderBy("timeStamp", descending: true);
     querySnapshot = await totalComment.getDocuments();
 
     //get commentLen
@@ -73,13 +73,15 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     }
 
     // get firstCommentTime
-    Timestamp ftimestamp = querySnapshot.documents[0]['timeStamp'];
+    Timestamp ftimestamp = querySnapshot.documents[commentLen - 1]['timeStamp'];
     var fdate = ftimestamp.toDate();
     currentCommentTime = fdate.millisecondsSinceEpoch;
 
-    Timestamp ltimestamp = querySnapshot.documents[commentLen - 1]['timeStamp'];
+    Timestamp ltimestamp = querySnapshot.documents[0]['timeStamp'];
     var ldate = ltimestamp.toDate();
     lastCommentTime = ldate.millisecondsSinceEpoch;
+
+    commentIndex = commentLen - 1;
 
     print('////////////////commentLen: $commentLen');
     print('////////////////allComment: $allComment');
@@ -120,8 +122,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   }
 
   void setNextCommentTime() async {
-    if (commentIndex < commentLen - 1) {
-      commentIndex += 1;
+    if (commentIndex > 0) {
+      commentIndex -= 1;
       print('NEW commentIndex: $commentIndex');
 
       Timestamp ctimestamp = querySnapshot.documents[commentIndex]['timeStamp'];
@@ -132,12 +134,23 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       print('NEXT commentTime: $currentCommentTime');
       print('NEXT comment: $comment');
     } else {
-      commentIndex = commentLen;
+      commentIndex = 0;
     }
-  }
+    // if (commentIndex < commentLen - 1) {
+    //   commentIndex += 1;
+    //   print('NEW commentIndex: $commentIndex');
 
-  // void pushComment() {
-  // }
+    //   Timestamp ctimestamp = querySnapshot.documents[commentIndex]['timeStamp'];
+    //   var cdate = ctimestamp.toDate();
+    //   currentCommentTime = cdate.millisecondsSinceEpoch;
+
+    //   String comment = querySnapshot.documents[commentIndex]['msg'];
+    //   print('NEXT commentTime: $currentCommentTime');
+    //   print('NEXT comment: $comment');
+    // } else {
+    //   commentIndex = commentLen;
+    // }
+  }
 
 // -------------------------------------------------------
   @protected
@@ -468,27 +481,31 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   Widget chatPanel() {
     return Container(
       width: MediaQuery.of(context).size.height / 2.7,
-      child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: pushedComment.length,
-          itemBuilder: (BuildContext context, index) {
-            return RichText(
-              text: TextSpan(
-                children: <TextSpan>[
-                  TextSpan(
-                    text: '${pushedUsername[index]}: ',
-                    style: TextStyle(
-                      color: Colors.blue[800],
-                      fontWeight: FontWeight.bold,
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: ListView.builder(
+            shrinkWrap: true,
+            // reverse: true,
+            itemCount: pushedComment.length,
+            itemBuilder: (BuildContext context, index) {
+              return RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: '${pushedUsername[index]}: ',
+                      style: TextStyle(
+                        color: Colors.blue[800],
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: '${pushedComment[index]}',
-                  ),
-                ],
-              ),
-            );
-          }),
+                    TextSpan(
+                      text: '${pushedComment[index]}',
+                    ),
+                  ],
+                ),
+              );
+            }),
+      ),
     );
   }
 
