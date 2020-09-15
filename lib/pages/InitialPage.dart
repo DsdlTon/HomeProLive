@@ -1,9 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:test_live_app/pages/LogInPage.dart';
 import 'package:test_live_app/pages/Register.dart';
-import 'package:test_live_app/controllers/api.dart';
 
 class InitialPage extends StatefulWidget {
   @override

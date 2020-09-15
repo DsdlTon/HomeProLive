@@ -1,12 +1,16 @@
-import 'dart:async';
-import 'dart:convert';
+// import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'package:test_live_app/controllers/firebaseDB.dart';
+import 'package:test_live_app/pages/ChatPage.dart';
+
+import '../main.dart';
 
 class NotificationController {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -23,6 +27,7 @@ class NotificationController {
         _firebaseMessaging
             .requestNotificationPermissions(IosNotificationSettings());
       }
+      _firebaseMessaging.requestNotificationPermissions();
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.get('FCMToken');
       String username = 'tester1';
@@ -38,7 +43,6 @@ class NotificationController {
               .document(username)
               .get();
           if (snapShot.exists) {
-            print('YES!!!!');
             // if Yes
             // get oldUserToken List from DB (name as userToken List)
             await Firestore.instance
@@ -53,11 +57,9 @@ class NotificationController {
             // make oldToken = userToken
             userToken = oldToken;
           }
-          print('!! userToken before: $userToken !!');
           // if No
           // add newUserToken in userTokenList
           userToken.add(token);
-          print('!! userToken after: $userToken !!');
           //if Username is Existed in system
           if (username != null) {
             // save userTokenList to DB
@@ -65,47 +67,52 @@ class NotificationController {
           }
         });
       }
-
       _firebaseMessaging.configure(
         // call when app is in the foreground
         onMessage: (Map<String, dynamic> message) async {
           print("onMessage: $message");
-          String msg = 'notibody';
-          String name = 'chatapp';
+          String title = 'title';
+          String body = 'body';
           if (Platform.isIOS) {
-            msg = message['aps']['alert']['body'];
-            name = message['aps']['alert']['title'];
+            body = message['aps']['alert']['body'];
+            title = message['aps']['alert']['title'];
+            sendLocalNotification(title, body);
           } else {
-            msg = message['notification']['body'];
-            name = message['notification']['title'];
+            body = message['notification']['body'];
+            title = message['notification']['title'];
+            sendLocalNotification(title, body);
           }
-
-          String currentChatRoom = (prefs.get('currentChatRoom') ?? 'None');
-
-          if (Platform.isIOS) {
-            if (message['chatroomid'] != currentChatRoom) {
-              sendLocalNotification(name, msg);
-            }
-          } else {
-            if (message['data']['chatroomid'] != currentChatRoom) {
-              sendLocalNotification(name, msg);
-            }
-          }
-        },
-
-        // onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
-        // call when app has been close completely and it's opened form the noti directly
-        onLaunch: (Map<String, dynamic> message) async {
-          print("onLaunch: $message");
         },
         // call when the app is in the background and opened by noti directly
         onResume: (Map<String, dynamic> message) async {
           print("onResume: $message");
+          String chatroomId = message['data']['chatroomid'];
+          int len = chatroomId.length;
+          String channelName = chatroomId.substring(0, 13);
+          String username = chatroomId.substring(13, len);
+          navigateToChatPage(channelName, username);
+        },
+        // call when app has been close completely and it's opened form the noti directly
+        onLaunch: (Map<String, dynamic> message) async {
+          print("onLaunch: $message");
         },
       );
     } catch (e) {
       print(e.message);
     }
+  }
+
+  void navigateToChatPage(channelName, username) {
+    print("enter navigate");
+    navigatorKey.currentState.push(
+      MaterialPageRoute(
+        builder: (_) => ChatPage(
+          channelName: channelName,
+          username: username,
+        ),
+      ),
+    );
+    print("exit navigate");
   }
 
   Future initLocalNotification() async {
@@ -141,55 +148,15 @@ class NotificationController {
 
   Future _selectNotification(String payload) async {}
 
-  sendLocalNotification(name, msg) async {
+  sendLocalNotification(title, body) async {
+    print('enter sendLocalNotification');
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'your channel id', 'your channel name', 'your channel description',
         importance: Importance.Max, priority: Priority.High);
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await _flutterLocalNotificationsPlugin
-        .show(0, name, msg, platformChannelSpecifics, payload: 'item x');
-  }
-
-  Future<void> sendNotificationMessage(
-      messageType, msg, senderName, chatRoomID, targetUserToken) async {
-    await http.post(
-      'https://fcm.googleapis.com/fcm/send',
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization':
-            'key=AAAAn00GHMI:APA91bGlkavV8tSqb9xptjUCkA-0oiXl0Ben3Vx3PeRo4SNc5H9fIBVle5c9csZVJUqQXzCC73W1iZSn_jsWp8Gr7TGCHMeBTLI0KO-36SGV4TBV-0scqd2onx0Lq8QeOllAyZd5aCwp',
-      },
-      body: jsonEncode(
-        <String, dynamic>{
-          'notification': <String, dynamic>{
-            'body': messageType == 'text' ? '$msg' : '(Photo)',
-            'title': '$senderName',
-          },
-          'priority': 'high',
-          'data': <String, dynamic>{
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            'id': '1',
-            'status': 'done',
-            'chatroomid': chatRoomID,
-          },
-          'to': targetUserToken,
-        },
-      ),
-    );
+    await _flutterLocalNotificationsPlugin.show(
+        0, title, body, platformChannelSpecifics);
   }
 }
-
-// await Firestore.instance
-//     .collection('Users')
-//     .document(username)
-//     .get()
-//     .then((snapshot) {
-//   List<String> oldToken = List.from(snapshot['FCMToken']);
-//   print('************ 3. oldToken: $oldToken ************');
-//   oldToken.forEach((token) {
-//     userToken.add(token);
-//     print('4. $userToken');
-//   });
-// });

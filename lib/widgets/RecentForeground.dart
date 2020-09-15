@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,14 +8,14 @@ import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/ChatPage.dart';
 
-class ForegroundLive extends StatefulWidget {
+class RecentForegroundLive extends StatefulWidget {
   final String title;
   final String userProfile;
   final String liveUser;
   final String username;
   final String channelName;
 
-  ForegroundLive(
+  RecentForegroundLive(
       {this.title,
       this.channelName,
       this.userProfile,
@@ -21,10 +23,10 @@ class ForegroundLive extends StatefulWidget {
       this.username});
 
   @override
-  _ForegroundLiveState createState() => _ForegroundLiveState();
+  _RecentForegroundLiveState createState() => _RecentForegroundLiveState();
 }
 
-class _ForegroundLiveState extends State<ForegroundLive> {
+class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   TextEditingController chatController = TextEditingController();
   String chatText;
   FocusNode focusNode;
@@ -32,12 +34,68 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   bool _keyboardState;
   var token;
 
+  int commentIndex = 0; //yes
+  int commentLen; //yes
+  int startLiveTime; //yes
+  int firstCommentTime; //commentTime[commentIndex]
+  int lastCommentTime = 1599640062717;
+  int timer = 100; //yes
+
+  List<String> allComment = []; //yes
+  List<String> pushedComment = []; //wait for allComment to push data in.
+
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
 
+  void getDatatoPlaybackComment() {
+    startLiveTime = int.parse(widget.channelName);
+    getDataFromFirebase();
+  }
+
+  Future<void> getDataFromFirebase() async {
+    var totalComment = Firestore.instance
+        .collection("CurrentLive")
+        .document(widget.channelName)
+        .collection("Chats")
+        .orderBy("timeStamp", descending: false);
+    var querySnapshot = await totalComment.getDocuments();
+    //get commentLen
+    commentLen = querySnapshot.documents.length;
+    //get allComment[]
+    for (int i = 0; i < commentLen; i++) {
+      allComment.add(querySnapshot.documents[i]['msg']);
+    }
+    print('commentLen: $commentLen');
+    print('allComment: $allComment');
+  }
+
+// --------------------------------------------------------
+
+  Timer _timer;
+  int _start = 10;
+
+  void counter() {
+    const milliSec = const Duration(milliseconds: 100);
+    _timer = new Timer.periodic(
+      milliSec,
+      (Timer timer) => setState(
+        () {
+          if (_start < 1) {
+            timer.cancel();
+          } else {
+            _start = _start + 1;
+          }
+        },
+      ),
+    );
+  }
+
+// -------------------------------------------------------
   @protected
   void initState() {
     super.initState();
+    getDatatoPlaybackComment();
+    counter();
     FireStoreClass.saveViewer(
       widget.username,
       widget.liveUser,
@@ -360,39 +418,9 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   Widget chatPanel() {
     return Container(
       width: MediaQuery.of(context).size.height / 2.7,
-      child: StreamBuilder(
-        stream: FireStoreClass.getChat(widget.channelName),
-        builder: (BuildContext context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            return ListView.builder(
-              reverse: true,
-              shrinkWrap: true,
-              itemCount: snapshot.data.documents.length,
-              itemBuilder: (BuildContext context, int index) {
-                return RichText(
-                  text: TextSpan(
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: '${snapshot.data.documents[index]["username"]}: ',
-                        style: TextStyle(
-                          color: Colors.blue[800],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextSpan(
-                        text: snapshot.data.documents[index]["msg"],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          }
-        },
+      child: Text(
+        "$_start",
+        style: TextStyle(color: Colors.white),
       ),
     );
   }

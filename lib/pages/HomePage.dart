@@ -1,11 +1,9 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/notification.dart';
 import 'package:test_live_app/pages/ListLivePage.dart';
 import 'package:test_live_app/pages/ListRecentlyLivePage.dart';
 
 import 'package:test_live_app/pages/allChatPage.dart';
-import 'package:test_live_app/controllers/api.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,8 +19,6 @@ class _HomePageState extends State<HomePage> {
       _selectedIndex = index;
     });
   }
-
-  // final FirebaseMessaging _messaging = FirebaseMessaging();
 
   @override
   void initState() {
@@ -70,9 +66,24 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.chat_bubble,
-                size: 20,
+              icon: Stack(
+                children: [
+                  Icon(
+                    Icons.chat_bubble,
+                    size: 20,
+                  ),
+                  // Positioned(
+                  //   right: 0,
+                  //   child: Container(
+                  //     height: 10,
+                  //     width: 10,
+                  //     decoration: BoxDecoration(
+                  //       shape: BoxShape.circle,
+                  //       color: Colors.red,
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               ),
               title: Text(
                 'Chat',

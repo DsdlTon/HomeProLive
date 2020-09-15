@@ -20,10 +20,6 @@ class AllChatPage extends StatefulWidget {
 class _AllChatPageState extends State<AllChatPage> {
   @override
   Widget build(BuildContext context) {
-    final availableHeight = MediaQuery.of(context).size.height -
-        AppBar().preferredSize.height -
-        MediaQuery.of(context).padding.top -
-        MediaQuery.of(context).padding.bottom;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[800],
@@ -106,9 +102,9 @@ class _AllChatPageState extends State<AllChatPage> {
                                 borderRadius: BorderRadius.circular(5),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    spreadRadius: 1,
-                                    blurRadius: 6,
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 0.1,
+                                    blurRadius: 1,
                                     offset: Offset(0, 1),
                                   ),
                                 ],

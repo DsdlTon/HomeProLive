@@ -7,8 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/controllers/notification.dart';
 import 'package:test_live_app/pages/showFullImage.dart';
+
+import '../main.dart';
 
 class ChatPage extends StatefulWidget {
   final String title;
@@ -45,18 +46,6 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     FireStoreClass.userReaded(widget.channelName, widget.username);
-  }
-
-  Future sendNotification(messageType, msg) async {
-    String chatRoomID = widget.channelName + widget.username;
-    try {
-      print(
-          "messageType: $messageType \n msg: $msg \n sender: ${widget.title}'s Admin \n chatRoomID: $chatRoomID \n sentTo: ${widget.fcmToken}");
-      await NotificationController.instance.sendNotificationMessage(messageType,
-          msg, "${widget.title}'s Admin", chatRoomID, widget.fcmToken);
-    } catch (e) {
-      print(e.message);
-    }
   }
 
   Future getImageFromGallery() async {
@@ -107,79 +96,82 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomLeft,
-              colors: [
-                Colors.blue[600],
-                Colors.blue[700],
-                Colors.blue[800],
-                Colors.blue[800],
-              ],
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      home: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomLeft,
+                colors: [
+                  Colors.blue[600],
+                  Colors.blue[700],
+                  Colors.blue[800],
+                  Colors.blue[800],
+                ],
+              ),
+            ),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          centerTitle: true,
+          title: Text(
+            "${widget.title}'s Admin",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
             ),
           ),
         ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        centerTitle: true,
-        title: Text(
-          "${widget.title}'s Admin",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 15,
-          ),
-        ),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          Expanded(
-            child: ListView(
-              reverse: true,
-              shrinkWrap: true,
-              children: <Widget>[
-                buildChat(),
-              ],
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: <Widget>[
+            Expanded(
+              child: ListView(
+                reverse: true,
+                shrinkWrap: true,
+                children: <Widget>[
+                  buildChat(),
+                ],
+              ),
             ),
-          ),
-          bottomBar(context),
-          //preview image
-          _uploadedFileURL != ''
-              ? Container(
-                  color: Colors.black,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.center,
-                        child: Image.file(_image),
-                      ),
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: IconButton(
-                          icon: Icon(Icons.cancel, color: Colors.white),
-                          onPressed: () {
-                            setState(() {
-                              _uploadedFileURL = '';
-                            });
-                          },
+            bottomBar(context),
+            //preview image
+            _uploadedFileURL != ''
+                ? Container(
+                    color: Colors.black,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Image.file(_image),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              : Container(),
-        ],
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: IconButton(
+                            icon: Icon(Icons.cancel, color: Colors.white),
+                            onPressed: () {
+                              setState(() {
+                                _uploadedFileURL = '';
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(),
+          ],
+        ),
       ),
     );
   }

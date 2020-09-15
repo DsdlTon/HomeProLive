@@ -1,5 +1,4 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
@@ -32,6 +31,7 @@ class _ListLivePageState extends State<ListLivePage> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final availableHeight = MediaQuery.of(context).size.height -
         AppBar().preferredSize.height -
         MediaQuery.of(context).padding.top -
@@ -200,7 +200,7 @@ class _ListLivePageState extends State<ListLivePage> {
               begin: Alignment.bottomRight,
               colors: [
                 Colors.black.withOpacity(0.5),
-                Colors.black.withOpacity(0.2),
+                Colors.black.withOpacity(0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(5.0),

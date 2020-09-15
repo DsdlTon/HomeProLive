@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
 
-import 'package:test_live_app/pages/LivePage.dart';
+import 'package:test_live_app/pages/RecentLivePage.dart';
 
 class ListRecentlyLivePage extends StatefulWidget {
   @override
@@ -17,10 +17,10 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
   @override
   void initState() {
     super.initState();
-    findUsername();
+    getUsername();
   }
 
-  Future<void> findUsername() async {
+  Future<void> getUsername() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     FirebaseUser firebaseUser = await firebaseAuth.currentUser();
     setState(() {
@@ -31,10 +31,10 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
 
   @override
   Widget build(BuildContext context) {
-    final availableHeight = MediaQuery.of(context).size.height -
-        AppBar().preferredSize.height -
-        MediaQuery.of(context).padding.top -
-        MediaQuery.of(context).padding.bottom;
+    // final availableHeight = MediaQuery.of(context).size.height -
+    //     AppBar().preferredSize.height -
+    //     MediaQuery.of(context).padding.top -
+    //     MediaQuery.of(context).padding.bottom;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.orange[400],
@@ -174,7 +174,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => LivePage(
+            builder: (context) => RecentLivePage(
               title: title,
               userProfile: userProfile,
               liveUser: liveUser,
