@@ -27,11 +27,6 @@ class RecentForegroundLive extends StatefulWidget {
 }
 
 class _RecentForegroundLiveState extends State<RecentForegroundLive> {
-  TextEditingController chatController = TextEditingController();
-  String chatText;
-  FocusNode focusNode;
-  int _keyboardVisibilitySubscriberId;
-  bool _keyboardState;
   var token;
 
   var querySnapshot;
@@ -175,24 +170,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       print('Retrived Token: $token');
       return token;
     });
-
-    _keyboardState = _keyboardVisibility.isKeyboardVisible;
-    _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
-      onChange: (bool visible) {
-        setState(() {
-          _keyboardState = visible;
-          if (_keyboardState != true) {
-            setState(() {
-              chatController.clear();
-              FocusScope.of(context).unfocus();
-            });
-          }
-        });
-      },
-    );
-
-    focusNode = FocusNode();
-    focusNode.requestFocus();
   }
 
   @override
@@ -200,7 +177,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     super.dispose();
     FireStoreClass.deleteViewers(
         username: widget.username, channelName: widget.channelName);
-    _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
     _timer.cancel();
     FocusScope.of(context).unfocus();
   }
@@ -223,18 +199,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 liveHeader(),
-                _keyboardState == false
-                    ? liveBottom()
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            height: MediaQuery.of(context).size.height * 0.45,
-                            child: chatPanel(),
-                          ),
-                          showChatTextField(),
-                        ],
-                      ),
+                liveBottom(),
               ],
             ),
           ),
@@ -314,43 +279,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
-  Widget showChatTextField() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15.0),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
-      ),
-      child: TextField(
-        focusNode: focusNode,
-        style: TextStyle(color: Colors.white),
-        controller: chatController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: 'Aa',
-          hintStyle: TextStyle(color: Colors.grey),
-          suffixIcon: IconButton(
-            icon: Icon(Icons.send, color: Colors.white),
-            onPressed: () {
-              chatText = chatController.text;
-              if (chatText == null || chatText.isEmpty) {
-                return print('Enter null');
-              } else {
-                FireStoreClass.saveChat(
-                  widget.username,
-                  chatText,
-                  widget.channelName,
-                  token,
-                );
-              }
-              FocusScope.of(context).unfocus();
-              chatController.clear();
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget favIcon({icon, onPressed}) {
     return Container(
       width: 40,
@@ -405,20 +333,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            Row(
-              children: [
-                showItemList(),
-                fakeChatTextField(),
-              ],
-            ),
-            Expanded(
-              child: Row(
-                children: [
-                  chatIcon(),
-                  // favIcon(),
-                ],
-              ),
-            ),
+            showItemList(),
+            chatIcon(),
           ],
         ),
       ),
@@ -505,35 +421,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                 ),
               );
             }),
-      ),
-    );
-  }
-
-  Widget fakeChatTextField() {
-    return GestureDetector(
-      onTap: () {
-        focusNode.requestFocus();
-        setState(() {
-          _keyboardState = true;
-        });
-      },
-      child: Container(
-        height: 40,
-        width: MediaQuery.of(context).size.width / 1.5,
-        padding: EdgeInsets.symmetric(horizontal: 10.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Aa',
-            style: TextStyle(
-              color: Colors.grey,
-            ),
-          ),
-        ),
       ),
     );
   }
