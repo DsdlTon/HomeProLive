@@ -49,6 +49,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future getImageFromGallery() async {
+    // ignore: deprecated_member_use
     await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
       setState(() {
         _image = image;
@@ -59,6 +60,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future getImageFromCamera() async {
+    // ignore: deprecated_member_use
     await ImagePicker.pickImage(source: ImageSource.camera).then((image) {
       setState(() {
         _image = image;
@@ -204,7 +206,7 @@ class _ChatPageState extends State<ChatPage> {
                     var chatMsgSnap = snapshot.data.documents[index];
                     Timestamp timestamp = chatMsgSnap['timeStamp'];
                     var date = timestamp.toDate();
-                    String formattedDate = DateFormat('kk:mm').format(date);
+                    String formattedDate = DateFormat('dd MMM kk:mm').format(date);
                     return chatMsgSnap['role'] == 'user'
                         ? userChatBubble(
                             chatMsgSnap: chatMsgSnap,
@@ -481,7 +483,7 @@ class _ChatPageState extends State<ChatPage> {
         ),
         iconSize: 25.0,
         onPressed: () {
-          String chatText = chatroomController.text;
+          String chatText = chatroomController.text.trim();
           //if TextField has Text
           if (chatText != null && chatText.isNotEmpty) {
             if (isNewChatRoom == true) {

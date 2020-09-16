@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/pages/ForgotPassword.dart';
 import 'package:test_live_app/pages/HomePage.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -12,7 +15,15 @@ class _LoginPageState extends State<LoginPage> {
   String password;
   String email;
 
+  UserDao _user;
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  void saveUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('accessToken', _user.accessToken);
+    prefs.setString('username', _user.username);
+  }
 
   void _validateInputs() {
     final form = _formKey.currentState;
@@ -22,25 +33,24 @@ class _LoginPageState extends State<LoginPage> {
       print('password: $password');
       // checkAuthen();
 
-      MaterialPageRoute materialPageRoute =
-          MaterialPageRoute(builder: (BuildContext context) => HomePage());
-      Navigator.of(context).pushAndRemoveUntil(
-          materialPageRoute, (Route<dynamic> route) => false);
+      final body = {
+        "username": username,
+        "password": password,
+      };
 
-      // final body = {
-      //   "username": username,
-      //   "password": password,
-      // };
+      UserService.login(body).then((user) {
+        setState(() {
+          _user = user;
+          saveUserData();
+        });
 
-      // UserService.login(body).then((success) {
-      //   if (success) {
-      //     print('Login Success as $username');
-      //     MaterialPageRoute materialPageRoute =
-      //         MaterialPageRoute(builder: (BuildContext context) => HomePage());
-      //     Navigator.of(context).pushAndRemoveUntil(
-      //         materialPageRoute, (Route<dynamic> route) => false);
-      //   }
-      // });
+        print('/////// THIS IS accessToken: $_user');
+
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext context) => HomePage());
+        Navigator.of(context).pushAndRemoveUntil(
+            materialPageRoute, (Route<dynamic> route) => false);
+      });
     }
   }
 

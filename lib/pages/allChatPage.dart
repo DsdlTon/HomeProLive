@@ -1,16 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
 import 'package:test_live_app/pages/ChatPage.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class AllChatPage extends StatefulWidget {
   final String title;
   final String liveUser;
-  final String username;
   final String channelName;
 
-  const AllChatPage(
-      {Key key, this.title, this.liveUser, this.username, this.channelName})
+  const AllChatPage({Key key, this.title, this.liveUser, this.channelName})
       : super(key: key);
 
   @override
@@ -18,6 +20,22 @@ class AllChatPage extends StatefulWidget {
 }
 
 class _AllChatPageState extends State<AllChatPage> {
+  String username = '';
+
+  getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username');
+    });
+    return username;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,13 +91,18 @@ class _AllChatPageState extends State<AllChatPage> {
                   controller: new ScrollController(keepScrollOffset: false),
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (BuildContext context, int index) {
+                    Timestamp timestamp =
+                        snapshot.data.documents[index]['timeStamp'];
+                    var date = timestamp.toDate();
+                    String formattedDate =
+                        DateFormat('dd MMM kk:mm').format(date);
                     String title = snapshot.data.documents[index]['title'];
                     String channelName =
                         snapshot.data.documents[index]['channelName'];
-                    String username =
+                    String usernameInFB =
                         snapshot.data.documents[index]['chatWith'];
 
-                    return username == 'tester1'
+                    return usernameInFB == username
                         ? GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -97,6 +120,7 @@ class _AllChatPageState extends State<AllChatPage> {
                               margin: EdgeInsets.symmetric(
                                   horizontal: 4, vertical: 2),
                               padding: EdgeInsets.all(15),
+                              width: MediaQuery.of(context).size.width,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(5),
@@ -109,49 +133,82 @@ class _AllChatPageState extends State<AllChatPage> {
                                   ),
                                 ],
                               ),
-                              width: MediaQuery.of(context).size.width,
                               child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
-                                  CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: Colors.blue[800],
-                                    child: CircleAvatar(
-                                      radius: 18,
-                                      backgroundImage:
-                                          AssetImage('assets/homeproLogo.png'),
-                                    ),
-                                  ),
                                   Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.7,
-                                    margin: EdgeInsets.only(left: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    child: Row(
                                       children: <Widget>[
-                                        Text(
-                                          snapshot.data.documents[index]
-                                              ['title'],
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: Colors.blue[800],
+                                          child: CircleAvatar(
+                                            radius: 18,
+                                            backgroundImage: AssetImage(
+                                                'assets/homeproLogo.png'),
                                           ),
                                         ),
-                                        SizedBox(height: 5),
-                                        Text(
-                                          snapshot.data.documents[index]
-                                              ['lastMsg'],
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: snapshot.data.documents[index]
-                                                      ['isUserRead'] ==
-                                                  false
-                                              ? TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                )
-                                              : TextStyle(
-                                                  color: Colors.grey[600],
-                                                ),
+                                        Container(
+                                          margin: EdgeInsets.only(left: 10),
+                                          child: Row(
+                                            children: <Widget>[
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Text(
+                                                    snapshot.data
+                                                            .documents[index]
+                                                        ['title'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5),
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: <Widget>[
+                                                      Text(
+                                                        snapshot.data.documents[
+                                                            index]['lastMsg'],
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: snapshot.data.documents[
+                                                                        index][
+                                                                    'isUserRead'] ==
+                                                                false
+                                                            ? TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              )
+                                                            : TextStyle(
+                                                                color: Colors
+                                                                    .grey[600],
+                                                              ),
+                                                      ),
+                                                      Container(
+                                                        child: Text(
+                                                          ' · $formattedDate',
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .grey[600],
+                                                            fontSize: 10,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),

@@ -1,8 +1,9 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:test_live_app/pages/RecentLivePage.dart';
 
@@ -12,21 +13,21 @@ class ListRecentlyLivePage extends StatefulWidget {
 }
 
 class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
-  String username = 'tester1';
+  String username = '';
+
+  getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username');
+    });
+    print('////////////////////' + username);
+    return username;
+  }
 
   @override
   void initState() {
     super.initState();
-    getUsername();
-  }
-
-  Future<void> getUsername() async {
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    FirebaseUser firebaseUser = await firebaseAuth.currentUser();
-    setState(() {
-      username = firebaseUser.displayName;
-      print(username);
-    });
+    getUserData();
   }
 
   @override
@@ -229,7 +230,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                         ),
                         child: Center(
                           child: Text(
-                            'Live',
+                            'Recently',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10.0,

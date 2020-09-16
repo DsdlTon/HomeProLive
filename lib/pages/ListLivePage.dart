@@ -4,6 +4,8 @@ import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
 import 'package:test_live_app/pages/InitialPage.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:test_live_app/pages/LivePage.dart';
 
 class ListLivePage extends StatefulWidget {
@@ -12,7 +14,21 @@ class ListLivePage extends StatefulWidget {
 }
 
 class _ListLivePageState extends State<ListLivePage> {
-  String username = 'tester1';
+  String username = '';
+
+  getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username');
+    });
+    return username;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData();
+  }
 
   @override
   Widget build(BuildContext context) {
