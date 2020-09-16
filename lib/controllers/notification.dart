@@ -22,6 +22,9 @@ class NotificationController {
   static NotificationController get instance => NotificationController();
 
   Future takeFCMTokenWhenAppLaunch() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = prefs.getString('username');
+
     try {
       if (Platform.isIOS) {
         _firebaseMessaging
@@ -30,8 +33,7 @@ class NotificationController {
       _firebaseMessaging.requestNotificationPermissions();
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String token = prefs.get('FCMToken');
-      String username = 'tester1';
-
+      print('********** USERNAME: $username ***********');
       print('********** Exists FCMToken: $token ***********');
       if (token == null) {
         _firebaseMessaging.getToken().then((token) async {

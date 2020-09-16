@@ -39,17 +39,32 @@ class _LoginPageState extends State<LoginPage> {
       };
 
       UserService.login(body).then((user) {
-        setState(() {
-          _user = user;
-          saveUserData();
-        });
+        if (user.message == null) {
+          setState(() {
+            _user = user;
+            saveUserData();
+          });
 
-        print('/////// THIS IS accessToken: $_user');
-
-        MaterialPageRoute materialPageRoute =
-            MaterialPageRoute(builder: (BuildContext context) => HomePage());
-        Navigator.of(context).pushAndRemoveUntil(
-            materialPageRoute, (Route<dynamic> route) => false);
+          MaterialPageRoute materialPageRoute =
+              MaterialPageRoute(builder: (BuildContext context) => HomePage());
+          Navigator.of(context).pushAndRemoveUntil(
+              materialPageRoute, (Route<dynamic> route) => false);
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(user.message),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                )
+              ],
+            ),
+          );
+        }
       });
     }
   }
