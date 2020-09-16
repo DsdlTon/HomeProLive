@@ -22,6 +22,7 @@ class UserService {
 
   static Future<bool> createUserInDB(body) async {
     final response = await Http.post("$baseUrl/auth/register", body: body);
+    print('/////////////${response.body}');
     if (response.statusCode == 200) {
       return true;
     } else {
@@ -41,13 +42,8 @@ class UserService {
 
   static Future<UserDao> login(body) async {
     final response = await Http.post("$baseUrl/auth/login", body: body);
-    if (response.statusCode == 200) {
-      final String responseString = response.body;
-      return userDaoFromJson(responseString);
-    } else {
-      final String responseString = response.body;
-      return userDaoFromJson(responseString);
-    }
+    final String responseString = response.body;
+    return userDaoFromJson(responseString);
   }
 }
 

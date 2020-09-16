@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/pages/HomePage.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class RegisterPage extends StatefulWidget {
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -16,7 +18,15 @@ class _RegisterPageState extends State<RegisterPage> {
   String email;
   String phone;
 
+  UserDao _user;
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  void saveUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('accessToken', _user.accessToken);
+    prefs.setString('username', _user.username);
+  }
 
   void _validateInputs() {
     final form = _formKey.currentState;
@@ -32,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       final body = {
         "name": name,
-        "surname": surname,
+        "lastname": surname,
         "username": username,
         "password": password,
         "email": email,
@@ -40,22 +50,19 @@ class _RegisterPageState extends State<RegisterPage> {
       };
       UserService.createUserInDB(body).then((success) {
         print('Enter createUserInDB Method');
+        print('success: $success');
         if (success) {
           print('Add User Info in DB Success!!');
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Your Account has been Created.'),
+              title: Text(
+                  "Your Account has been Created. You're going to Login to the App"),
               actions: <Widget>[
                 FlatButton(
                   child: Text('OK'),
                   onPressed: () {
-                    // username = '';
-                    // password = '';
-                    MaterialPageRoute materialPageRoute = MaterialPageRoute(
-                        builder: (BuildContext context) => HomePage());
-                    Navigator.of(context).pushAndRemoveUntil(
-                        materialPageRoute, (Route<dynamic> route) => false);
+                    loginProcess(body);
                   },
                 )
               ],
@@ -63,9 +70,41 @@ class _RegisterPageState extends State<RegisterPage> {
           );
         }
       });
-      
+
       // registerThread();
     }
+  }
+
+  void loginProcess(body) {
+    UserService.login(body).then((response) {
+      //login success
+      if (response.message == "success") {
+        setState(() {
+          _user = response;
+          saveUserData();
+        });
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext context) => HomePage());
+        Navigator.of(context).pushAndRemoveUntil(
+            materialPageRoute, (Route<dynamic> route) => false);
+      } else {
+        //login failed
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(response.message),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+          ),
+        );
+      }
+    });
   }
 
   // void createAccount(body) {

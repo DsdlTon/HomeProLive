@@ -313,47 +313,71 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     );
   }
 
+  List product;
+  Future<List<dynamic>> getProductList(channelName) async {
+    await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .get()
+        .then((snapshot) {
+      product = snapshot['productInLive'];
+      print('PRODUCT: $product');
+    });
+    return product;
+  }
+
   PersistentBottomSheetController bottomSheet() {
     return showBottomSheet(
       context: context,
       backgroundColor: Colors.black.withOpacity(0.8),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'All Product',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 17.0,
-              ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-            SingleChildScrollView(
-              child: Container(
+      builder: (context) {
+        return FutureBuilder(
+          future: getProductList(widget.channelName),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.6,
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.47,
-                child: ListView.builder(
-                  itemBuilder: (context, position) {
-                    return Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(
-                          position.toString(),
-                          style: TextStyle(fontSize: 22.0),
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'All Product',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 17.0,
+                      ),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                    SingleChildScrollView(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.47,
+                        child: ListView.builder(
+                          // itemCount: snapshot.data.documents.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Text(product[1]),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
+                    )
+                  ],
                 ),
-              ),
-            )
-          ],
-        ),
-      ),
+              );
+            }
+          },
+        );
+      },
     );
   }
 

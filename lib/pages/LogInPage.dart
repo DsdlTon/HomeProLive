@@ -25,6 +25,37 @@ class _LoginPageState extends State<LoginPage> {
     prefs.setString('username', _user.username);
   }
 
+  void loginProcess(body) {
+    UserService.login(body).then((user) {
+      if (user.message == "success") {
+        setState(() {
+          _user = user;
+          saveUserData();
+        });
+
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (BuildContext context) => HomePage());
+        Navigator.of(context).pushAndRemoveUntil(
+            materialPageRoute, (Route<dynamic> route) => false);
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(user.message),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            ],
+          ),
+        );
+      }
+    });
+  }
+
   void _validateInputs() {
     final form = _formKey.currentState;
     if (form.validate()) {
@@ -38,34 +69,7 @@ class _LoginPageState extends State<LoginPage> {
         "password": password,
       };
 
-      UserService.login(body).then((user) {
-        if (user.message == null) {
-          setState(() {
-            _user = user;
-            saveUserData();
-          });
-
-          MaterialPageRoute materialPageRoute =
-              MaterialPageRoute(builder: (BuildContext context) => HomePage());
-          Navigator.of(context).pushAndRemoveUntil(
-              materialPageRoute, (Route<dynamic> route) => false);
-        } else {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(user.message),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )
-              ],
-            ),
-          );
-        }
-      });
+      loginProcess(body);
     }
   }
 

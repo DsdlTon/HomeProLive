@@ -209,5 +209,4 @@ class FireStoreClass {
   static Stream<QuerySnapshot> getChatroomData() {
     return _db.collection("Chatroom").snapshots();
   }
-
 }
