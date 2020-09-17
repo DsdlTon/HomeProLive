@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/pages/HomePage.dart';
 
@@ -10,11 +11,12 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage>{
+
+
   String username;
   String password;
   String email;
-
   UserDao _user;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -62,7 +64,6 @@ class _LoginPageState extends State<LoginPage> {
       form.save();
       print('username: $username');
       print('password: $password');
-      // checkAuthen();
 
       final body = {
         "username": username,
@@ -72,55 +73,6 @@ class _LoginPageState extends State<LoginPage> {
       loginProcess(body);
     }
   }
-
-  // Future<void> checkAuthen() async {
-  //   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-  //   await firebaseAuth
-  //       .signInWithEmailAndPassword(email: email, password: password)
-  //       .then((response) {
-  //     print('Authen Success');
-  //     MaterialPageRoute materialPageRoute =
-  //         MaterialPageRoute(builder: (BuildContext context) => HomePage());
-  //     Navigator.of(context).pushAndRemoveUntil(
-  //         materialPageRoute, (Route<dynamic> route) => false);
-  //   }).catchError((response) {
-  //     String title = response.code;
-  //     String message = response.message;
-  //     loginAlert(title, message);
-  //   });
-  // }
-
-  // void loginAlert(String title, String message) {
-  //   showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           title: ListTile(
-  //             leading: Icon(
-  //               Icons.add_alert,
-  //               color: Colors.red,
-  //               size: 20.0,
-  //             ),
-  //             title: Text(
-  //               title,
-  //               style: TextStyle(color: Colors.red, fontSize: 10.0),
-  //             ),
-  //           ),
-  //           content: Text(
-  //             message,
-  //             style: TextStyle(color: Colors.red, fontSize: 10.0),
-  //           ),
-  //           actions: <Widget>[
-  //             FlatButton(
-  //               child: Text('OK'),
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //             ),
-  //           ],
-  //         );
-  //       });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -142,15 +94,18 @@ class _LoginPageState extends State<LoginPage> {
             ),
             child: Column(
               children: <Widget>[
-                Container(
-                  height: MediaQuery.of(context).size.width / 1.8,
-                  margin: EdgeInsets.only(top: 50.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      appLogo(),
-                      appName(),
-                    ],
+                FloatUpAnimation(
+                  1.0,
+                  Container(
+                    height: MediaQuery.of(context).size.width / 1.8,
+                    margin: EdgeInsets.only(top: 50.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        appLogo(),
+                        appName(),
+                      ],
+                    ),
                   ),
                 ),
                 Padding(
@@ -159,25 +114,31 @@ class _LoginPageState extends State<LoginPage> {
                     key: _formKey,
                     child: Column(
                       children: <Widget>[
-                        fullTextFormField(
-                          label: 'Username',
-                          hint: 'Your Username',
-                          keyboardType: TextInputType.text,
-                          obscureText: false,
-                          onSaved: (String value) {
-                            username = value.trim();
-                          },
-                          validator: _usernameValidator,
+                        FloatUpAnimation(
+                          1.2,
+                          fullTextFormField(
+                            label: 'Username',
+                            hint: 'Your Username',
+                            keyboardType: TextInputType.text,
+                            obscureText: false,
+                            onSaved: (String value) {
+                              username = value.trim();
+                            },
+                            validator: _usernameValidator,
+                          ),
                         ),
-                        fullTextFormField(
-                          label: 'Password',
-                          hint: 'Your Password',
-                          keyboardType: TextInputType.text,
-                          obscureText: true,
-                          onSaved: (String value) {
-                            password = value.trim();
-                          },
-                          validator: _passwordValidator,
+                        FloatUpAnimation(
+                          1.4,
+                          fullTextFormField(
+                            label: 'Password',
+                            hint: 'Your Password',
+                            keyboardType: TextInputType.text,
+                            obscureText: true,
+                            onSaved: (String value) {
+                              password = value.trim();
+                            },
+                            validator: _passwordValidator,
+                          ),
                         ),
                       ],
                     ),
@@ -186,30 +147,36 @@ class _LoginPageState extends State<LoginPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
-                    Container(
-                      child: loginButtonTranparent(
-                        text: 'Login',
-                        page: HomePage(),
-                      ),
-                    ),
-                    FlatButton(
-                      padding: EdgeInsets.symmetric(horizontal: -10.0),
-                      child: Text(
-                        "Don't have any Account? Create One.",
-                        style: TextStyle(
-                          fontSize: 12.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w400,
+                    FloatUpAnimation(
+                      1.6,
+                      Container(
+                        child: loginButtonTranparent(
+                          text: 'Login',
+                          page: HomePage(),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegisterPage(),
+                    ),
+                    FloatUpAnimation(
+                      1.8,
+                      FlatButton(
+                        padding: EdgeInsets.symmetric(horizontal: -10.0),
+                        child: Text(
+                          "Don't have any Account? Create One.",
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
                           ),
-                        );
-                      },
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegisterPage(),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -313,25 +280,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  // String _emailValidator(String value) {
-  //   if (value.isEmpty) {
-  //     return "Please Enter your Email Address";
-  //   }
-  //   String p = "[a-zA-Z0-9\+\.\_\%\-\+]{1,256}" +
-  //       "\\@" +
-  //       "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
-  //       "(" +
-  //       "\\." +
-  //       "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
-  //       ")+";
-  //   RegExp regExp = new RegExp(p);
-
-  //   if (regExp.hasMatch(value)) {
-  //     return null;
-  //   }
-  //   return 'Email is not valid';
-  // }
 
   String _usernameValidator(String value) {
     if (value.isEmpty) {

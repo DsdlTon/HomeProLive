@@ -81,7 +81,9 @@ class _AllChatPageState extends State<AllChatPage> {
             builder: (BuildContext context, snapshot) {
               if (!snapshot.hasData) {
                 return Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.blue[800],
+                  ),
                 );
               } else {
                 return ListView.builder(

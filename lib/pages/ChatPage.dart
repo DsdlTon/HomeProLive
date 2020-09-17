@@ -188,7 +188,9 @@ class _ChatPageState extends State<ChatPage> {
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.blue[800],
+                  ),
                 );
               } else {
                 if (snapshot.data.documents.length == 0) {
@@ -569,12 +571,16 @@ class _ChatPageState extends State<ChatPage> {
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return CircularProgressIndicator(
+            backgroundColor: Colors.blue[800],
+          );
         }
         //Chatroom Field
         var chatroomSnap = snapshot.data;
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return CircularProgressIndicator(
+            backgroundColor: Colors.blue[800],
+          );
         } else if (chatroomSnap["isAdminRead"] == true) {
           return Container(
             padding: EdgeInsets.only(right: 3),

@@ -1,13 +1,9 @@
 // import 'dart:convert';
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:http/http.dart' as http;
-import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/ChatPage.dart';
 
 import '../main.dart';
@@ -16,8 +12,6 @@ class NotificationController {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  // List<String> userToken = [];
-  // List<String> oldToken = [];
 
   static NotificationController get instance => NotificationController();
 
@@ -26,51 +20,8 @@ class NotificationController {
     String username = prefs.getString('username');
 
     try {
-      // if (Platform.isIOS) {
-      //   _firebaseMessaging
-      //       .requestNotificationPermissions(IosNotificationSettings());
-      // }
-      // _firebaseMessaging.requestNotificationPermissions();
-      // SharedPreferences prefs = await SharedPreferences.getInstance();
-      // String token = prefs.get('FCMToken');
-      // print('********** USERNAME: $username ***********');
-      // print('********** Exists FCMToken: $token ***********');
       _firebaseMessaging.subscribeToTopic(username);
       _firebaseMessaging.subscribeToTopic('live');
-      // if (token == null) {
-      //   _firebaseMessaging.getToken().then((token) async {
-      //     prefs.setString('FCMToken', token);
-      //     print('********** FCMToken: ' + token + '**********');
-      //     // check if it has oldToken List in DB?
-      //     final snapShot = await Firestore.instance
-      //         .collection('Users')
-      //         .document(username)
-      //         .get();
-      //     if (snapShot.exists) {
-      //       // if Yes
-      //       // get oldUserToken List from DB (name as userToken List)
-      //       await Firestore.instance
-      //           .collection('Users')
-      //           .document(username)
-      //           .get()
-      //           .then((snapshot) {
-      //         oldToken = List.from(snapshot['FCMToken']);
-      //         // print('oldToken: $oldToken');
-      //       });
-      //       print('oldToken: $oldToken');
-      //       // make oldToken = userToken
-      //       userToken = oldToken;
-      //     }
-      //     // if No
-      //     // add newUserToken in userTokenList
-      //     userToken.add(token);
-      //     //if Username is Existed in system
-      //     if (username != null) {
-      //       // save userTokenList to DB
-      //       FireStoreClass.instanace.saveUserToken(username, userToken);
-      //     }
-      //   });
-      // }
       _firebaseMessaging.configure(
         // call when app is in the foreground
         onMessage: (Map<String, dynamic> message) async {
@@ -84,6 +35,8 @@ class NotificationController {
           } else {
             body = message['notification']['body'];
             title = message['notification']['title'];
+            print('body $body');
+            print('title $title');
             sendLocalNotification(title, body);
           }
         },
@@ -101,8 +54,7 @@ class NotificationController {
           print("onLaunch: $message");
         },
       );
-    } 
-    catch (e) {
+    } catch (e) {
       print(e.message);
     }
   }
@@ -149,19 +101,24 @@ class NotificationController {
   }
 
   Future _onDidReceiveLocalNotification(
-      int id, String title, String body, String payload) async {}
+      int id, String title, String body, String payload) async {
+    print("_onDidReceiveLocalNotification called.");
+  }
 
-  Future _selectNotification(String payload) async {}
+  Future _selectNotification(String payload) async {
+    print("onSelectNotification called.");
+  }
 
   sendLocalNotification(title, body) async {
     print('enter sendLocalNotification');
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-        'your channel id', 'your channel name', 'your channel description',
+        '10000', 'your channel name', 'your channel description',
         importance: Importance.Max, priority: Priority.High);
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     await _flutterLocalNotificationsPlugin.show(
-        0, title, body, platformChannelSpecifics);
+        1, title, body, platformChannelSpecifics,
+        payload: 'THIS IS PAYLOAD');
   }
 }

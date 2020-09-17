@@ -1,5 +1,7 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
 import 'package:test_live_app/pages/LogInPage.dart';
@@ -32,11 +34,6 @@ class _ListLivePageState extends State<ListLivePage> {
 
   @override
   Widget build(BuildContext context) {
-    // final availableHeight = MediaQuery.of(context).size.height -
-    //     AppBar().preferredSize.height -
-    //     MediaQuery.of(context).padding.top -
-    //     MediaQuery.of(context).padding.bottom;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[800],
@@ -56,15 +53,24 @@ class _ListLivePageState extends State<ListLivePage> {
         ),
         automaticallyImplyLeading: false,
         centerTitle: true,
-        leading: signOutButton(),
-        title: Column(
-          children: <Widget>[
-            appName(),
-            showUsername(),
-          ],
+        leading: FloatUpAnimation(
+          0.5,
+          signOutButton(),
+        ),
+        title: FloatUpAnimation(
+          0.5,
+          Column(
+            children: <Widget>[
+              appName(),
+              showUsername(),
+            ],
+          ),
         ),
         actions: <Widget>[
-          cartButton(),
+          FloatUpAnimation(
+            0.5,
+            cartButton(),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -80,7 +86,9 @@ class _ListLivePageState extends State<ListLivePage> {
             builder: (BuildContext context, snapshot) {
               if (!snapshot.hasData) {
                 return Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.blue[800],
+                  ),
                 );
               } else if (snapshot.data.documents.length == 0) {
                 return Center(
@@ -90,40 +98,46 @@ class _ListLivePageState extends State<ListLivePage> {
                     children: <Widget>[
                       Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
                       SizedBox(height: 10),
-                      Text(
-                        'No Current Streaming',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 18.0,
+                      FloatUpAnimation(
+                        0.8,
+                        Text(
+                          'No Current Streaming',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18.0,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 );
               } else {
-                return Container(
-                  child: GridView.builder(
-                    itemCount: snapshot.data.documents.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      childAspectRatio: MediaQuery.of(context).size.width /
-                          (MediaQuery.of(context).size.height * 0.8),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 2.0,
-                      mainAxisSpacing: 2.0,
+                return FloatUpAnimation(
+                  0.8,
+                  Container(
+                    child: GridView.builder(
+                      itemCount: snapshot.data.documents.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        childAspectRatio: MediaQuery.of(context).size.width /
+                            (MediaQuery.of(context).size.height * 0.8),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 2.0,
+                        mainAxisSpacing: 2.0,
+                      ),
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          child: liveContent(
+                            title: '${snapshot.data.documents[index]["title"]}',
+                            thumbnail:
+                                '${snapshot.data.documents[index]["thumbnail"]}',
+                            liveUser: 'Homepro1',
+                            userProfile: 'assets/logo.png',
+                            channelName:
+                                '${snapshot.data.documents[index]["channelName"]}',
+                          ),
+                        );
+                      },
                     ),
-                    itemBuilder: (BuildContext context, int index) {
-                      return Container(
-                        child: liveContent(
-                          title: '${snapshot.data.documents[index]["title"]}',
-                          thumbnail:
-                              '${snapshot.data.documents[index]["thumbnail"]}',
-                          liveUser: 'Homepro1',
-                          userProfile: 'assets/logo.png',
-                          channelName:
-                              '${snapshot.data.documents[index]["channelName"]}',
-                        ),
-                      );
-                    },
                   ),
                 );
               }
@@ -264,7 +278,12 @@ class _ListLivePageState extends State<ListLivePage> {
                                 builder: (BuildContext context, snapshot) {
                                   if (!snapshot.hasData) {
                                     return Center(
-                                      child: Text('0'),
+                                      child: Text(
+                                        '0',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     );
                                   } else {
                                     int viewers =
@@ -385,8 +404,10 @@ class _ListLivePageState extends State<ListLivePage> {
   }
 
   Future<void> processSignOut() async {
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove("username");
+    _firebaseMessaging.unsubscribeFromTopic(username);
 
     MaterialPageRoute materialPageRoute =
         MaterialPageRoute(builder: (BuildContext context) => LoginPage());

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_live_app/animations/fadeTransition.dart';
 import 'package:test_live_app/pages/HomePage.dart';
 import 'package:test_live_app/pages/LogInPage.dart';
 
@@ -14,7 +13,7 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> checkAuthen() async {
     print("ENTER CHECK AUTHEN: $username");
-    await Future.delayed(Duration(milliseconds: 1500), () {
+    await Future.delayed(Duration(milliseconds: 1000), () {
       if (username != null) {
         Navigator.of(context).pushReplacement(MaterialPageRoute(
           builder: (context) => HomePage(),
