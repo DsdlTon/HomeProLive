@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:test_live_app/pages/InitialPage.dart';
+import 'package:test_live_app/pages/SplashPage.dart';
 import 'package:test_live_app/providers/CategoryCardChange.dart';
 
 // Future<void> main() async {
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.teal,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: InitialPage(),
+        home: SplashPage(),
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
-import 'package:test_live_app/pages/InitialPage.dart';
+import 'package:test_live_app/pages/LogInPage.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -385,8 +385,11 @@ class _ListLivePageState extends State<ListLivePage> {
   }
 
   Future<void> processSignOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove("username");
+
     MaterialPageRoute materialPageRoute =
-        MaterialPageRoute(builder: (BuildContext context) => InitialPage());
+        MaterialPageRoute(builder: (BuildContext context) => LoginPage());
     Navigator.of(context)
         .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
   }

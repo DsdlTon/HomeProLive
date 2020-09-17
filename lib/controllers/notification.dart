@@ -16,8 +16,8 @@ class NotificationController {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  List<String> userToken = [];
-  List<String> oldToken = [];
+  // List<String> userToken = [];
+  // List<String> oldToken = [];
 
   static NotificationController get instance => NotificationController();
 
@@ -26,49 +26,51 @@ class NotificationController {
     String username = prefs.getString('username');
 
     try {
-      if (Platform.isIOS) {
-        _firebaseMessaging
-            .requestNotificationPermissions(IosNotificationSettings());
-      }
-      _firebaseMessaging.requestNotificationPermissions();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String token = prefs.get('FCMToken');
-      print('********** USERNAME: $username ***********');
-      print('********** Exists FCMToken: $token ***********');
-      if (token == null) {
-        _firebaseMessaging.getToken().then((token) async {
-          prefs.setString('FCMToken', token);
-          print('********** FCMToken: ' + token + '**********');
-          // check if it has oldToken List in DB?
-          final snapShot = await Firestore.instance
-              .collection('Users')
-              .document(username)
-              .get();
-          if (snapShot.exists) {
-            // if Yes
-            // get oldUserToken List from DB (name as userToken List)
-            await Firestore.instance
-                .collection('Users')
-                .document(username)
-                .get()
-                .then((snapshot) {
-              oldToken = List.from(snapshot['FCMToken']);
-              // print('oldToken: $oldToken');
-            });
-            print('oldToken: $oldToken');
-            // make oldToken = userToken
-            userToken = oldToken;
-          }
-          // if No
-          // add newUserToken in userTokenList
-          userToken.add(token);
-          //if Username is Existed in system
-          if (username != null) {
-            // save userTokenList to DB
-            FireStoreClass.instanace.saveUserToken(username, userToken);
-          }
-        });
-      }
+      // if (Platform.isIOS) {
+      //   _firebaseMessaging
+      //       .requestNotificationPermissions(IosNotificationSettings());
+      // }
+      // _firebaseMessaging.requestNotificationPermissions();
+      // SharedPreferences prefs = await SharedPreferences.getInstance();
+      // String token = prefs.get('FCMToken');
+      // print('********** USERNAME: $username ***********');
+      // print('********** Exists FCMToken: $token ***********');
+      _firebaseMessaging.subscribeToTopic(username);
+      _firebaseMessaging.subscribeToTopic('live');
+      // if (token == null) {
+      //   _firebaseMessaging.getToken().then((token) async {
+      //     prefs.setString('FCMToken', token);
+      //     print('********** FCMToken: ' + token + '**********');
+      //     // check if it has oldToken List in DB?
+      //     final snapShot = await Firestore.instance
+      //         .collection('Users')
+      //         .document(username)
+      //         .get();
+      //     if (snapShot.exists) {
+      //       // if Yes
+      //       // get oldUserToken List from DB (name as userToken List)
+      //       await Firestore.instance
+      //           .collection('Users')
+      //           .document(username)
+      //           .get()
+      //           .then((snapshot) {
+      //         oldToken = List.from(snapshot['FCMToken']);
+      //         // print('oldToken: $oldToken');
+      //       });
+      //       print('oldToken: $oldToken');
+      //       // make oldToken = userToken
+      //       userToken = oldToken;
+      //     }
+      //     // if No
+      //     // add newUserToken in userTokenList
+      //     userToken.add(token);
+      //     //if Username is Existed in system
+      //     if (username != null) {
+      //       // save userTokenList to DB
+      //       FireStoreClass.instanace.saveUserToken(username, userToken);
+      //     }
+      //   });
+      // }
       _firebaseMessaging.configure(
         // call when app is in the foreground
         onMessage: (Map<String, dynamic> message) async {
@@ -99,7 +101,8 @@ class NotificationController {
           print("onLaunch: $message");
         },
       );
-    } catch (e) {
+    } 
+    catch (e) {
       print(e.message);
     }
   }

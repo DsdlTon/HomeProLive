@@ -4,6 +4,7 @@ import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/pages/LogInPage.dart';
 
 import 'package:test_live_app/pages/RecentLivePage.dart';
 
@@ -375,7 +376,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
             ),
             FlatButton(
               onPressed: () {
-                // processSignOut();
+                processSignOut();
               },
               child: Text('Yes'),
             ),
@@ -383,5 +384,15 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
         );
       },
     );
+  }
+
+  Future<void> processSignOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove("username");
+
+    MaterialPageRoute materialPageRoute =
+        MaterialPageRoute(builder: (BuildContext context) => LoginPage());
+    Navigator.of(context)
+        .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
   }
 }

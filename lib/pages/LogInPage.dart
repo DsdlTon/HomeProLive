@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/api.dart';
-import 'package:test_live_app/pages/ForgotPassword.dart';
 import 'package:test_live_app/pages/HomePage.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/pages/Register.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -159,16 +159,6 @@ class _LoginPageState extends State<LoginPage> {
                     key: _formKey,
                     child: Column(
                       children: <Widget>[
-                        // fullTextFormField(
-                        //   label: 'Email',
-                        //   hint: 'Your email',
-                        //   keyboardType: TextInputType.emailAddress,
-                        //   obscureText: false,
-                        //   onSaved: (String value) {
-                        //     email = value.trim();
-                        //   },
-                        //   validator: _emailValidator,
-                        // ),
                         fullTextFormField(
                           label: 'Username',
                           hint: 'Your Username',
@@ -205,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                     FlatButton(
                       padding: EdgeInsets.symmetric(horizontal: -10.0),
                       child: Text(
-                        'Forgot your Password?',
+                        "Don't have any Account? Create One.",
                         style: TextStyle(
                           fontSize: 12.0,
                           color: Colors.white,
@@ -216,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ForgotPasswordPage(),
+                            builder: (context) => RegisterPage(),
                           ),
                         );
                       },
