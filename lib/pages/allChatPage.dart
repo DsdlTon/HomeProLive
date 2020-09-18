@@ -103,129 +103,150 @@ class _AllChatPageState extends State<AllChatPage> {
                         snapshot.data.documents[index]['chatWith'];
 
                     return usernameInFB == username
-                        ? GestureDetector(
-                            onTap: () {
-                              print("tab");
-                              Navigator.pushNamed(
-                                context,
-                                '/chatPage',
-                                arguments: ChatPage(
-                                  title: title,
-                                  channelName: channelName,
-                                  username: username,
-                                ),
-                              );
-                            },
-                            child: Container(
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 2),
-                              padding: EdgeInsets.all(15),
-                              width: MediaQuery.of(context).size.width,
-                              decoration: BoxDecoration(
+                        ? Dismissible(
+                            key: Key(snapshot.data.documents[index].toString()),
+                            background: Container(
+                              alignment: AlignmentDirectional.centerEnd,
+                              color: Colors.red,
+                              child: Icon(
+                                Icons.delete,
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(5),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 0.1,
-                                    blurRadius: 1,
-                                    offset: Offset(0, 1),
-                                  ),
-                                ],
                               ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Container(
-                                    child: Row(
-                                      children: <Widget>[
-                                        CircleAvatar(
-                                          radius: 20,
-                                          backgroundColor: Colors.blue[800],
-                                          child: CircleAvatar(
-                                            radius: 18,
-                                            backgroundImage: AssetImage(
-                                                'assets/homeproLogo.png'),
+                            ),
+                            onDismissed: (direction) {
+                              setState(() {
+                                final chats = snapshot.data.documents;
+                                chats.removeAt(index);
+                              });
+                            },
+                            direction: DismissDirection.endToStart,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/chatPage',
+                                  arguments: ChatPage(
+                                    title: title,
+                                    channelName: channelName,
+                                    username: username,
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                margin: EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 2),
+                                padding: EdgeInsets.all(15),
+                                width: MediaQuery.of(context).size.width,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.2),
+                                      spreadRadius: 0.1,
+                                      blurRadius: 1,
+                                      offset: Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Container(
+                                      child: Row(
+                                        children: <Widget>[
+                                          CircleAvatar(
+                                            radius: 20,
+                                            backgroundColor: Colors.blue[800],
+                                            child: CircleAvatar(
+                                              radius: 18,
+                                              backgroundImage: AssetImage(
+                                                  'assets/homeproLogo.png'),
+                                            ),
                                           ),
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.only(left: 10),
-                                          child: Row(
-                                            children: <Widget>[
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: <Widget>[
-                                                  Text(
-                                                    snapshot.data
-                                                            .documents[index]
-                                                        ['title'],
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        snapshot.data.documents[
-                                                            index]['lastMsg'],
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: snapshot.data.documents[
-                                                                        index][
-                                                                    'isUserRead'] ==
-                                                                false
-                                                            ? TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              )
-                                                            : TextStyle(
-                                                                color: Colors
-                                                                    .grey[600],
-                                                              ),
+                                          Container(
+                                            margin: EdgeInsets.only(left: 10),
+                                            child: Row(
+                                              children: <Widget>[
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      snapshot.data
+                                                              .documents[index]
+                                                          ['title'],
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
-                                                      Container(
-                                                        child: Text(
-                                                          ' · $formattedDate',
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .grey[600],
-                                                            fontSize: 10,
+                                                    ),
+                                                    SizedBox(height: 5),
+                                                    Row(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .end,
+                                                      children: <Widget>[
+                                                        Text(
+                                                          snapshot.data
+                                                                  .documents[
+                                                              index]['lastMsg'],
+                                                          maxLines: 2,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: snapshot.data.documents[
+                                                                          index]
+                                                                      [
+                                                                      'isUserRead'] ==
+                                                                  false
+                                                              ? TextStyle(
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                )
+                                                              : TextStyle(
+                                                                  color: Colors
+                                                                          .grey[
+                                                                      600],
+                                                                ),
+                                                        ),
+                                                        Container(
+                                                          child: Text(
+                                                            ' · $formattedDate',
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .grey[600],
+                                                              fontSize: 10,
+                                                            ),
                                                           ),
                                                         ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  snapshot.data.documents[index]
-                                              ['isUserRead'] ==
-                                          false
-                                      ? Container(
-                                          width: 11,
-                                          height: 11,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.blue[700],
-                                          ),
-                                        )
-                                      : Container(),
-                                ],
+                                    snapshot.data.documents[index]
+                                                ['isUserRead'] ==
+                                            false
+                                        ? Container(
+                                            width: 11,
+                                            height: 11,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.blue[700],
+                                            ),
+                                          )
+                                        : Container(),
+                                  ],
+                                ),
                               ),
                             ),
                           )

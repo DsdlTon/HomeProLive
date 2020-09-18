@@ -8,29 +8,10 @@ import 'package:test_live_app/pages/LogInPage.dart';
 import 'package:test_live_app/pages/RecentLivePage.dart';
 import 'package:test_live_app/pages/Register.dart';
 import 'package:test_live_app/pages/SplashPage.dart';
-import 'package:test_live_app/pages/showFullImage.dart';
+import 'package:test_live_app/widgets/showFullImage.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    // routes: {
-    //   '/': (context) => SplashPage(),
-    //   '/loginPage': (context) => LoginPage(),
-    //   '/registerPage': (context) => RegisterPage(),
-    //   '/homePage': (context) => HomePage(),
-    //   '/listLivePage': (context) => ListLivePage(),
-    //   '/ListRecentlyLivePage': (context) => ListRecentlyLivePage(),
-    //   '/allChatPage': (context) => AllChatPage(),
-    //   '/chatPage': (context) => ChatPage(),
-    //   '/livePage': (context) => LivePage(),
-    //   '/recentLivePage': (context) => RecentLivePage(),
-    //   '/fullImageScreen': (context) => FullImageScreen(),
-    //   '/foregroundLive': (context) => ForegroundLive(),
-    //   '/backgroundLive': (context) => BackgroundLive(),
-    //   '/recentForeground': (context) => RecentForegroundLive(),
-
-    //   '/cartPage': (context) => CartPage(),
-    // },
-
     switch (settings.name) {
       case '/':
         return MaterialPageRoute(builder: (_) => SplashPage());

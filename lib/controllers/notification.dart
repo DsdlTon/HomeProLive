@@ -31,27 +31,22 @@ class NotificationController {
           if (Platform.isIOS) {
             body = message['aps']['alert']['body'];
             title = message['aps']['alert']['title'];
-            sendLocalNotification(title, body);
+            sendLocalNotification(message, title, body);
           } else {
             body = message['notification']['body'];
             title = message['notification']['title'];
-            print('body $body');
-            print('title $title');
-            sendLocalNotification(title, body);
+            sendLocalNotification(message, title, body);
           }
         },
         // call when the app is in the background and opened by noti directly
         onResume: (Map<String, dynamic> message) async {
           print("onResume: $message");
-          String chatroomId = message['data']['chatroomid'];
-          int len = chatroomId.length;
-          String channelName = chatroomId.substring(0, 13);
-          String username = chatroomId.substring(13, len);
-          navigateToChatPage(channelName, username);
+          navigateToChatPage(message);
         },
         // call when app has been close completely and it's opened form the noti directly
         onLaunch: (Map<String, dynamic> message) async {
           print("onLaunch: $message");
+          navigateToChatPage(message);
         },
       );
     } catch (e) {
@@ -59,17 +54,34 @@ class NotificationController {
     }
   }
 
-  void navigateToChatPage(channelName, username) {
-    print("enter navigate");
-    navigatorKey.currentState.push(
-      MaterialPageRoute(
-        builder: (_) => ChatPage(
+  void navigateToChatPage(message) {
+    if (Platform.isIOS) {
+      // String chatroomId = message['aps']['alert']['chatroomid'];
+      // int len = chatroomId.length;
+      // String channelName = chatroomId.substring(0, 13);
+      // String username = chatroomId.substring(13, len);
+      // MyApp.navigatorKey.currentState.pushNamed(
+      //   '/chatPage',
+      //   arguments: ChatPage(
+      //     title: 'WaitForApi',
+      //     channelName: channelName,
+      //     username: username,
+      //   ),
+      // );
+    } else {
+      String chatroomId = message['data']['chatroomid'];
+      int len = chatroomId.length;
+      String channelName = chatroomId.substring(0, 13);
+      String username = chatroomId.substring(13, len);
+      MyApp.navigatorKey.currentState.pushNamed(
+        '/chatPage',
+        arguments: ChatPage(
+          title: 'WaitForApi',
           channelName: channelName,
           username: username,
         ),
-      ),
-    );
-    print("exit navigate");
+      );
+    }
   }
 
   Future initLocalNotification() async {
@@ -109,7 +121,7 @@ class NotificationController {
     print("onSelectNotification called.");
   }
 
-  sendLocalNotification(title, body) async {
+  sendLocalNotification(message, title, body) async {
     print('enter sendLocalNotification');
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         '10000', 'your channel name', 'your channel description',

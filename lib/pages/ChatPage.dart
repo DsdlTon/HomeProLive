@@ -7,11 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/pages/showFullImage.dart';
+import 'package:test_live_app/widgets/showFullImage.dart';
 
 class ChatPage extends StatefulWidget {
-  // static const routeName = '/chatPage';
-
   final String title;
   final String channelName;
   final String username;
