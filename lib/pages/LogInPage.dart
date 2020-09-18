@@ -11,9 +11,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>{
-
-
+class _LoginPageState extends State<LoginPage> {
   String username;
   String password;
   String email;
@@ -35,10 +33,8 @@ class _LoginPageState extends State<LoginPage>{
           saveUserData();
         });
 
-        MaterialPageRoute materialPageRoute =
-            MaterialPageRoute(builder: (BuildContext context) => HomePage());
-        Navigator.of(context).pushAndRemoveUntil(
-            materialPageRoute, (Route<dynamic> route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            '/homePage', (Route<dynamic> route) => false);
       } else {
         showDialog(
           context: context,
@@ -169,12 +165,7 @@ class _LoginPageState extends State<LoginPage>{
                           ),
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => RegisterPage(),
-                            ),
-                          );
+                          Navigator.of(context).pushNamed('/registerPage');
                         },
                       ),
                     ),

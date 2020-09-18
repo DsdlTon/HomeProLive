@@ -414,9 +414,11 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
     prefs.remove("username");
     _firebaseMessaging.unsubscribeFromTopic(username);
 
-    MaterialPageRoute materialPageRoute =
-        MaterialPageRoute(builder: (BuildContext context) => LoginPage());
-    Navigator.of(context)
-        .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
+    Navigator.of(context).pushNamedAndRemoveUntil('/loginPage', (Route<dynamic> route) => false);
+
+    // MaterialPageRoute materialPageRoute =
+    //     MaterialPageRoute(builder: (BuildContext context) => LoginPage());
+    // Navigator.of(context)
+    //     .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
   }
 }

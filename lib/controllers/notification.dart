@@ -15,7 +15,7 @@ class NotificationController {
 
   static NotificationController get instance => NotificationController();
 
-  Future takeFCMTokenWhenAppLaunch() async {
+  Future subscribeWhenAppLaunch() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String username = prefs.getString('username');
 

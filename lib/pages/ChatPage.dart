@@ -9,9 +9,9 @@ import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/showFullImage.dart';
 
-import '../main.dart';
-
 class ChatPage extends StatefulWidget {
+  // static const routeName = '/chatPage';
+
   final String title;
   final String channelName;
   final String username;
@@ -98,82 +98,79 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      home: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          elevation: 0,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomLeft,
-                colors: [
-                  Colors.blue[600],
-                  Colors.blue[700],
-                  Colors.blue[800],
-                  Colors.blue[800],
-                ],
-              ),
-            ),
-          ),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-          centerTitle: true,
-          title: Text(
-            "${widget.title}'s Admin",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              colors: [
+                Colors.blue[600],
+                Colors.blue[700],
+                Colors.blue[800],
+                Colors.blue[800],
+              ],
             ),
           ),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Expanded(
-              child: ListView(
-                reverse: true,
-                shrinkWrap: true,
-                children: <Widget>[
-                  buildChat(),
-                ],
-              ),
-            ),
-            bottomBar(context),
-            //preview image
-            _uploadedFileURL != ''
-                ? Container(
-                    color: Colors.black,
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.3,
-                    child: Stack(
-                      children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: Image.file(_image),
-                        ),
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton(
-                            icon: Icon(Icons.cancel, color: Colors.white),
-                            onPressed: () {
-                              setState(() {
-                                _uploadedFileURL = '';
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Container(),
-          ],
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
+        centerTitle: true,
+        title: Text(
+          "${widget.title}'s Admin",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+          ),
+        ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          Expanded(
+            child: ListView(
+              reverse: true,
+              shrinkWrap: true,
+              children: <Widget>[
+                buildChat(),
+              ],
+            ),
+          ),
+          bottomBar(context),
+          //preview image
+          _uploadedFileURL != ''
+              ? Container(
+                  color: Colors.black,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                  child: Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: Image.file(_image),
+                      ),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                          icon: Icon(Icons.cancel, color: Colors.white),
+                          onPressed: () {
+                            setState(() {
+                              _uploadedFileURL = '';
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
+        ],
       ),
     );
   }
@@ -208,7 +205,8 @@ class _ChatPageState extends State<ChatPage> {
                     var chatMsgSnap = snapshot.data.documents[index];
                     Timestamp timestamp = chatMsgSnap['timeStamp'];
                     var date = timestamp.toDate();
-                    String formattedDate = DateFormat('dd MMM kk:mm').format(date);
+                    String formattedDate =
+                        DateFormat('dd MMM kk:mm').format(date);
                     return chatMsgSnap['role'] == 'user'
                         ? userChatBubble(
                             chatMsgSnap: chatMsgSnap,
@@ -342,14 +340,18 @@ class _ChatPageState extends State<ChatPage> {
                   children: <Widget>[
                     InkWell(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FullImageScreen(
-                              image: chatMsgSnap['url'],
-                            ),
-                          ),
+                        Navigator.of(context).pushNamed(
+                          '/fullImageScreen',
+                          arguments: 'ttttt',
                         );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => FullImageScreen(
+                        //       image: chatMsgSnap['url'],
+                        //     ),
+                        //   ),
+                        // );
                       },
                       child: Container(
                         padding: EdgeInsets.only(top: 4, bottom: 4),

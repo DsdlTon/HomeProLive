@@ -2,10 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/pages/CartPage.dart';
-import 'package:test_live_app/pages/ChatPage.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/pages/ChatPage.dart';
 
 class AllChatPage extends StatefulWidget {
   final String title;
@@ -107,14 +105,14 @@ class _AllChatPageState extends State<AllChatPage> {
                     return usernameInFB == username
                         ? GestureDetector(
                             onTap: () {
-                              Navigator.push(
+                              print("tab");
+                              Navigator.pushNamed(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => ChatPage(
-                                    title: title,
-                                    channelName: channelName,
-                                    username: username,
-                                  ),
+                                '/chatPage',
+                                arguments: ChatPage(
+                                  title: title,
+                                  channelName: channelName,
+                                  username: username,
                                 ),
                               );
                             },
@@ -242,45 +240,6 @@ class _AllChatPageState extends State<AllChatPage> {
     );
   }
 
-  Widget signOutButton() {
-    return IconButton(
-      icon: Icon(
-        Icons.exit_to_app,
-        color: Colors.white,
-      ),
-      tooltip: 'Logout',
-      onPressed: () {
-        signOutAlert();
-      },
-    );
-  }
-
-  void signOutAlert() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Do you want to Logout?'),
-          content: Text('This method will logged you out'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            FlatButton(
-              onPressed: () {
-                // processSignOut();
-              },
-              child: Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget appName() {
     return RichText(
       text: TextSpan(
@@ -311,12 +270,7 @@ class _AllChatPageState extends State<AllChatPage> {
       ),
       tooltip: 'Cart',
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CartPage(),
-          ),
-        );
+        Navigator.of(context).pushNamed('/cartPage');
       },
     );
   }

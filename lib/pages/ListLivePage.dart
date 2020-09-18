@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/pages/CartPage.dart';
-import 'package:test_live_app/pages/LogInPage.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -185,17 +184,15 @@ class _ListLivePageState extends State<ListLivePage> {
       onTap: () {
         print('Tap $liveUser');
 
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (context) => LivePage(
-              title: title,
-              userProfile: userProfile,
-              liveUser: liveUser,
-              username: username,
-              channelName: channelName,
-              role: ClientRole.Audience,
-            ),
+          '/livePage',
+          arguments: LivePage(
+            title: title,
+            userProfile: userProfile,
+            liveUser: liveUser,
+            channelName: channelName,
+            username: username,
           ),
         );
       },
@@ -409,9 +406,7 @@ class _ListLivePageState extends State<ListLivePage> {
     prefs.remove("username");
     _firebaseMessaging.unsubscribeFromTopic(username);
 
-    MaterialPageRoute materialPageRoute =
-        MaterialPageRoute(builder: (BuildContext context) => LoginPage());
     Navigator.of(context)
-        .pushAndRemoveUntil(materialPageRoute, (Route<dynamic> route) => false);
+        .pushNamedAndRemoveUntil('/loginPage', (Route<dynamic> route) => false);
   }
 }

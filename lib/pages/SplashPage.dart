@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_live_app/pages/HomePage.dart';
-import 'package:test_live_app/pages/LogInPage.dart';
 
 class SplashPage extends StatefulWidget {
   @override
@@ -12,16 +10,11 @@ class _SplashPageState extends State<SplashPage> {
   String username;
 
   Future<void> checkAuthen() async {
-    print("ENTER CHECK AUTHEN: $username");
     await Future.delayed(Duration(milliseconds: 1000), () {
       if (username != null) {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ));
+        Navigator.of(context).pushReplacementNamed('/homePage');
       } else {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => LoginPage(),
-        ));
+        Navigator.of(context).pushReplacementNamed('/loginPage');
       }
     });
   }
@@ -38,7 +31,6 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
     getUsernameInPref();
-    print('BEFORE ENTER CHECK AUTHEN: $username');
     checkAuthen();
   }
 

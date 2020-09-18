@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'package:test_live_app/pages/SplashPage.dart';
 import 'package:test_live_app/providers/CategoryCardChange.dart';
-
-// Future<void> main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   PushNotificationsManager().init();
-//   runApp(MyApp());
-// }
+import 'package:test_live_app/utils/route_generator.dart';
 
 final navigatorKey = new GlobalKey<NavigatorState>();
 void main() {
@@ -27,7 +20,8 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.teal,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: SplashPage(),
+        initialRoute: '/',
+        onGenerateRoute: RouteGenerator.generateRoute,
       ),
     );
   }
