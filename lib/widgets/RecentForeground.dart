@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/pages/ChatPage.dart';
+import 'package:test_live_app/screens/ChatPage.dart';
 
 class RecentForegroundLive extends StatefulWidget {
   final String title;
@@ -139,17 +137,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       widget.liveUser,
       widget.channelName,
     );
-
-    Firestore.instance
-        .collection("Users")
-        .document(widget.username)
-        .get()
-        .then((snapshot) {
-      token = snapshot['FCMToken'];
-      // assert(token is String);
-      print('Retrived Token: $token');
-      return token;
-    });
   }
 
   @override
@@ -272,16 +259,14 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         icon: Icon(Icons.chat, color: Colors.white),
         onPressed: () {
           FocusScope.of(context).unfocus();
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (context) => ChatPage(
-                title: widget.title,
-                channelName: widget.channelName,
-                username: widget.username,
-                liveUser: widget.liveUser,
-                fcmToken: token,
-              ),
+            '/chatPage',
+            arguments: ChatPage(
+              title: widget.title,
+              channelName: widget.channelName,
+              username: widget.username,
+              liveUser: widget.liveUser,
             ),
           );
         },
@@ -314,47 +299,139 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
+  List product;
+  Future<List<dynamic>> getProductList(channelName) async {
+    await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .get()
+        .then((snapshot) {
+      product = snapshot['productInLive'];
+      print('PRODUCT: $product');
+      print('PRODUCT LEN: ${product.length}');
+    });
+    return product;
+  }
+
   PersistentBottomSheetController bottomSheet() {
     return showBottomSheet(
       context: context,
       backgroundColor: Colors.black.withOpacity(0.8),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        width: MediaQuery.of(context).size.width,
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'All Product',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 17.0,
-              ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-            SingleChildScrollView(
-              child: Container(
+      builder: (context) {
+        return FutureBuilder(
+          future: getProductList(widget.channelName),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.6,
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.47,
-                child: ListView.builder(
-                  itemBuilder: (context, position) {
-                    return Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text(
-                          position.toString(),
-                          style: TextStyle(fontSize: 22.0),
+                padding: EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.05,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'Products (${product.length})',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17.0,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                color: Colors.white, size: 18),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                    SingleChildScrollView(
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height * 0.47,
+                        child: ListView.builder(
+                          itemCount: product.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return Card(
+                              color: Colors.black.withOpacity(0.3),
+                              child: Padding(
+                                padding: EdgeInsets.all(10.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.1,
+                                      child: Image.network(
+                                        product[index]['image'],
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.03),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          product[index]['title'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        ),
+                                        Text(
+                                          '฿ ' + product[index]['price'],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        alignment: Alignment.centerRight,
+                                        child: IconButton(
+                                          onPressed: () {},
+                                          icon: Icon(
+                                            Icons.add_shopping_cart,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
+                    )
+                  ],
                 ),
-              ),
-            )
-          ],
-        ),
-      ),
+              );
+            }
+          },
+        );
+      },
     );
   }
 

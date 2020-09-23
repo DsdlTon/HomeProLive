@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/notification.dart';
-import 'package:test_live_app/pages/ListLivePage.dart';
-import 'package:test_live_app/pages/ListRecentlyLivePage.dart';
+import 'package:test_live_app/screens/ListLivePage.dart';
+import 'package:test_live_app/screens/ListRecentlyLivePage.dart';
 
-import 'package:test_live_app/pages/allChatPage.dart';
+import 'package:test_live_app/screens/allChatPage.dart';
 
 class HomePage extends StatefulWidget {
   @override

@@ -1,14 +1,15 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
-import 'package:test_live_app/pages/CartPage.dart';
-import 'package:test_live_app/pages/ChatPage.dart';
-import 'package:test_live_app/pages/HomePage.dart';
-import 'package:test_live_app/pages/LivePage.dart';
-import 'package:test_live_app/pages/LogInPage.dart';
-import 'package:test_live_app/pages/RecentLivePage.dart';
-import 'package:test_live_app/pages/Register.dart';
-import 'package:test_live_app/pages/SplashPage.dart';
+import 'package:test_live_app/screens/CartPage.dart';
+import 'package:test_live_app/screens/ChatPage.dart';
+import 'package:test_live_app/screens/HomePage.dart';
+import 'package:test_live_app/screens/LivePage.dart';
+import 'package:test_live_app/screens/LogInPage.dart';
+import 'package:test_live_app/screens/RecentLivePage.dart';
+import 'package:test_live_app/screens/Register.dart';
+import 'package:test_live_app/screens/SplashPage.dart';
 import 'package:test_live_app/widgets/showFullImage.dart';
+import 'package:test_live_app/screens/ProductDetail.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -64,16 +65,10 @@ class RouteGenerator {
             role: ClientRole.Audience,
           ),
         );
-
-      // case '/listLivePage':
-      //   return MaterialPageRoute(builder: (_) => ListLivePage());
-      // case '/listRecentlyLivePage':
-      //   return MaterialPageRoute(builder: (_) => ListRecentlyLivePage());
-      // case '/allChatPage':
-      //   return MaterialPageRoute(builder: (_) => AllChatPage());
-
       case '/cartPage':
         return MaterialPageRoute(builder: (_) => CartPage());
+      case '/productDetailPage':
+        return MaterialPageRoute(builder: (_) => ProductDetailPage());
 
       default:
         return _errorRoute();

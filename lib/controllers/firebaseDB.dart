@@ -131,6 +131,19 @@ class FireStoreClass {
     return snapshot;
   }
 
+  // static Stream<QuerySnapshot> getChatroomByName(username) {
+  //   var snapshot = _db
+  //       .collection("Chatroom")
+  //       .where("chatWith", isEqualTo: username)
+  //       .orderBy("timeStamp", descending: true)
+  //       .snapshots();
+  //   return snapshot;
+  // }
+
+  static Stream<QuerySnapshot> getChatroomData() {
+    return _db.collection("Chatroom").snapshots();
+  }
+
   static void setupChatroom(channelName, username, title) {
     _db.collection("Chatroom").document(channelName + username).setData({
       'channelName': channelName,
@@ -206,7 +219,5 @@ class FireStoreClass {
         '--------------- $channelName+$username is readed by User --------------------');
   }
 
-  static Stream<QuerySnapshot> getChatroomData() {
-    return _db.collection("Chatroom").snapshots();
-  }
+  
 }

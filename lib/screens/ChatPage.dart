@@ -14,16 +14,14 @@ class ChatPage extends StatefulWidget {
   final String channelName;
   final String username;
   final String liveUser;
-  final List fcmToken;
 
-  const ChatPage(
-      {Key key,
-      this.title,
-      this.channelName,
-      this.username,
-      this.liveUser,
-      this.fcmToken})
-      : super(key: key);
+  const ChatPage({
+    Key key,
+    this.title,
+    this.channelName,
+    this.username,
+    this.liveUser,
+  }) : super(key: key);
 
   @override
   _ChatPageState createState() => _ChatPageState();
@@ -252,13 +250,9 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                     InkWell(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FullImageScreen(
-                              image: chatMsgSnap['url'],
-                            ),
-                          ),
+                        Navigator.of(context).pushNamed(
+                          '/fullImageScreen',
+                          arguments: chatMsgSnap['url'],
                         );
                       },
                       child: Container(
@@ -340,7 +334,7 @@ class _ChatPageState extends State<ChatPage> {
                       onTap: () {
                         Navigator.of(context).pushNamed(
                           '/fullImageScreen',
-                          arguments: 'ttttt',
+                          arguments: chatMsgSnap['url'],
                         );
                         // Navigator.push(
                         //   context,
@@ -517,7 +511,6 @@ class _ChatPageState extends State<ChatPage> {
                 _uploadedFileURL = '';
               });
             }
-            //if TextField Not has text
             //check if it has selected image
           } else if (_uploadedFileURL != '') {
             if (isNewChatRoom == true) {

@@ -3,18 +3,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/pages/CartPage.dart';
-
+import 'package:test_live_app/screens/CartPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/screens/RecentLivePage.dart';
 
-import 'package:test_live_app/pages/LivePage.dart';
-
-class ListLivePage extends StatefulWidget {
+class ListRecentlyLivePage extends StatefulWidget {
   @override
-  _ListLivePageState createState() => _ListLivePageState();
+  _ListRecentlyLivePageState createState() => _ListRecentlyLivePageState();
 }
 
-class _ListLivePageState extends State<ListLivePage> {
+class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
   String username = '';
 
   getUserData() async {
@@ -22,6 +20,7 @@ class _ListLivePageState extends State<ListLivePage> {
     setState(() {
       username = prefs.getString('username');
     });
+    print('////////////////////' + username);
     return username;
   }
 
@@ -35,17 +34,17 @@ class _ListLivePageState extends State<ListLivePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue[800],
+        backgroundColor: Colors.orange[400],
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomLeft,
               colors: [
-                Colors.blue[600],
-                Colors.blue[700],
-                Colors.blue[800],
-                Colors.blue[800],
+                Colors.yellow[600],
+                Colors.yellow[700],
+                Colors.yellow[800],
+                Colors.yellow[800],
               ],
             ),
           ),
@@ -56,14 +55,17 @@ class _ListLivePageState extends State<ListLivePage> {
           0.5,
           signOutButton(),
         ),
-        title: FloatUpAnimation(
-          0.5,
-          Column(
-            children: <Widget>[
+        title: Column(
+          children: <Widget>[
+            FloatUpAnimation(
+              0.5,
               appName(),
+            ),
+            FloatUpAnimation(
+              0.5,
               showUsername(),
-            ],
-          ),
+            ),
+          ],
         ),
         actions: <Widget>[
           FloatUpAnimation(
@@ -81,33 +83,35 @@ class _ListLivePageState extends State<ListLivePage> {
             color: Colors.white,
           ),
           child: StreamBuilder(
-            stream: FireStoreClass.getCurrentLive(),
+            stream: FireStoreClass.getRecentlyLive(),
             builder: (BuildContext context, snapshot) {
               if (!snapshot.hasData) {
                 return Center(
                   child: CircularProgressIndicator(
-                    backgroundColor: Colors.blue[800],
+                    backgroundColor: Colors.yellow[800],
                   ),
                 );
               } else if (snapshot.data.documents.length == 0) {
                 return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
-                      SizedBox(height: 10),
-                      FloatUpAnimation(
-                        0.8,
-                        Text(
-                          'No Current Streaming',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 18.0,
+                  child: Container(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
+                        SizedBox(height: 10),
+                        FloatUpAnimation(
+                          0.8,
+                          Text(
+                            'No Recent Streaming',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 18.0,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               } else {
@@ -183,16 +187,16 @@ class _ListLivePageState extends State<ListLivePage> {
     return InkWell(
       onTap: () {
         print('Tap $liveUser');
-
         Navigator.pushNamed(
           context,
-          '/livePage',
-          arguments: LivePage(
+          '/recentLivePage',
+          arguments: RecentLivePage(
             title: title,
             userProfile: userProfile,
             liveUser: liveUser,
             channelName: channelName,
             username: username,
+            role: ClientRole.Audience,
           ),
         );
       },
@@ -221,7 +225,6 @@ class _ListLivePageState extends State<ListLivePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                // color: Colors.green,
                 padding: EdgeInsets.all(5.0),
                 child: Align(
                   alignment: Alignment.topLeft,
@@ -232,7 +235,7 @@ class _ListLivePageState extends State<ListLivePage> {
                             vertical: 2.0, horizontal: 6.0),
                         height: 20.0,
                         decoration: BoxDecoration(
-                          color: Colors.blue[800].withOpacity(0.6),
+                          color: Colors.orange[400].withOpacity(0.6),
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(5.0),
                             bottomLeft: Radius.circular(5.0),
@@ -240,7 +243,7 @@ class _ListLivePageState extends State<ListLivePage> {
                         ),
                         child: Center(
                           child: Text(
-                            'Live',
+                            'Recently',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10.0,
@@ -324,7 +327,7 @@ class _ListLivePageState extends State<ListLivePage> {
                         CircleAvatar(
                           radius: 14.0,
                           backgroundImage: AssetImage(userProfile),
-                          backgroundColor: Colors.blue[800],
+                          backgroundColor: Colors.orange[400],
                         ),
                         SizedBox(width: 5.0),
                         Text(

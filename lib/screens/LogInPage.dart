@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
-import 'package:test_live_app/pages/HomePage.dart';
-
+import 'package:test_live_app/screens/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_live_app/pages/Register.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -26,7 +24,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void loginProcess(body) {
+    print('ENTER LOGIN PROCESS');
     UserService.login(body).then((user) {
+      print('userMessage: ${user.message}');
       if (user.message == "success") {
         setState(() {
           _user = user;
@@ -51,6 +51,8 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
+    }).catchError((e) {
+      print('ERROR: $e');
     });
   }
 

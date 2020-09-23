@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/pages/ChatPage.dart';
+import 'package:test_live_app/screens/ChatPage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+// import 'package:sqflite/sqflite.dart';
+// import 'package:path/path.dart';
 
 class ForegroundLive extends StatefulWidget {
   final String title;
@@ -30,10 +33,55 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   FocusNode focusNode;
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
+  List product;
+  List cart = [];
   var token;
+
+  // static Database _database;
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
+
+  // Future<Database> get database async {
+  //   if (_database != null) return _database;
+  //   _database = await initDB();
+  //   return _database;
+  // }
+
+  // initDB() async {
+  //   Directory documentsDirectory = await getApplicationDocumentsDirectory();
+  //   String path = join(documentsDirectory.path, "userCart.db");
+  //   return await openDatabase(path, version: 1, onOpen: (db) {},
+  //       onCreate: (Database db, int version) async {
+  //     await db.execute("CREATE TABLE Cart ("
+  //         "id INTEGER PRIMARY KEY,"
+  //         "username TEXT,"
+  //         "productTitle TEXT,"
+  //         "productSKU TEXT,"
+  //         "productUrl TEXT,"
+  //         "productPrice INTEGER,"
+  //         "productQuantity INTEGER,"
+  //         ")");
+  //   });
+  // }
+
+  Future<List<dynamic>> getProductList(channelName) async {
+    await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .get()
+        .then((snapshot) {
+      product = snapshot['productInLive'];
+      print('PRODUCT: $product');
+      print('PRODUCT LEN: ${product.length}');
+    });
+    return product;
+  }
+
+  void addToBasket(product) {
+    cart.add(product);
+    print('CART: $cart');
+  }
 
   @protected
   void initState() {
@@ -43,17 +91,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       widget.liveUser,
       widget.channelName,
     );
-
-    Firestore.instance
-        .collection("Users")
-        .document(widget.username)
-        .get()
-        .then((snapshot) {
-      token = snapshot['FCMToken'];
-      // assert(token is String);
-      print('Retrived Token: $token');
-      return token;
-    });
 
     _keyboardState = _keyboardVisibility.isKeyboardVisible;
     _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
@@ -131,7 +168,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
           begin: Alignment.topRight,
           colors: [
             Colors.black.withOpacity(0.6),
-            Colors.black.withOpacity(0.4),
+            // Colors.black.withOpacity(0.4),
             Colors.black.withOpacity(0.1),
             Colors.transparent,
           ],
@@ -259,16 +296,14 @@ class _ForegroundLiveState extends State<ForegroundLive> {
         icon: Icon(Icons.chat, color: Colors.white),
         onPressed: () {
           FocusScope.of(context).unfocus();
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (context) => ChatPage(
-                title: widget.title,
-                channelName: widget.channelName,
-                username: widget.username,
-                liveUser: widget.liveUser,
-                fcmToken: token,
-              ),
+            '/chatPage',
+            arguments: ChatPage(
+              title: widget.title,
+              channelName: widget.channelName,
+              username: widget.username,
+              liveUser: widget.liveUser,
             ),
           );
         },
@@ -313,19 +348,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     );
   }
 
-  List product;
-  Future<List<dynamic>> getProductList(channelName) async {
-    await Firestore.instance
-        .collection("CurrentLive")
-        .document(channelName)
-        .get()
-        .then((snapshot) {
-      product = snapshot['productInLive'];
-      print('PRODUCT: $product');
-    });
-    return product;
-  }
-
   PersistentBottomSheetController bottomSheet() {
     return showBottomSheet(
       context: context,
@@ -342,32 +364,119 @@ class _ForegroundLiveState extends State<ForegroundLive> {
               return Container(
                 height: MediaQuery.of(context).size.height * 0.6,
                 width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      'All Product',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17.0,
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.05,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'Products (${product.length})',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17.0,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                color: Colors.white, size: 18),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                     SingleChildScrollView(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.47,
-                        child: ListView.builder(
-                          // itemCount: snapshot.data.documents.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Text(product[1]),
-                              ),
-                            );
-                          },
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                              '/productDetailPage');
+                        },
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.47,
+                          child: ListView.builder(
+                            itemCount: product.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return Card(
+                                color: Colors.black.withOpacity(0.3),
+                                child: Padding(
+                                  padding: EdgeInsets.all(10.0),
+                                  child: Row(
+                                    children: <Widget>[
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.1,
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.1,
+                                        child: Image.network(
+                                          product[index]['image'],
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.03),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            product[index]['title'],
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
+                                          ),
+                                          Text(
+                                            '฿ ' + product[index]['price'],
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          alignment: Alignment.centerRight,
+                                          child: IconButton(
+                                            onPressed: () {
+                                              addToBasket(product[index]);
+                                              Fluttertoast.showToast(
+                                                msg:
+                                                    "Added ${product[index]['title']} to your Cart.",
+                                                toastLength: Toast.LENGTH_LONG,
+                                                gravity: ToastGravity.BOTTOM,
+                                                backgroundColor:
+                                                    Colors.blue[800],
+                                                textColor: Colors.white,
+                                                fontSize: 13.0,
+                                              );
+                                            },
+                                            icon: Icon(
+                                              Icons.add_shopping_cart,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ),
                     )

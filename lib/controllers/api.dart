@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as Http;
 import 'dart:convert';
+import '../models/ProductDao.dart';
 
-String baseUrl = "http://188.166.189.84:3000";
+String baseUrl = "https://188.166.189.84";
 
 class UserService {
   // static Future<List<UserDao>> getAllUser() async {
@@ -30,24 +33,16 @@ class UserService {
     }
   }
 
-  // static Future<bool> createUserInFirebase(body) async {
-  //   final response =
-  //       await Http.post("http://10.0.2.2:3000/api/user/createuser", body: body);
-  //   if (response.statusCode == 200) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // }
-
   static Future<UserDao> login(body) async {
+    print('LOGIN API');
     final response = await Http.post("$baseUrl/auth/login", body: body);
     final String responseString = response.body;
+    print('LOGIN API2');
     return userDaoFromJson(responseString);
   }
 }
 
-UserDao userDaoFromJson(String str) => UserDao.fromjson(json.decode(str));
+UserDao userDaoFromJson(String str) => UserDao.fromJson(json.decode(str));
 String userDaoToJson(UserDao data) => json.encode(data.toJson());
 
 class UserDao {
@@ -73,7 +68,7 @@ class UserDao {
     this.message,
   });
 
-  factory UserDao.fromjson(Map<String, dynamic> json) {
+  factory UserDao.fromJson(Map<String, dynamic> json) {
     return UserDao(
       id: json["id"],
       name: json["name"],
@@ -101,3 +96,25 @@ class UserDao {
     };
   }
 }
+
+//--------------------------------------------------------------------------
+
+class ProductService {
+  static Future<ProductDao> getProductDetail(id) async {
+    
+    final response = await Http.get("https://188.166.189.84/api/product/{$id}");
+    print('PRODUCTDETAILS RESPONSE: ${response.body}');
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+      return productDaoFromJson(responseString);
+      // List list = json.decode(response.body);
+      // return list.map((m) => ProductDao.fromJson(m)).toList();
+    } else {
+      throw Exception('Failed to Load Product Data!!!');
+    }
+  }
+}
+
+ProductDao productDaoFromJson(String str) =>
+    ProductDao.fromJson(json.decode(str));
+String productToJson(ProductDao data) => json.encode(data.toJson());

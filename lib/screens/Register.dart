@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/api.dart';
-import 'package:test_live_app/pages/HomePage.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -70,8 +68,6 @@ class _RegisterPageState extends State<RegisterPage> {
           );
         }
       });
-
-      // registerThread();
     }
   }
 
@@ -83,10 +79,8 @@ class _RegisterPageState extends State<RegisterPage> {
           _user = response;
           saveUserData();
         });
-        MaterialPageRoute materialPageRoute =
-            MaterialPageRoute(builder: (BuildContext context) => HomePage());
-        Navigator.of(context).pushAndRemoveUntil(
-            materialPageRoute, (Route<dynamic> route) => false);
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil("/homePage", (route) => false);
       } else {
         //login failed
         showDialog(
