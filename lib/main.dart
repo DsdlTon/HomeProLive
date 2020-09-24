@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:test_live_app/screens/ProductDetail.dart';
 // import 'package:provider/provider.dart';
 import 'package:test_live_app/utils/route_generator.dart';
 

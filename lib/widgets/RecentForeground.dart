@@ -3,21 +3,22 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 
 class RecentForegroundLive extends StatefulWidget {
   final String title;
-  final String userProfile;
-  final String liveUser;
+  final String adminProfile;
+  final String liveAdmin;
   final String username;
   final String channelName;
 
   RecentForegroundLive(
       {this.title,
       this.channelName,
-      this.userProfile,
-      this.liveUser,
+      this.adminProfile,
+      this.liveAdmin,
       this.username});
 
   @override
@@ -40,6 +41,48 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   List<String> allUsername = [];
   List<String> pushedUsername = [];
 
+  List cart = [];
+  List product;
+  Future<List<dynamic>> getProductList(channelName) async {
+    await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .get()
+        .then((snapshot) {
+      product = snapshot['productInLive'];
+      print('PRODUCT: $product');
+      print('PRODUCT LEN: ${product.length}');
+    });
+    return product;
+  }
+
+  void addToBasket(product) {
+    if (!cart.contains(product["title"])) {
+      print('CONTAIN: ${cart.contains(product)}');
+      setState(() {
+        cart.add(product["title"]);
+      });
+      print('CART: $cart');
+      Fluttertoast.showToast(
+        msg: "Added ${product["title"]} to your Cart.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.blue[800],
+        textColor: Colors.white,
+        fontSize: 13.0,
+      );
+    } else if (cart.contains(product["title"])) {
+      Fluttertoast.showToast(
+        msg: "This Item is Already in your Cart.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 13.0,
+      );
+    }
+  }
+
   Future<void> getDataFromFirebase() async {
     startLiveTime = int.parse(widget.channelName);
 
@@ -54,25 +97,31 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     commentLen = querySnapshot.documents.length;
 
     //get allComment[]
-    for (int i = 0; i < commentLen; i++) {
-      allComment.add(querySnapshot.documents[i]['msg']);
-    }
+    if (commentLen != 0) {
+      for (int i = 0; i < commentLen; i++) {
+        allComment.add(querySnapshot.documents[i]['msg']);
+      }
 
-    //get FirstUsername
-    for (int i = 0; i < commentLen; i++) {
-      allUsername.add(querySnapshot.documents[i]['username']);
+      //get FirstUsername
+      for (int i = 0; i < commentLen; i++) {
+        allUsername.add(querySnapshot.documents[i]['username']);
+      }
+
+      Timestamp ftimestamp =
+          querySnapshot.documents[commentLen - 1]['timeStamp'];
+      var fdate = ftimestamp.toDate();
+      currentCommentTime = fdate.millisecondsSinceEpoch;
+
+      Timestamp ltimestamp = querySnapshot.documents[0]['timeStamp'];
+      var ldate = ltimestamp.toDate();
+      lastCommentTime = ldate.millisecondsSinceEpoch;
+
+      commentIndex = commentLen - 1;
+    } else {
+      print('NO COMMENT IN THIS LIVE');
     }
 
     // get firstCommentTime
-    Timestamp ftimestamp = querySnapshot.documents[commentLen - 1]['timeStamp'];
-    var fdate = ftimestamp.toDate();
-    currentCommentTime = fdate.millisecondsSinceEpoch;
-
-    Timestamp ltimestamp = querySnapshot.documents[0]['timeStamp'];
-    var ldate = ltimestamp.toDate();
-    lastCommentTime = ldate.millisecondsSinceEpoch;
-
-    commentIndex = commentLen - 1;
 
     print('START commentLen: $commentLen');
     print('START allComment: $allComment');
@@ -134,7 +183,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     replayComment();
     FireStoreClass.saveViewer(
       widget.username,
-      widget.liveUser,
+      widget.liveAdmin,
       widget.channelName,
     );
   }
@@ -246,6 +295,44 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
+  Widget favIcon({icon, onPressed}) {
+    return Container(
+      width: 40,
+      height: 40,
+      margin: EdgeInsets.only(left: 5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.black.withOpacity(0.2),
+      ),
+      child: IconButton(
+        icon: Icon(Icons.favorite_border, color: Colors.white),
+        onPressed: () {},
+      ),
+    );
+  }
+
+  Widget cartButton() {
+    return Container(
+      width: 40,
+      height: 40,
+      margin: EdgeInsets.only(left: 5),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.black.withOpacity(0.2),
+      ),
+      child: IconButton(
+        icon: Icon(
+          Icons.shopping_cart,
+          color: Colors.white,
+        ),
+        tooltip: 'Cart',
+        onPressed: () {
+          Navigator.of(context).pushNamed('/cartPage');
+        },
+      ),
+    );
+  }
+
   Widget chatIcon({icon, onPressed}) {
     return Container(
       width: 40,
@@ -266,7 +353,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
               title: widget.title,
               channelName: widget.channelName,
               username: widget.username,
-              liveUser: widget.liveUser,
+              liveAdmin: widget.liveAdmin,
+              isFromPage: 'RecentForeground',
             ),
           );
         },
@@ -283,7 +371,13 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             showItemList(),
-            chatIcon(),
+            Row(
+              children: [
+                chatIcon(),
+                favIcon(),
+                cartButton(),
+              ],
+            ),
           ],
         ),
       ),
@@ -297,20 +391,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         bottomSheet();
       },
     );
-  }
-
-  List product;
-  Future<List<dynamic>> getProductList(channelName) async {
-    await Firestore.instance
-        .collection("CurrentLive")
-        .document(channelName)
-        .get()
-        .then((snapshot) {
-      product = snapshot['productInLive'];
-      print('PRODUCT: $product');
-      print('PRODUCT LEN: ${product.length}');
-    });
-    return product;
   }
 
   PersistentBottomSheetController bottomSheet() {
@@ -408,7 +488,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                       child: Container(
                                         alignment: Alignment.centerRight,
                                         child: IconButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            addToBasket(product[index]);
+                                          },
                                           icon: Icon(
                                             Icons.add_shopping_cart,
                                             color: Colors.white,
@@ -471,7 +553,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       children: <Widget>[
         CircleAvatar(
           radius: 14.0,
-          backgroundImage: AssetImage(widget.userProfile),
+          backgroundImage: AssetImage(widget.adminProfile),
           backgroundColor: Colors.blue[800],
         ),
         SizedBox(width: 5.0),
@@ -479,7 +561,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              widget.liveUser,
+              widget.liveAdmin,
               style: TextStyle(color: Colors.white, fontSize: 12.0),
             ),
             SizedBox(height: 2),
@@ -495,7 +577,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                 Center(
                   child: StreamBuilder(
                     stream: FireStoreClass.getViewer(
-                        widget.liveUser, widget.channelName),
+                        widget.liveAdmin, widget.channelName),
                     builder: (BuildContext context, snapshot) {
                       if (!snapshot.hasData) {
                         return Center(

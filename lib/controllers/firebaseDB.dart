@@ -12,38 +12,38 @@ class FireStoreClass {
 
   // ---Token----------------------------------------------------------------------
 
-  Future<List<String>> getOldUserToken(username) async {
-    print('ENTER getUserToken FUNCTION');
-    return await _db
-        .collection('Users')
-        .document(username)
-        .get()
-        .then((snapshot) {
-      List<String> oldToken = List.from(snapshot['FCMToken']);
-      print('oldToken: $oldToken');
-      return oldToken;
-    });
-  }
+  // Future<List<String>> getOldUserToken(username) async {
+  //   print('ENTER getUserToken FUNCTION');
+  //   return await _db
+  //       .collection('Users')
+  //       .document(username)
+  //       .get()
+  //       .then((snapshot) {
+  //     List<String> oldToken = List.from(snapshot['FCMToken']);
+  //     print('oldToken: $oldToken');
+  //     return oldToken;
+  //   });
+  // }
 
-  //userToken that pass in here Included both oldToken and newToken already
-  Future<void> saveUserToken(username, userToken) async {
-    print('ENTER SAVEUSERTOKEN FUNCTION');
-    getUserTokenList(userToken);
-    print('SAVE $username, $allUserToken, ${allUserToken.runtimeType}');
-    await Firestore.instance.collection('Users').document(username).setData({
-      'FCMToken': allUserToken,
-    });
-  }
+  // //userToken that pass in here Included both oldToken and newToken already
+  // Future<void> saveUserToken(username, userToken) async {
+  //   print('ENTER SAVEUSERTOKEN FUNCTION');
+  //   getUserTokenList(userToken);
+  //   print('SAVE $username, $allUserToken, ${allUserToken.runtimeType}');
+  //   await Firestore.instance.collection('Users').document(username).setData({
+  //     'FCMToken': allUserToken,
+  //   });
+  // }
 
-  List<String> getUserTokenList(userToken) {
-    userToken.forEach((token) {
-      print('Enter forEach!!!!!!!!!!!!!!!');
-      print('$token');
-      allUserToken.add(token.toString());
-      print('allUserToken: $allUserToken');
-    });
-    return allUserToken.toList();
-  }
+  // List<String> getUserTokenList(userToken) {
+  //   userToken.forEach((token) {
+  //     print('Enter forEach!!!!!!!!!!!!!!!');
+  //     print('$token');
+  //     allUserToken.add(token.toString());
+  //     print('allUserToken: $allUserToken');
+  //   });
+  //   return allUserToken.toList();
+  // }
 
 // ---Chat In Live-----------------------------------------------------------------
 
@@ -71,21 +71,21 @@ class FireStoreClass {
 
 // ---Viewer in Live---------------------------------------------------------------------------
 
-  static void saveViewer(username, liveUser, channelName) {
+  static void saveViewer(username, liveAdmin, channelName) {
     _db
         .collection("CurrentLive")
         .document(channelName)
         .collection("Viewers")
         .document(username)
         .setData({
-      'liveUser': liveUser,
+      'liveAdmin': liveAdmin,
     });
 
     print(
-        '-------------- save username $username in $liveUser channal -------------------');
+        '-------------- save username $username in $liveAdmin channal -------------------');
   }
 
-  static Stream<QuerySnapshot> getViewer(liveUser, channelName) {
+  static Stream<QuerySnapshot> getViewer(liveAdmin, channelName) {
     return _db
         .collection("CurrentLive")
         .document(channelName)
@@ -218,6 +218,4 @@ class FireStoreClass {
     print(
         '--------------- $channelName+$username is readed by User --------------------');
   }
-
-  
 }

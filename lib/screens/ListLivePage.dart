@@ -92,7 +92,10 @@ class _ListLivePageState extends State<ListLivePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
+                      FloatUpAnimation(
+                        0.6,
+                        Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
+                      ),
                       SizedBox(height: 10),
                       FloatUpAnimation(
                         0.8,
@@ -126,8 +129,8 @@ class _ListLivePageState extends State<ListLivePage> {
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
-                            liveUser: 'Homepro1',
-                            userProfile: 'assets/logo.png',
+                            liveAdmin: 'Homepro1',
+                            adminProfile: 'assets/logo.png',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
                           ),
@@ -176,18 +179,18 @@ class _ListLivePageState extends State<ListLivePage> {
     );
   }
 
-  Widget liveContent({thumbnail, liveUser, userProfile, channelName, title}) {
+  Widget liveContent({thumbnail, liveAdmin, adminProfile, channelName, title}) {
     return InkWell(
       onTap: () {
-        print('Tap $liveUser');
+        print('Tap $liveAdmin');
 
         Navigator.pushNamed(
           context,
           '/livePage',
           arguments: LivePage(
             title: title,
-            userProfile: userProfile,
-            liveUser: liveUser,
+            adminProfile: adminProfile,
+            liveAdmin: liveAdmin,
             channelName: channelName,
             username: username,
           ),
@@ -218,7 +221,6 @@ class _ListLivePageState extends State<ListLivePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                // color: Colors.green,
                 padding: EdgeInsets.all(5.0),
                 child: Align(
                   alignment: Alignment.topLeft,
@@ -268,7 +270,7 @@ class _ListLivePageState extends State<ListLivePage> {
                             Center(
                               child: StreamBuilder(
                                 stream: FireStoreClass.getViewer(
-                                    liveUser, channelName),
+                                    liveAdmin, channelName),
                                 builder: (BuildContext context, snapshot) {
                                   if (!snapshot.hasData) {
                                     return Center(
@@ -320,12 +322,12 @@ class _ListLivePageState extends State<ListLivePage> {
                       children: <Widget>[
                         CircleAvatar(
                           radius: 14.0,
-                          backgroundImage: AssetImage(userProfile),
+                          backgroundImage: AssetImage(adminProfile),
                           backgroundColor: Colors.blue[800],
                         ),
                         SizedBox(width: 5.0),
                         Text(
-                          liveUser,
+                          liveAdmin,
                           style: TextStyle(color: Colors.white, fontSize: 12.0),
                         )
                       ],

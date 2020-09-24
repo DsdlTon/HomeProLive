@@ -7,20 +7,23 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/widgets/showFullImage.dart';
+
+import 'LivePage.dart';
 
 class ChatPage extends StatefulWidget {
   final String title;
   final String channelName;
   final String username;
-  final String liveUser;
+  final String liveAdmin;
+  final String isFromPage;
 
   const ChatPage({
     Key key,
     this.title,
     this.channelName,
     this.username,
-    this.liveUser,
+    this.liveAdmin,
+    this.isFromPage,
   }) : super(key: key);
 
   @override
@@ -30,18 +33,23 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   TextEditingController chatroomController = new TextEditingController();
   bool isNewChatRoom = true;
+  bool isLive;
 
   File _image;
   String _uploadedFileURL = '';
   String path;
   final picker = ImagePicker();
+  // String titleFromFB;
 
   //---------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
+    //update userRead
     FireStoreClass.userReaded(widget.channelName, widget.username);
+    print('Come From: ${widget.isFromPage}');
+    checkIsLive(widget.channelName);
   }
 
   Future getImageFromGallery() async {
@@ -81,15 +89,30 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  Future<String> totalChat(channelName, username) async {
-    var chatQuery = Firestore.instance
-        .collection('Chatroom')
-        .document(channelName + username)
-        .collection('ChatMessage');
+  // Future<String> totalChat(channelName, username) async {
+  //   var chatQuery = Firestore.instance
+  //       .collection('Chatroom')
+  //       .document(channelName + username)
+  //       .collection('ChatMessage');
 
-    var querySnapshot = await chatQuery.getDocuments();
-    int totalChat = querySnapshot.documents.length;
-    return totalChat.toString();
+  //   var querySnapshot = await chatQuery.getDocuments();
+  //   int totalChat = querySnapshot.documents.length;
+  //   return totalChat.toString();
+  // }
+
+  Future<bool> checkIsLive(channelName) async {
+    print('ENTER ISLIVE');
+    return await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .get()
+        // ignore: missing_return
+        .then((data) {
+      setState(() {
+        isLive = data["onLive"];
+        print("isLive: $isLive");
+      });
+    });
   }
 
   @override
@@ -125,6 +148,9 @@ class _ChatPageState extends State<ChatPage> {
             fontSize: 15,
           ),
         ),
+        actions: <Widget>[
+          isLive == true ? backToLiveButton(context) : Container(),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -168,6 +194,28 @@ class _ChatPageState extends State<ChatPage> {
               : Container(),
         ],
       ),
+    );
+  }
+
+  Widget backToLiveButton(context) {
+    return IconButton(
+      icon: Icon(
+        Icons.live_tv,
+        color: Colors.white,
+      ),
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          '/livePage',
+          arguments: LivePage(
+            // title: widget.title,
+            // adminProfile: adminProfile,
+            // liveAdmin: liveAdmin,
+            // channelName: widget.channelName,
+            // username: widget.username,
+          ),
+        );
+      },
     );
   }
 
@@ -336,14 +384,6 @@ class _ChatPageState extends State<ChatPage> {
                           '/fullImageScreen',
                           arguments: chatMsgSnap['url'],
                         );
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => FullImageScreen(
-                        //       image: chatMsgSnap['url'],
-                        //     ),
-                        //   ),
-                        // );
                       },
                       child: Container(
                         padding: EdgeInsets.only(top: 4, bottom: 4),
@@ -568,7 +608,6 @@ class _ChatPageState extends State<ChatPage> {
             backgroundColor: Colors.blue[800],
           );
         }
-        //Chatroom Field
         var chatroomSnap = snapshot.data;
         if (!snapshot.hasData) {
           return CircularProgressIndicator(

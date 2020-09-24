@@ -8,6 +8,7 @@ import 'package:test_live_app/screens/ChatPage.dart';
 import '../main.dart';
 
 class NotificationController {
+  String chatroomTitle;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -75,12 +76,13 @@ class NotificationController {
       int len = chatroomId.length;
       String channelName = chatroomId.substring(0, 13);
       String username = chatroomId.substring(13, len);
+
       MyApp.navigatorKey.currentState.pushNamed(
         '/chatPage',
         arguments: ChatPage(
-          title: 'WaitForApi',
           channelName: channelName,
           username: username,
+          isFromPage: 'noti',
         ),
       );
     }

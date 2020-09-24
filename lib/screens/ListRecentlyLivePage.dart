@@ -20,7 +20,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
     setState(() {
       username = prefs.getString('username');
     });
-    print('////////////////////' + username);
+    print('username:' + username);
     return username;
   }
 
@@ -98,7 +98,11 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
+                        FloatUpAnimation(
+                          0.6,
+                          Icon(Icons.live_tv,
+                              color: Colors.grey[400], size: 60),
+                        ),
                         SizedBox(height: 10),
                         FloatUpAnimation(
                           0.8,
@@ -133,8 +137,8 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
-                            liveUser: 'Homepro1',
-                            userProfile: 'assets/logo.png',
+                            liveAdmin: 'Homepro1',
+                            adminProfile: 'assets/logo.png',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
                           ),
@@ -183,17 +187,17 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
     );
   }
 
-  Widget liveContent({thumbnail, liveUser, userProfile, channelName, title}) {
+  Widget liveContent({thumbnail, liveAdmin, adminProfile, channelName, title}) {
     return InkWell(
       onTap: () {
-        print('Tap $liveUser');
+        print('Tap $liveAdmin');
         Navigator.pushNamed(
           context,
           '/recentLivePage',
           arguments: RecentLivePage(
             title: title,
-            userProfile: userProfile,
-            liveUser: liveUser,
+            adminProfile: adminProfile,
+            liveAdmin: liveAdmin,
             channelName: channelName,
             username: username,
             role: ClientRole.Audience,
@@ -274,7 +278,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                             Center(
                               child: StreamBuilder(
                                 stream: FireStoreClass.getViewer(
-                                    liveUser, channelName),
+                                    liveAdmin, channelName),
                                 builder: (BuildContext context, snapshot) {
                                   if (!snapshot.hasData) {
                                     return Center(
@@ -326,12 +330,12 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                       children: <Widget>[
                         CircleAvatar(
                           radius: 14.0,
-                          backgroundImage: AssetImage(userProfile),
+                          backgroundImage: AssetImage(adminProfile),
                           backgroundColor: Colors.orange[400],
                         ),
                         SizedBox(width: 5.0),
                         Text(
-                          liveUser,
+                          liveAdmin,
                           style: TextStyle(color: Colors.white, fontSize: 12.0),
                         )
                       ],

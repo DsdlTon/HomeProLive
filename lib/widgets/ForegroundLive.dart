@@ -11,16 +11,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class ForegroundLive extends StatefulWidget {
   final String title;
-  final String userProfile;
-  final String liveUser;
+  final String adminProfile;
+  final String liveAdmin;
   final String username;
   final String channelName;
 
   ForegroundLive(
       {this.title,
       this.channelName,
-      this.userProfile,
-      this.liveUser,
+      this.adminProfile,
+      this.liveAdmin,
       this.username});
 
   @override
@@ -37,33 +37,9 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   List cart = [];
   var token;
 
-  // static Database _database;
-
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
 
-  // Future<Database> get database async {
-  //   if (_database != null) return _database;
-  //   _database = await initDB();
-  //   return _database;
-  // }
-
-  // initDB() async {
-  //   Directory documentsDirectory = await getApplicationDocumentsDirectory();
-  //   String path = join(documentsDirectory.path, "userCart.db");
-  //   return await openDatabase(path, version: 1, onOpen: (db) {},
-  //       onCreate: (Database db, int version) async {
-  //     await db.execute("CREATE TABLE Cart ("
-  //         "id INTEGER PRIMARY KEY,"
-  //         "username TEXT,"
-  //         "productTitle TEXT,"
-  //         "productSKU TEXT,"
-  //         "productUrl TEXT,"
-  //         "productPrice INTEGER,"
-  //         "productQuantity INTEGER,"
-  //         ")");
-  //   });
-  // }
 
   Future<List<dynamic>> getProductList(channelName) async {
     await Firestore.instance
@@ -79,8 +55,30 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   }
 
   void addToBasket(product) {
-    cart.add(product);
-    print('CART: $cart');
+    if (!cart.contains(product["title"])) {
+      print('CONTAIN: ${cart.contains(product)}');
+      setState(() {
+        cart.add(product["title"]);
+      });
+      print('CART: $cart');
+      Fluttertoast.showToast(
+        msg: "Added ${product["title"]} to your Cart.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.blue[800],
+        textColor: Colors.white,
+        fontSize: 13.0,
+      );
+    } else if (cart.contains(product["title"])) {
+      Fluttertoast.showToast(
+        msg: "This Item is Already in your Cart.",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 13.0,
+      );
+    }
   }
 
   @protected
@@ -88,7 +86,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     super.initState();
     FireStoreClass.saveViewer(
       widget.username,
-      widget.liveUser,
+      widget.liveAdmin,
       widget.channelName,
     );
 
@@ -271,14 +269,34 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return Container(
       width: 40,
       height: 40,
-      margin: EdgeInsets.only(left: 5),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.black.withOpacity(0.2),
       ),
       child: IconButton(
-        icon: Icon(Icons.favorite, color: Colors.white),
+        icon: Icon(Icons.favorite_border, color: Colors.white),
         onPressed: () {},
+      ),
+    );
+  }
+
+  Widget cartButton() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.black.withOpacity(0.2),
+      ),
+      child: IconButton(
+        icon: Icon(
+          Icons.shopping_cart,
+          color: Colors.white,
+        ),
+        tooltip: 'Cart',
+        onPressed: () {
+          Navigator.of(context).pushNamed('/cartPage');
+        },
       ),
     );
   }
@@ -287,7 +305,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return Container(
       width: 40,
       height: 40,
-      margin: EdgeInsets.only(left: 5),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.black.withOpacity(0.2),
@@ -303,7 +320,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
               title: widget.title,
               channelName: widget.channelName,
               username: widget.username,
-              liveUser: widget.liveUser,
+              liveAdmin: widget.liveAdmin,
+              isFromPage: 'foreground',
             ),
           );
         },
@@ -313,7 +331,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
 
   Widget bottomBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(5, 0, 20, 0),
+      padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
       child: Align(
         alignment: Alignment.bottomLeft,
         child: Row(
@@ -327,9 +345,11 @@ class _ForegroundLiveState extends State<ForegroundLive> {
             ),
             Expanded(
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   chatIcon(),
-                  // favIcon(),
+                  cartButton(),
+                  favIcon(),
                 ],
               ),
             ),
@@ -394,8 +414,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                     SingleChildScrollView(
                       child: GestureDetector(
                         onTap: () {
-                          Navigator.of(context).pushNamed(
-                              '/productDetailPage');
+                          Navigator.of(context).pushNamed('/productDetailPage');
                         },
                         child: Container(
                           width: MediaQuery.of(context).size.width,
@@ -540,7 +559,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       },
       child: Container(
         height: 40,
-        width: MediaQuery.of(context).size.width / 1.5,
+        width: MediaQuery.of(context).size.width / 2,
         padding: EdgeInsets.symmetric(horizontal: 10.0),
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.2),
@@ -564,7 +583,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       children: <Widget>[
         CircleAvatar(
           radius: 14.0,
-          backgroundImage: AssetImage(widget.userProfile),
+          backgroundImage: AssetImage(widget.adminProfile),
           backgroundColor: Colors.blue[800],
         ),
         SizedBox(width: 5.0),
@@ -572,7 +591,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              widget.liveUser,
+              widget.liveAdmin,
               style: TextStyle(color: Colors.white, fontSize: 12.0),
             ),
             SizedBox(height: 2),
@@ -588,7 +607,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                 Center(
                   child: StreamBuilder(
                     stream: FireStoreClass.getViewer(
-                        widget.liveUser, widget.channelName),
+                        widget.liveAdmin, widget.channelName),
                     builder: (BuildContext context, snapshot) {
                       if (!snapshot.hasData) {
                         return Center(

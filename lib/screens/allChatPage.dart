@@ -7,10 +7,10 @@ import 'package:test_live_app/screens/ChatPage.dart';
 
 class AllChatPage extends StatefulWidget {
   final String title;
-  final String liveUser;
+  final String liveAdmin;
   final String channelName;
 
-  const AllChatPage({Key key, this.title, this.liveUser, this.channelName})
+  const AllChatPage({Key key, this.title, this.liveAdmin, this.channelName})
       : super(key: key);
 
   @override
@@ -120,6 +120,7 @@ class _AllChatPageState extends State<AllChatPage> {
                                   title: title,
                                   channelName: channelName,
                                   username: username,
+                                  isFromPage: 'allChatPage',
                                 ),
                               );
                             },

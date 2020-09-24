@@ -30,6 +30,7 @@ class RouteGenerator {
             title: chatArgs.title,
             channelName: chatArgs.channelName,
             username: chatArgs.username,
+            isFromPage: chatArgs.isFromPage,
           ),
         );
       case '/fullImageScreen':
@@ -47,8 +48,8 @@ class RouteGenerator {
             title: liveArgs.title,
             channelName: liveArgs.channelName,
             username: liveArgs.username,
-            userProfile: liveArgs.userProfile,
-            liveUser: liveArgs.liveUser,
+            liveAdmin: liveArgs.liveAdmin,
+            adminProfile: liveArgs.adminProfile,
             role: ClientRole.Audience,
           ),
         );
@@ -60,8 +61,8 @@ class RouteGenerator {
             title: recentLiveArgs.title,
             channelName: recentLiveArgs.channelName,
             username: recentLiveArgs.username,
-            userProfile: recentLiveArgs.userProfile,
-            liveUser: recentLiveArgs.liveUser,
+            liveAdmin: recentLiveArgs.liveAdmin,
+            adminProfile: recentLiveArgs.adminProfile,
             role: ClientRole.Audience,
           ),
         );

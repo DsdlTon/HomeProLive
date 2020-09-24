@@ -7,8 +7,8 @@ class RecentLivePage extends StatefulWidget {
   final String title;
   final String channelName;
   final String username;
-  final String userProfile;
-  final String liveUser;
+  final String adminProfile;
+  final String liveAdmin;
 
   /// non-modifiable client role of the page
   final ClientRole role;
@@ -20,8 +20,8 @@ class RecentLivePage extends StatefulWidget {
     this.title,
     this.role,
     this.username,
-    this.userProfile,
-    this.liveUser,
+    this.adminProfile,
+    this.liveAdmin,
   }) : super(key: key);
 
   @override
@@ -54,8 +54,8 @@ class _RecentLivePageState extends State<RecentLivePage> {
               RecentForegroundLive(
                 title: widget.title,
                 channelName: widget.channelName,
-                userProfile: widget.userProfile,
-                liveUser: widget.liveUser,
+                adminProfile: widget.adminProfile,
+                liveAdmin: widget.liveAdmin,
                 username: widget.username,
               ),
               Container(),
