@@ -26,8 +26,8 @@ class RecentForegroundLive extends StatefulWidget {
 }
 
 class _RecentForegroundLiveState extends State<RecentForegroundLive> {
-  var token;
-  var querySnapshot;
+  var commentSnapshot;
+  int quantity = 0;
 
   int commentIndex = 0; //yes
   int commentLen; //yes
@@ -91,28 +91,28 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         .document(widget.channelName)
         .collection("Chats")
         .orderBy("timeStamp", descending: true);
-    querySnapshot = await totalComment.getDocuments();
+    commentSnapshot = await totalComment.getDocuments();
 
     //get commentLen
-    commentLen = querySnapshot.documents.length;
+    commentLen = commentSnapshot.documents.length;
 
     //get allComment[]
     if (commentLen != 0) {
       for (int i = 0; i < commentLen; i++) {
-        allComment.add(querySnapshot.documents[i]['msg']);
+        allComment.add(commentSnapshot.documents[i]['msg']);
       }
 
       //get FirstUsername
       for (int i = 0; i < commentLen; i++) {
-        allUsername.add(querySnapshot.documents[i]['username']);
+        allUsername.add(commentSnapshot.documents[i]['username']);
       }
 
       Timestamp ftimestamp =
-          querySnapshot.documents[commentLen - 1]['timeStamp'];
+          commentSnapshot.documents[commentLen - 1]['timeStamp'];
       var fdate = ftimestamp.toDate();
       currentCommentTime = fdate.millisecondsSinceEpoch;
 
-      Timestamp ltimestamp = querySnapshot.documents[0]['timeStamp'];
+      Timestamp ltimestamp = commentSnapshot.documents[0]['timeStamp'];
       var ldate = ltimestamp.toDate();
       lastCommentTime = ldate.millisecondsSinceEpoch;
 
@@ -163,11 +163,12 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       commentIndex -= 1;
       print('NEW commentIndex: $commentIndex');
 
-      Timestamp ctimestamp = querySnapshot.documents[commentIndex]['timeStamp'];
+      Timestamp ctimestamp =
+          commentSnapshot.documents[commentIndex]['timeStamp'];
       var cdate = ctimestamp.toDate();
       currentCommentTime = cdate.millisecondsSinceEpoch;
 
-      String comment = querySnapshot.documents[commentIndex]['msg'];
+      String comment = commentSnapshot.documents[commentIndex]['msg'];
       print('NEXT commentTime: $currentCommentTime');
       print('NEXT comment: $comment');
     } else {
@@ -468,13 +469,19 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        Text(
-                                          product[index]['title'],
-                                          style: TextStyle(
-                                            color: Colors.white,
+                                        Container(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.65,
+                                          child: Text(
+                                            product[index]['title'],
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 2,
                                           ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
                                         ),
                                         Text(
                                           '฿ ' + product[index]['price'],
@@ -489,7 +496,18 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                         alignment: Alignment.centerRight,
                                         child: IconButton(
                                           onPressed: () {
-                                            addToBasket(product[index]);
+                                            print('Tap ICON');
+
+                                            quantityBottomSheet(
+                                              selectedProductSku: product[index]
+                                                  ["sku"],
+                                              selectedProductTitle:
+                                                  product[index]["title"],
+                                              selectedProductImage:
+                                                  product[index]["image"],
+                                              selectedProductPrice:
+                                                  product[index]["price"],
+                                            );
                                           },
                                           icon: Icon(
                                             Icons.add_shopping_cart,
@@ -514,6 +532,163 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           },
         );
       },
+    );
+  }
+
+  PersistentBottomSheetController quantityBottomSheet({
+    selectedProductSku,
+    selectedProductTitle,
+    selectedProductImage,
+    selectedProductPrice,
+  }) {
+    print(selectedProductImage);
+    return showBottomSheet(
+      context: context,
+      backgroundColor: Colors.white.withOpacity(0.95),
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.21,
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.all(10.0),
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  showProductImage(selectedProductImage),
+                  showProductInfo(
+                    selectedProductTitle: selectedProductTitle,
+                    selectedProductPrice: selectedProductPrice,
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.01,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  buyNowButton(),
+                  addToBasketButton(),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget showProductImage(selectedProductImage) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.1,
+      height: MediaQuery.of(context).size.height * 0.1,
+      margin: EdgeInsets.only(right: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Image.network(
+          selectedProductImage,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Widget showProductInfo({selectedProductTitle, selectedProductPrice}) {
+    return Container(
+      constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          showProductTitle(selectedProductTitle),
+          showProductPrice(selectedProductPrice),
+        ],
+      ),
+    );
+  }
+
+  Widget showProductTitle(selectedProductTitle) {
+    return Text(
+      selectedProductTitle,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 15.0,
+      ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+    );
+  }
+
+  Widget showProductPrice(selectedProductPrice) {
+    return Container(
+      child: Text(
+        '฿$selectedProductPrice / Item',
+        style: TextStyle(
+          color: Colors.blue[900],
+          fontSize: 13.0,
+        ),
+      ),
+    );
+  }
+
+  Widget buyNowButton() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.055,
+      width: MediaQuery.of(context).size.width * 0.6,
+      margin: EdgeInsets.only(right: 3),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          colors: [
+            Colors.blue[600],
+            Colors.blue[700],
+            Colors.blue[700],
+            Colors.blue[800],
+          ],
+        ),
+        borderRadius: BorderRadius.circular(3.0),
+      ),
+      child: Center(
+        child: Text(
+          'Buy Now',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget addToBasketButton() {
+    return Expanded(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.055,
+        width: MediaQuery.of(context).size.width * 0.3,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomLeft,
+            colors: [
+              Colors.yellow[700],
+              Colors.yellow[700],
+              Colors.yellow[800],
+            ],
+          ),
+          borderRadius: BorderRadius.circular(3.0),
+        ),
+        child: Center(
+          child: Text(
+            'Add to Basket',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -13,6 +13,7 @@ class ListLivePage extends StatefulWidget {
 
 class _ListLivePageState extends State<ListLivePage> {
   String username = '';
+  String accessToken;
 
   getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -22,10 +23,19 @@ class _ListLivePageState extends State<ListLivePage> {
     return username;
   }
 
+  getAccessToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      accessToken = prefs.getString('accessToken');
+      print('ACCESSTOKEN: $accessToken');
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     getUserData();
+    getAccessToken();
   }
 
   @override

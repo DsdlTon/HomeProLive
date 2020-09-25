@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/User.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -16,7 +17,7 @@ class _RegisterPageState extends State<RegisterPage> {
   String email;
   String phone;
 
-  UserDao _user;
+  User _user;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 

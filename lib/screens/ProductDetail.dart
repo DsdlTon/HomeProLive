@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/ProductDao.dart';
+import '../models/Product.dart';
 import '../controllers/api.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -8,7 +8,7 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
-  ProductDao _product;
+  Product _product;
 
   @override
   void initState() {

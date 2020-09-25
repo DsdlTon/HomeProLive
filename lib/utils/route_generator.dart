@@ -66,6 +66,7 @@ class RouteGenerator {
             role: ClientRole.Audience,
           ),
         );
+
       case '/cartPage':
         return MaterialPageRoute(builder: (_) => CartPage());
       case '/productDetailPage':

@@ -3,6 +3,7 @@ import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/screens/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/User.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -13,11 +14,12 @@ class _LoginPageState extends State<LoginPage> {
   String username;
   String password;
   String email;
-  UserDao _user;
+  User _user;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void saveUserData() async {
+    print("ENTER SAVE USER DATA");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', _user.accessToken);
     prefs.setString('username', _user.username);
@@ -27,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     print('ENTER LOGIN PROCESS');
     UserService.login(body).then((user) {
       print('userMessage: ${user.message}');
+
       if (user.message == "success") {
         setState(() {
           _user = user;

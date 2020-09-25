@@ -1,24 +1,28 @@
-class Cart {
-  final int id;
-  final String username;
-  final String productTitle;
-  final String productSKU;
-  final String productUrl;
-  final int productPrice;
-  final int productQuantity;
 
-  Cart(this.username, this.productTitle, this.productSKU, this.productUrl,
-      this.productPrice, this.productQuantity, this.id);
+import 'CartDetails.dart';
+
+class Cart {
+  int userId;
+  List<CartDetails> cartDetails;
+
+  Cart({this.userId, this.cartDetails});
+
+  Cart.fromJson(Map<String, dynamic> json) {
+    userId = json['userId'];
+    if (json['cartDetails'] != null) {
+      cartDetails = new List<CartDetails>();
+      json['cartDetails'].forEach((v) {
+        cartDetails.add(new CartDetails.fromJson(v));
+      });
+    }
+  }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-      'productTitle': productTitle,
-      'productSKU': productSKU,
-      'productUrl': productUrl,
-      'productPrice': productPrice,
-      'productQuantity': productQuantity,
-    };
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['userId'] = this.userId;
+    if (this.cartDetails != null) {
+      data['cartDetails'] = this.cartDetails.map((v) => v.toJson()).toList();
+    }
+    return data;
   }
 }
