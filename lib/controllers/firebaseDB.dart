@@ -47,7 +47,7 @@ class FireStoreClass {
 
 // ---Chat In Live-----------------------------------------------------------------
 
-  static void saveChat(username, chatText, channelName, token) {
+  static void saveChat(username, chatText, channelName) {
     _db
         .collection("CurrentLive")
         .document(channelName)
@@ -56,7 +56,6 @@ class FireStoreClass {
       'username': username, //username is defined in foreground
       'msg': chatText, //chatText is TextController in Foreground
       'timeStamp': Timestamp.now(),
-      'FCMToken': token,
     });
   }
 
@@ -204,7 +203,7 @@ class FireStoreClass {
     _db
         .collection("Chatroom")
         .document(channelName + username)
-        .updateData({'lastMsg': '$username is sent a photo'});
+        .updateData({'lastMsg': '$username is sent a image'});
     print(
         '--------------- $channelName+$username is readed by User --------------------');
   }

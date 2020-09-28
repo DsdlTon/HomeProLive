@@ -5,6 +5,7 @@ import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:test_live_app/controllers/api.dart';
 
 // import 'package:sqflite/sqflite.dart';
 // import 'package:path/path.dart';
@@ -33,28 +34,46 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   FocusNode focusNode;
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
-  List product;
+
   List cart = [];
-  var token;
+  List<String> sku = [];
+  List productSnap;
+  List<dynamic> product = [];
+  int quantity = 0;
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
 
-
-  Future<List<dynamic>> getProductList(channelName) async {
+  Future<List<String>> getProductToShowInLive(channelName) async {
     await Firestore.instance
         .collection("CurrentLive")
         .document(channelName)
         .get()
         .then((snapshot) {
-      product = snapshot['productInLive'];
-      print('PRODUCT: $product');
-      print('PRODUCT LEN: ${product.length}');
+      productSnap = snapshot['productInLive'];
+    });
+    int productLen = productSnap.length;
+    for (int i = 0; i < productLen; i++) {
+      sku.add(productSnap[i]['sku']);
+    }
+    print('sku: $sku');
+    print('skuType: ${sku.runtimeType}');
+
+    return sku;
+  }
+
+  Future<List<dynamic>> getProductInfo(sku) async {
+    await ProductService.getProduct(sku).then((res) {
+      print('resWhenGet: $res');
+      setState(() {
+        product = res;
+      });
+      print('product: $product');
     });
     return product;
   }
 
-  void addToBasket(product) {
+  void addToCart(product) {
     if (!cart.contains(product["title"])) {
       print('CONTAIN: ${cart.contains(product)}');
       setState(() {
@@ -89,6 +108,10 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       widget.liveAdmin,
       widget.channelName,
     );
+
+    getProductToShowInLive(widget.channelName).then((sku) {
+      getProductInfo(sku);
+    });
 
     _keyboardState = _keyboardVisibility.isKeyboardVisible;
     _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
@@ -253,7 +276,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                   widget.username,
                   chatText,
                   widget.channelName,
-                  token,
                 );
               }
               FocusScope.of(context).unfocus();
@@ -373,139 +395,355 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       context: context,
       backgroundColor: Colors.black.withOpacity(0.8),
       builder: (context) {
-        return FutureBuilder(
-          future: getProductList(widget.channelName),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              return Container(
-                height: MediaQuery.of(context).size.height * 0.6,
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.05,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            'Products (${product.length})',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17.0,
-                            ),
+        return StatefulBuilder(
+          builder: (BuildContext context, state) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.6,
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          'Products (${product.length})',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17.0,
                           ),
-                          IconButton(
-                            icon: Icon(Icons.close,
-                                color: Colors.white, size: 18),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
+                        ),
+                        IconButton(
+                          icon:
+                              Icon(Icons.close, color: Colors.white, size: 18),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
                     ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-                    SingleChildScrollView(
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).pushNamed('/productDetailPage');
-                        },
-                        child: Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height * 0.47,
-                          child: ListView.builder(
-                            itemCount: product.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Card(
-                                color: Colors.black.withOpacity(0.3),
-                                child: Padding(
-                                  padding: EdgeInsets.all(10.0),
-                                  child: Row(
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  SingleChildScrollView(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.47,
+                      child: ListView.builder(
+                        itemCount: product.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Card(
+                            color: Colors.black.withOpacity(0.3),
+                            child: Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.1,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.1,
+                                    child: Image.network(
+                                      product[index]['image'],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.03),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: <Widget>[
                                       Container(
                                         width:
                                             MediaQuery.of(context).size.width *
-                                                0.1,
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.1,
-                                        child: Image.network(
-                                          product[index]['image'],
-                                          fit: BoxFit.cover,
+                                                0.65,
+                                        child: Text(
+                                          product[index]["title"],
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
                                         ),
                                       ),
-                                      SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.03),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            product[index]['title'],
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                          ),
-                                          Text(
-                                            '฿ ' + product[index]['price'],
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          alignment: Alignment.centerRight,
-                                          child: IconButton(
-                                            onPressed: () {
-                                              addToBasket(product[index]);
-                                              Fluttertoast.showToast(
-                                                msg:
-                                                    "Added ${product[index]['title']} to your Cart.",
-                                                toastLength: Toast.LENGTH_LONG,
-                                                gravity: ToastGravity.BOTTOM,
-                                                backgroundColor:
-                                                    Colors.blue[800],
-                                                textColor: Colors.white,
-                                                fontSize: 13.0,
-                                              );
-                                            },
-                                            icon: Icon(
-                                              Icons.add_shopping_cart,
-                                              color: Colors.white,
-                                              size: 20,
-                                            ),
-                                          ),
+                                      Text(
+                                        '฿ ' + product[index]["price"],
+                                        style: TextStyle(
+                                          color: Colors.white,
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                                  Expanded(
+                                    child: Container(
+                                      alignment: Alignment.centerRight,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          showQuantitySelection(
+                                          selectedProductSku: product[index]
+                                              ["sku"],
+                                          selectedProductTitle: product[index]
+                                              ["title"],
+                                          selectedProductImage: product[index]
+                                              ["image"],
+                                          selectedProductPrice: product[index]
+                                              ["price"],
+                                          );
+                                        },
+                                        icon: Icon(
+                                          Icons.add_shopping_cart,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    )
-                  ],
-                ),
-              );
-            }
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         );
       },
+    );
+  }
+
+  showQuantitySelection({
+    selectedProductSku,
+    selectedProductTitle,
+    selectedProductImage,
+    selectedProductPrice,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white.withOpacity(0.95),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, state) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.21,
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          showProductImage(selectedProductImage),
+                          showProductInfo(
+                            selectedProductTitle: selectedProductTitle,
+                            selectedProductPrice: selectedProductPrice,
+                          ),
+                        ],
+                      ),
+                      Container(
+                        child: Row(
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                state(() {
+                                  quantity -= 1;
+                                  print(quantity);
+                                });
+                              },
+                              child: Container(
+                                width: 25,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 1.5,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.remove,
+                                  size: 15,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                '$quantity',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                state(() {
+                                  quantity += 1;
+                                  print(quantity);
+                                });
+                              },
+                              child: Container(
+                                width: 25,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 1.5,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 15,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.01,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      buyNowButton(),
+                      addToCartButton(),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget showProductImage(selectedProductImage) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.1,
+      height: MediaQuery.of(context).size.height * 0.1,
+      margin: EdgeInsets.only(right: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Image.network(
+          selectedProductImage,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Widget showProductInfo({selectedProductTitle, selectedProductPrice}) {
+    return Container(
+      constraints: BoxConstraints(minWidth: 100, maxWidth: 200),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          showProductTitle(selectedProductTitle),
+          showProductPrice(selectedProductPrice),
+        ],
+      ),
+    );
+  }
+
+  Widget showProductTitle(selectedProductTitle) {
+    return Text(
+      selectedProductTitle,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 15.0,
+      ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+    );
+  }
+
+  Widget showProductPrice(selectedProductPrice) {
+    return Container(
+      child: Text(
+        '฿$selectedProductPrice / Item',
+        style: TextStyle(
+          color: Colors.blue[900],
+          fontSize: 13.0,
+        ),
+      ),
+    );
+  }
+
+  Widget buyNowButton() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.055,
+      width: MediaQuery.of(context).size.width * 0.6,
+      margin: EdgeInsets.only(right: 3),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          colors: [
+            Colors.blue[600],
+            Colors.blue[700],
+            Colors.blue[700],
+            Colors.blue[800],
+          ],
+        ),
+        borderRadius: BorderRadius.circular(3.0),
+      ),
+      child: Center(
+        child: Text(
+          'Buy Now',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 11,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget addToCartButton() {
+    return Expanded(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.055,
+        width: MediaQuery.of(context).size.width * 0.3,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomLeft,
+            colors: [
+              Colors.yellow[700],
+              Colors.yellow[700],
+              Colors.yellow[800],
+            ],
+          ),
+          borderRadius: BorderRadius.circular(3.0),
+        ),
+        child: Center(
+          child: Text(
+            'Add to Cart',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -4,7 +4,7 @@ import '../models/Product.dart';
 import '../models/User.dart';
 import '../models/Cart.dart';
 
-String baseUrl = "https://188.166.189.84"; // /api/cart
+String baseUrl = "https://188.166.189.84";
 
 class UserService {
   static Future<bool> createUserInDB(body) async {
@@ -13,7 +13,7 @@ class UserService {
     if (response.statusCode == 200) {
       return true;
     } else {
-      print('responseCode: ${response.statusCode}');
+      print('Status: ${response.statusCode}');
       return false;
     }
   }
@@ -38,8 +38,29 @@ class ProductService {
       final String responseString = response.body;
       return productFromJson(responseString);
     } else {
-      throw Exception('Failed to Load Product Data!!!');
+      throw Exception(
+          'Status: ${response.statusCode} Failed to Load Product Data!!!');
     }
+  }
+
+  static Future<List<dynamic>> getProduct(sku) async {
+    print('ENTER GETALLPRODUCT');
+    Map<String, List<String>> data = {
+      "sku_list": sku,
+    };
+    String body = json.encode(data);
+    print('skuObj: $body');
+    final response = await Http.post(
+      "$baseUrl/api/product/sku",
+      headers: {"Content-Type": "application/json"},
+      body: body,
+    );
+    print('response: ${response.body}');
+    print('responseType: ${json.decode(response.body).runtimeType}');
+    List<dynamic> res = json.decode(response.body);
+    print('response after decode: $res');
+    print('response after decode Type: ${res.runtimeType}');
+    return res;
   }
 }
 
@@ -56,14 +77,24 @@ class CartService {
       final String responseString = response.body;
       return cartFromJson(responseString);
     } else {
-      throw Exception('Failed to Load Cart Data!!!');
+      throw Exception(
+          'Status: ${response.statusCode} Failed to Load Cart Data!!!');
     }
   }
 
   static Future<bool> addToCart(headers, body) async {
+    print('Enter Add to Cart');
     final response =
         await Http.post("$baseUrl/api/cart/add", headers: headers, body: body);
-        
+    print('responseBody: ${response.body}');
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+      cartFromJson(responseString);
+      return true;
+    } else {
+      throw Exception(
+          'Status: ${response.statusCode} Failed to Load Cart Data!!!');
+    }
   }
 }
 

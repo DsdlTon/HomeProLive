@@ -4,8 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RecentForegroundLive extends StatefulWidget {
   final String title;
@@ -29,59 +31,115 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   var commentSnapshot;
   int quantity = 0;
 
-  int commentIndex = 0; //yes
-  int commentLen; //yes
-  int startLiveTime; //yes
-  int currentCommentTime; //currentCommentTime[commentIndex]
+  int commentIndex = 0;
+  int commentLen;
+  int startLiveTime;
+  int currentCommentTime;
   int lastCommentTime;
-  int timer = 100; //yes
+  int timer = 100;
   Timer _timer;
-  List<String> allComment = []; //yes
-  List<String> pushedComment = []; //wait for allComment to push data in.
+  List<String> allComment = [];
+  List<String> pushedComment = [];
   List<String> allUsername = [];
   List<String> pushedUsername = [];
 
   List cart = [];
-  List product;
-  Future<List<dynamic>> getProductList(channelName) async {
+  List<String> sku = [];
+  List productSnap;
+  List<dynamic> product = [];
+
+  Future<List<String>> getProductToShowInLive(channelName) async {
     await Firestore.instance
         .collection("CurrentLive")
         .document(channelName)
         .get()
         .then((snapshot) {
-      product = snapshot['productInLive'];
-      print('PRODUCT: $product');
-      print('PRODUCT LEN: ${product.length}');
+      productSnap = snapshot['productInLive'];
+    });
+    int productLen = productSnap.length;
+    for (int i = 0; i < productLen; i++) {
+      sku.add(productSnap[i]['sku']);
+    }
+    print('sku: $sku');
+    print('skuType: ${sku.runtimeType}');
+
+    return sku;
+  }
+
+  Future<List<dynamic>> getProductInfo(sku) async {
+    await ProductService.getProduct(sku).then((res) {
+      print('resWhenGet: $res');
+      setState(() {
+        product = res;
+      });
+      print('product: $product');
     });
     return product;
   }
 
-  void addToBasket(product) {
-    if (!cart.contains(product["title"])) {
-      print('CONTAIN: ${cart.contains(product)}');
-      setState(() {
-        cart.add(product["title"]);
-      });
-      print('CART: $cart');
-      Fluttertoast.showToast(
-        msg: "Added ${product["title"]} to your Cart.",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.blue[800],
-        textColor: Colors.white,
-        fontSize: 13.0,
-      );
-    } else if (cart.contains(product["title"])) {
-      Fluttertoast.showToast(
-        msg: "This Item is Already in your Cart.",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 13.0,
-      );
-    }
+  Future<void> addProductToCart(sku, quantity, title) async {
+    print("Enter Add to Cart");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    final headers = {
+      "access-token": accessToken,
+    };
+    final body = {
+      "sku": sku.toString(),
+      "quantity": quantity.toString(),
+    };
+    print('Headers: $headers');
+    print('body: $body');
+    CartService.addToCart(headers, body).then((res) {
+      print('res: $res');
+      if (res == true) {
+        Fluttertoast.showToast(
+          msg: "Added $quantity $title to your Cart.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.blue[800],
+          textColor: Colors.white,
+          fontSize: 13.0,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "This Item is Already in your Cart.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 13.0,
+        );
+      }
+    });
   }
+
+  // void addToCart(product) {
+  //   if (!cart.contains(product["title"])) {
+  //     print('CONTAIN: ${cart.contains(product)}');
+  //     setState(() {
+  //       cart.add(product["title"]);
+  //     });
+  //     print('CART: $cart');
+  //     Fluttertoast.showToast(
+  //       msg: "Added ${product["title"]} to your Cart.",
+  //       toastLength: Toast.LENGTH_LONG,
+  //       gravity: ToastGravity.BOTTOM,
+  //       backgroundColor: Colors.blue[800],
+  //       textColor: Colors.white,
+  //       fontSize: 13.0,
+  //     );
+  //   } else if (cart.contains(product["title"])) {
+  // Fluttertoast.showToast(
+  //   msg: "This Item is Already in your Cart.",
+  //   toastLength: Toast.LENGTH_LONG,
+  //   gravity: ToastGravity.BOTTOM,
+  //   backgroundColor: Colors.red,
+  //   textColor: Colors.white,
+  //   fontSize: 13.0,
+  // );
+  //   }
+  // }
 
   Future<void> getDataFromFirebase() async {
     startLiveTime = int.parse(widget.channelName);
@@ -187,6 +245,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       widget.liveAdmin,
       widget.channelName,
     );
+    getProductToShowInLive(widget.channelName).then((sku) {
+      getProductInfo(sku);
+    });
   }
 
   @override
@@ -399,180 +460,240 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       context: context,
       backgroundColor: Colors.black.withOpacity(0.8),
       builder: (context) {
-        return FutureBuilder(
-          future: getProductList(widget.channelName),
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              return Container(
-                height: MediaQuery.of(context).size.height * 0.6,
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.05,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            'Products (${product.length})',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17.0,
-                            ),
+        return StatefulBuilder(
+          builder: (BuildContext context, state) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.6,
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          'Products (${product.length})',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17.0,
                           ),
-                          IconButton(
-                            icon: Icon(Icons.close,
-                                color: Colors.white, size: 18),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
+                        ),
+                        IconButton(
+                          icon:
+                              Icon(Icons.close, color: Colors.white, size: 18),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
                     ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-                    SingleChildScrollView(
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.47,
-                        child: ListView.builder(
-                          itemCount: product.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Card(
-                              color: Colors.black.withOpacity(0.3),
-                              child: Padding(
-                                padding: EdgeInsets.all(10.0),
-                                child: Row(
-                                  children: <Widget>[
-                                    Container(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.1,
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.1,
-                                      child: Image.network(
-                                        product[index]['image'],
-                                        fit: BoxFit.cover,
-                                      ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  SingleChildScrollView(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.47,
+                      child: ListView.builder(
+                        itemCount: product.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Card(
+                            color: Colors.black.withOpacity(0.3),
+                            child: Padding(
+                              padding: EdgeInsets.all(10.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.1,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.1,
+                                    child: Image.network(
+                                      product[index]['image'],
+                                      fit: BoxFit.cover,
                                     ),
-                                    SizedBox(
+                                  ),
+                                  SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.03),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Container(
                                         width:
                                             MediaQuery.of(context).size.width *
-                                                0.03),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Container(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.65,
-                                          child: Text(
-                                            product[index]['title'],
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                          ),
-                                        ),
-                                        Text(
-                                          '฿ ' + product[index]['price'],
+                                                0.65,
+                                        child: Text(
+                                          product[index]["title"],
                                           style: TextStyle(
                                             color: Colors.white,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    Expanded(
-                                      child: Container(
-                                        alignment: Alignment.centerRight,
-                                        child: IconButton(
-                                          onPressed: () {
-                                            print('Tap ICON');
-
-                                            quantityBottomSheet(
-                                              selectedProductSku: product[index]
-                                                  ["sku"],
-                                              selectedProductTitle:
-                                                  product[index]["title"],
-                                              selectedProductImage:
-                                                  product[index]["image"],
-                                              selectedProductPrice:
-                                                  product[index]["price"],
-                                            );
-                                          },
-                                          icon: Icon(
-                                            Icons.add_shopping_cart,
-                                            color: Colors.white,
-                                            size: 20,
-                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
                                         ),
                                       ),
-                                    )
-                                  ],
-                                ),
+                                      Text(
+                                        '฿ ' + product[index]["price"],
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      alignment: Alignment.centerRight,
+                                      child: IconButton(
+                                        onPressed: () {
+                                          showQuantitySelection(
+                                            selectedProductSku: product[index]
+                                                ["sku"],
+                                            selectedProductTitle: product[index]
+                                                ["title"],
+                                            selectedProductImage: product[index]
+                                                ["image"],
+                                            selectedProductPrice: product[index]
+                                                ["price"],
+                                          );
+                                        },
+                                        icon: Icon(
+                                          Icons.add_shopping_cart,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    )
-                  ],
-                ),
-              );
-            }
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         );
       },
     );
   }
 
-  PersistentBottomSheetController quantityBottomSheet({
+  showQuantitySelection({
     selectedProductSku,
     selectedProductTitle,
     selectedProductImage,
     selectedProductPrice,
   }) {
-    print(selectedProductImage);
-    return showBottomSheet(
+    showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white.withOpacity(0.95),
       builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.21,
-          width: MediaQuery.of(context).size.width,
-          padding: EdgeInsets.all(10.0),
-          child: Column(
-            children: <Widget>[
-              Row(
+        return StatefulBuilder(
+          builder: (context, state) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.21,
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(10.0),
+              child: Column(
                 children: <Widget>[
-                  showProductImage(selectedProductImage),
-                  showProductInfo(
-                    selectedProductTitle: selectedProductTitle,
-                    selectedProductPrice: selectedProductPrice,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          showProductImage(selectedProductImage),
+                          showProductInfo(
+                            selectedProductTitle: selectedProductTitle,
+                            selectedProductPrice: selectedProductPrice,
+                          ),
+                        ],
+                      ),
+                      Container(
+                        child: Row(
+                          children: <Widget>[
+                            GestureDetector(
+                              onTap: () {
+                                state(() {
+                                  quantity -= 1;
+                                  print(quantity);
+                                });
+                              },
+                              child: Container(
+                                width: 25,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 1.5,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.remove,
+                                  size: 15,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                '$quantity',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                state(() {
+                                  quantity += 1;
+                                  print(quantity);
+                                });
+                              },
+                              child: Container(
+                                width: 25,
+                                height: 25,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 1.5,
+                                    color: Colors.grey[300],
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 15,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.01,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      buyNowButton(),
+                      addToCartButton(
+                          selectedProductSku, quantity, selectedProductTitle),
+                    ],
                   ),
                 ],
               ),
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.01,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  buyNowButton(),
-                  addToBasketButton(),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -634,6 +755,72 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
+  Widget showQuantityPanel(quantity) {
+    return Container(
+      child: Row(
+        children: <Widget>[
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                quantity -= 1;
+                print(quantity);
+              });
+            },
+            child: Container(
+              width: 25,
+              height: 25,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  width: 1.5,
+                  color: Colors.grey[300],
+                ),
+              ),
+              child: Icon(
+                Icons.remove,
+                size: 15,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              '$quantity',
+              style: TextStyle(
+                fontSize: 15,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                quantity += 1;
+                print(quantity);
+              });
+            },
+            child: Container(
+              width: 25,
+              height: 25,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  width: 1.5,
+                  color: Colors.grey[300],
+                ),
+              ),
+              child: Icon(
+                Icons.add,
+                size: 15,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buyNowButton() {
     return Container(
       height: MediaQuery.of(context).size.height * 0.055,
@@ -663,28 +850,34 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
-  Widget addToBasketButton() {
+  Widget addToCartButton(sku, quantity, title) {
     return Expanded(
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.055,
-        width: MediaQuery.of(context).size.width * 0.3,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomLeft,
-            colors: [
-              Colors.yellow[700],
-              Colors.yellow[700],
-              Colors.yellow[800],
-            ],
+      child: GestureDetector(
+        onTap: () {
+          addProductToCart(sku, quantity, title);
+          print('Tap ADD To Cart');
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.055,
+          width: MediaQuery.of(context).size.width * 0.3,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              colors: [
+                Colors.yellow[700],
+                Colors.yellow[700],
+                Colors.yellow[800],
+              ],
+            ),
+            borderRadius: BorderRadius.circular(3.0),
           ),
-          borderRadius: BorderRadius.circular(3.0),
-        ),
-        child: Center(
-          child: Text(
-            'Add to Basket',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 11,
+          child: Center(
+            child: Text(
+              'Add to Cart',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+              ),
             ),
           ),
         ),
