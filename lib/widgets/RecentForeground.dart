@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,7 +30,8 @@ class RecentForegroundLive extends StatefulWidget {
 
 class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   var commentSnapshot;
-  int quantity = 0;
+  int _quantity = 0;
+  String _accessToken;
 
   int commentIndex = 0;
   int commentLen;
@@ -47,6 +49,15 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   List<String> sku = [];
   List productSnap;
   List<dynamic> product = [];
+
+  Future<String> getAccessToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    setState(() {
+      _accessToken = accessToken;
+    });
+    return _accessToken;
+  }
 
   Future<List<String>> getProductToShowInLive(channelName) async {
     await Firestore.instance
@@ -66,6 +77,29 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     return sku;
   }
 
+  Future<void> getQuantityofItem(_accessToken, sku) async {
+    final headers = {
+      "access-token": _accessToken.toString(),
+    };
+    final body = {
+      "sku": sku.toString(),
+    };
+    print('Headers: $headers');
+    print('body: $body');
+    await CartService.getItemQuantity(headers, body).then((quantity) {
+      print('Out of Funtion');
+      if (quantity != null) {
+        setState(() {
+          _quantity = quantity;
+        });
+      } else {
+        setState(() {
+          _quantity = 0;
+        });
+      }
+    });
+  }
+
   Future<List<dynamic>> getProductInfo(sku) async {
     await ProductService.getProduct(sku).then((res) {
       print('resWhenGet: $res');
@@ -77,24 +111,25 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     return product;
   }
 
-  Future<void> addProductToCart(sku, quantity, title) async {
+  Future<void> addProductToCart(sku, _quantity, title) async {
     print("Enter Add to Cart");
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String accessToken = prefs.getString('accessToken');
+
     final headers = {
-      "access-token": accessToken,
+      "access-token": _accessToken,
     };
     final body = {
       "sku": sku.toString(),
-      "quantity": quantity.toString(),
+      "quantity": _quantity.toString(),
     };
     print('Headers: $headers');
+    print('HeadersType: ${headers.runtimeType}');
     print('body: $body');
+    print('bodyType: ${body.runtimeType}');
     CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
         Fluttertoast.showToast(
-          msg: "Added $quantity $title to your Cart.",
+          msg: "Added $_quantity $title to your Cart.",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.blue[800],
@@ -103,7 +138,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         );
       } else {
         Fluttertoast.showToast(
-          msg: "This Item is Already in your Cart.",
+          msg: "Error! Can't get this Item to your Cart.",
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.red,
@@ -112,34 +147,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         );
       }
     });
-  }
 
-  // void addToCart(product) {
-  //   if (!cart.contains(product["title"])) {
-  //     print('CONTAIN: ${cart.contains(product)}');
-  //     setState(() {
-  //       cart.add(product["title"]);
-  //     });
-  //     print('CART: $cart');
-  //     Fluttertoast.showToast(
-  //       msg: "Added ${product["title"]} to your Cart.",
-  //       toastLength: Toast.LENGTH_LONG,
-  //       gravity: ToastGravity.BOTTOM,
-  //       backgroundColor: Colors.blue[800],
-  //       textColor: Colors.white,
-  //       fontSize: 13.0,
-  //     );
-  //   } else if (cart.contains(product["title"])) {
-  // Fluttertoast.showToast(
-  //   msg: "This Item is Already in your Cart.",
-  //   toastLength: Toast.LENGTH_LONG,
-  //   gravity: ToastGravity.BOTTOM,
-  //   backgroundColor: Colors.red,
-  //   textColor: Colors.white,
-  //   fontSize: 13.0,
-  // );
-  //   }
-  // }
+    Navigator.of(context).pop();
+  }
 
   Future<void> getDataFromFirebase() async {
     startLiveTime = int.parse(widget.channelName);
@@ -239,6 +249,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   void initState() {
     super.initState();
     getDataFromFirebase();
+    getAccessToken();
     replayComment();
     FireStoreClass.saveViewer(
       widget.username,
@@ -548,6 +559,11 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                       alignment: Alignment.centerRight,
                                       child: IconButton(
                                         onPressed: () {
+                                          getQuantityofItem(
+                                            _accessToken,
+                                            product[index]["sku"],
+                                          );
+
                                           showQuantitySelection(
                                             selectedProductSku: product[index]
                                                 ["sku"],
@@ -620,8 +636,10 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  quantity -= 1;
-                                  print(quantity);
+                                  _quantity > 0
+                                      ? _quantity -= 1
+                                      : _quantity = 0;
+                                  print(_quantity);
                                 });
                               },
                               child: Container(
@@ -630,21 +648,21 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    width: 1.5,
-                                    color: Colors.grey[300],
-                                  ),
+                                      width: 1.5, color: Colors.grey[300]),
                                 ),
                                 child: Icon(
                                   Icons.remove,
                                   size: 15,
-                                  color: Colors.black,
+                                  color: _quantity > 0
+                                      ? Colors.black
+                                      : Colors.grey[300],
                                 ),
                               ),
                             ),
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
-                                '$quantity',
+                                '$_quantity',
                                 style: TextStyle(
                                   fontSize: 15,
                                 ),
@@ -653,8 +671,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  quantity += 1;
-                                  print(quantity);
+                                  _quantity += 1;
+                                  print(_quantity);
                                 });
                               },
                               child: Container(
@@ -687,7 +705,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                     children: <Widget>[
                       buyNowButton(),
                       addToCartButton(
-                          selectedProductSku, quantity, selectedProductTitle),
+                          selectedProductSku, _quantity, selectedProductTitle),
                     ],
                   ),
                 ],
@@ -755,72 +773,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
-  Widget showQuantityPanel(quantity) {
-    return Container(
-      child: Row(
-        children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                quantity -= 1;
-                print(quantity);
-              });
-            },
-            child: Container(
-              width: 25,
-              height: 25,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  width: 1.5,
-                  color: Colors.grey[300],
-                ),
-              ),
-              child: Icon(
-                Icons.remove,
-                size: 15,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              '$quantity',
-              style: TextStyle(
-                fontSize: 15,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                quantity += 1;
-                print(quantity);
-              });
-            },
-            child: Container(
-              width: 25,
-              height: 25,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  width: 1.5,
-                  color: Colors.grey[300],
-                ),
-              ),
-              child: Icon(
-                Icons.add,
-                size: 15,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget buyNowButton() {
     return Container(
       height: MediaQuery.of(context).size.height * 0.055,
@@ -850,11 +802,11 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
-  Widget addToCartButton(sku, quantity, title) {
+  Widget addToCartButton(sku, _quantity, title) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          addProductToCart(sku, quantity, title);
+          addProductToCart(sku, _quantity, title);
           print('Tap ADD To Cart');
         },
         child: Container(

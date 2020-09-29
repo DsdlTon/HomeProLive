@@ -2,13 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:test_live_app/controllers/api.dart';
-
-// import 'package:sqflite/sqflite.dart';
-// import 'package:path/path.dart';
 
 class ForegroundLive extends StatefulWidget {
   final String title;
@@ -39,10 +37,20 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   List<String> sku = [];
   List productSnap;
   List<dynamic> product = [];
-  int quantity = 0;
+  int _quantity = 0;
+  String _accessToken;
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
+
+  Future<String> getAccessToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    setState(() {
+      _accessToken = accessToken;
+    });
+    return _accessToken;
+  }
 
   Future<List<String>> getProductToShowInLive(channelName) async {
     await Firestore.instance
@@ -62,6 +70,30 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return sku;
   }
 
+  Future<void> getQuantityofItem(_accessToken, sku) async {
+    final headers = {
+      "access-token": _accessToken.toString(),
+    };
+    final body = {
+      "sku": sku.toString(),
+    };
+    print('Headers: $headers');
+    print('HeadersType: ${headers.runtimeType}');
+    print('body: $body');
+    print('bodyType: ${body.runtimeType}');
+    await CartService.getItemQuantity(headers, body).then((quantity) {
+      if (quantity != null) {
+        setState(() {
+          _quantity = quantity;
+        });
+      } else {
+        setState(() {
+          _quantity = 0;
+        });
+      }
+    });
+  }
+
   Future<List<dynamic>> getProductInfo(sku) async {
     await ProductService.getProduct(sku).then((res) {
       print('resWhenGet: $res');
@@ -73,36 +105,50 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return product;
   }
 
-  void addToCart(product) {
-    if (!cart.contains(product["title"])) {
-      print('CONTAIN: ${cart.contains(product)}');
-      setState(() {
-        cart.add(product["title"]);
-      });
-      print('CART: $cart');
-      Fluttertoast.showToast(
-        msg: "Added ${product["title"]} to your Cart.",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.blue[800],
-        textColor: Colors.white,
-        fontSize: 13.0,
-      );
-    } else if (cart.contains(product["title"])) {
-      Fluttertoast.showToast(
-        msg: "This Item is Already in your Cart.",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 13.0,
-      );
-    }
+  Future<void> addProductToCart(sku, _quantity, title) async {
+    print("Enter Add to Cart");
+
+    final headers = {
+      "access-token": _accessToken,
+    };
+    final body = {
+      "sku": sku.toString(),
+      "quantity": _quantity.toString(),
+    };
+    print('Headers: $headers');
+    print('HeadersType: ${headers.runtimeType}');
+    print('body: $body');
+    print('bodyType: ${body.runtimeType}');
+    CartService.addToCart(headers, body).then((res) {
+      print('res: $res');
+      if (res == true) {
+        Fluttertoast.showToast(
+          msg: "Added $_quantity $title to your Cart.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.blue[800],
+          textColor: Colors.white,
+          fontSize: 13.0,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: "Error! Can't get this Item to your Cart.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 13.0,
+        );
+      }
+    });
+
+    Navigator.of(context).pop();
   }
 
   @protected
   void initState() {
     super.initState();
+    getAccessToken();
     FireStoreClass.saveViewer(
       widget.username,
       widget.liveAdmin,
@@ -483,15 +529,19 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                       alignment: Alignment.centerRight,
                                       child: IconButton(
                                         onPressed: () {
+                                          getQuantityofItem(
+                                            _accessToken,
+                                            product[index]["sku"],
+                                          );
                                           showQuantitySelection(
-                                          selectedProductSku: product[index]
-                                              ["sku"],
-                                          selectedProductTitle: product[index]
-                                              ["title"],
-                                          selectedProductImage: product[index]
-                                              ["image"],
-                                          selectedProductPrice: product[index]
-                                              ["price"],
+                                            selectedProductSku: product[index]
+                                                ["sku"],
+                                            selectedProductTitle: product[index]
+                                                ["title"],
+                                            selectedProductImage: product[index]
+                                                ["image"],
+                                            selectedProductPrice: product[index]
+                                                ["price"],
                                           );
                                         },
                                         icon: Icon(
@@ -555,8 +605,10 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  quantity -= 1;
-                                  print(quantity);
+                                  _quantity > 0
+                                      ? _quantity -= 1
+                                      : _quantity = 0;
+                                  print(_quantity);
                                 });
                               },
                               child: Container(
@@ -565,21 +617,21 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    width: 1.5,
-                                    color: Colors.grey[300],
-                                  ),
+                                      width: 1.5, color: Colors.grey[300]),
                                 ),
                                 child: Icon(
                                   Icons.remove,
                                   size: 15,
-                                  color: Colors.black,
+                                  color: _quantity > 0
+                                      ? Colors.black
+                                      : Colors.grey[300],
                                 ),
                               ),
                             ),
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
-                                '$quantity',
+                                '$_quantity',
                                 style: TextStyle(
                                   fontSize: 15,
                                 ),
@@ -588,8 +640,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  quantity += 1;
-                                  print(quantity);
+                                  _quantity += 1;
+                                  print(_quantity);
                                 });
                               },
                               child: Container(
@@ -621,7 +673,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       buyNowButton(),
-                      addToCartButton(),
+                      addToCartButton(
+                          selectedProductSku, _quantity, selectedProductTitle),
                     ],
                   ),
                 ],
@@ -718,28 +771,34 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     );
   }
 
-  Widget addToCartButton() {
+  Widget addToCartButton(sku, _quantity, title) {
     return Expanded(
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.055,
-        width: MediaQuery.of(context).size.width * 0.3,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.bottomLeft,
-            colors: [
-              Colors.yellow[700],
-              Colors.yellow[700],
-              Colors.yellow[800],
-            ],
+      child: GestureDetector(
+        onTap: () {
+          addProductToCart(sku, _quantity, title);
+          print('Tap ADD To Cart');
+        },
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.055,
+          width: MediaQuery.of(context).size.width * 0.3,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              colors: [
+                Colors.yellow[700],
+                Colors.yellow[700],
+                Colors.yellow[800],
+              ],
+            ),
+            borderRadius: BorderRadius.circular(3.0),
           ),
-          borderRadius: BorderRadius.circular(3.0),
-        ),
-        child: Center(
-          child: Text(
-            'Add to Cart',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 11,
+          child: Center(
+            child: Text(
+              'Add to Cart',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+              ),
             ),
           ),
         ),

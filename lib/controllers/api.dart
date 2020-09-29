@@ -96,6 +96,30 @@ class CartService {
           'Status: ${response.statusCode} Failed to Load Cart Data!!!');
     }
   }
+
+  static Future<int> getItemQuantity(headers, body) async {
+    print('Enter Get Item Quantity');
+    final response =
+        await Http.post("$baseUrl/api/cart/item", headers: headers, body: body);
+    print('responseBody: ${response.body}');
+    Map res = json.decode(response.body);
+    if (response.statusCode == 200) {
+      if (res != null) {
+        print('enter if');
+        print(res.runtimeType);
+        int quantity = res["quantity"];
+        print('quantity form server: $quantity');
+        return quantity;
+      } else if (res == null) {
+        print('enter else');
+        int quantity = 0;
+        return quantity;
+      }
+    } else {
+      throw Exception(
+          'Status: ${response.statusCode} Failed to Load Quantity Data!!!');
+    }
+  }
 }
 
 Cart cartFromJson(String responseString) {
