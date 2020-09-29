@@ -360,12 +360,7 @@ class _ListLivePageState extends State<ListLivePage> {
       ),
       tooltip: 'Cart',
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CartPage(),
-          ),
-        );
+        Navigator.of(context).pushNamed('/cartPage');
       },
     );
   }

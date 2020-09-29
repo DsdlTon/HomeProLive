@@ -488,7 +488,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                 children: <Widget>[
                                   Container(
                                     width:
-                                        MediaQuery.of(context).size.width * 0.1,
+                                        MediaQuery.of(context).size.width * 0.2,
                                     height: MediaQuery.of(context).size.height *
                                         0.1,
                                     child: Image.network(
@@ -506,7 +506,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                       Container(
                                         width:
                                             MediaQuery.of(context).size.width *
-                                                0.65,
+                                                0.57,
                                         child: Text(
                                           product[index]["title"],
                                           style: TextStyle(
@@ -775,8 +775,19 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          addProductToCart(sku, _quantity, title);
           print('Tap ADD To Cart');
+          if (_quantity != 0) {
+            addProductToCart(sku, _quantity, title);
+          } else {
+            Fluttertoast.showToast(
+              msg: "Please add Quantity of Product.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 13.0,
+            );
+          }
         },
         child: Container(
           height: MediaQuery.of(context).size.height * 0.055,

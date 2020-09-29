@@ -358,12 +358,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
       ),
       tooltip: 'Cart',
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CartPage(),
-          ),
-        );
+        Navigator.of(context).pushNamed('/cartPage');
       },
     );
   }

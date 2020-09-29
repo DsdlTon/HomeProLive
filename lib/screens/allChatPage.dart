@@ -176,30 +176,41 @@ class _AllChatPageState extends State<AllChatPage> {
                                                   ),
                                                   SizedBox(height: 5),
                                                   Row(
+                                                    mainAxisSize: MainAxisSize.min,
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment.end,
                                                     children: <Widget>[
-                                                      Text(
-                                                        snapshot.data.documents[
-                                                            index]['lastMsg'],
-                                                        maxLines: 2,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: snapshot.data.documents[
-                                                                        index][
-                                                                    'isUserRead'] ==
-                                                                false
-                                                            ? TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              )
-                                                            : TextStyle(
-                                                                color: Colors
-                                                                    .grey[600],
-                                                              ),
+                                                      Container(
+                                                        constraints:
+                                                            BoxConstraints(
+                                                          minWidth: 100,
+                                                          maxWidth: 170,
+                                                        ),
+                                                        child: Text(
+                                                          snapshot.data
+                                                                  .documents[
+                                                              index]['lastMsg'],
+                                                          maxLines: 2,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: snapshot.data.documents[
+                                                                          index]
+                                                                      [
+                                                                      'isUserRead'] ==
+                                                                  false
+                                                              ? TextStyle(
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                )
+                                                              : TextStyle(
+                                                                  color: Colors
+                                                                          .grey[
+                                                                      600],
+                                                                ),
+                                                        ),
                                                       ),
                                                       Container(
                                                         child: Text(

@@ -71,6 +71,7 @@ String productToJson(Product data) => json.encode(data.toJson());
 
 class CartService {
   static Future<Cart> getUserCart(headers) async {
+    print('headers: $headers');
     final response = await Http.get("$baseUrl/api/cart", headers: headers);
     print('cartResponse: ${response.body}');
     if (response.statusCode == 200) {
@@ -120,12 +121,21 @@ class CartService {
           'Status: ${response.statusCode} Failed to Load Quantity Data!!!');
     }
   }
+
+  static Future<bool> removeItemInCart(headers, body) async {
+    print('Enter Remove Item In Cart');
+    final response = await Http.post("$baseUrl/api/cart/remove",
+        headers: headers, body: body);
+    print('responseBody: ${response.body}');
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception(
+          'Status: ${response.statusCode} Failed to Delete Item!!!');
+    }
+  }
 }
 
-Cart cartFromJson(String responseString) {
-  return Cart.fromJson(json.decode(responseString));
-}
-
-String cartToJson(Cart cart) {
-  return json.encode(cart.toJson());
-}
+Cart cartFromJson(String responseString) =>
+    Cart.fromJson(json.decode(responseString));
+String cartToJson(Cart cart) => json.encode(cart.toJson());
