@@ -49,17 +49,13 @@ class ProductService {
       "sku_list": sku,
     };
     String body = json.encode(data);
-    print('skuObj: $body');
     final response = await Http.post(
       "$baseUrl/api/product/sku",
       headers: {"Content-Type": "application/json"},
       body: body,
     );
-    print('response: ${response.body}');
-    print('responseType: ${json.decode(response.body).runtimeType}');
     List<dynamic> res = json.decode(response.body);
     print('response after decode: $res');
-    print('response after decode Type: ${res.runtimeType}');
     return res;
   }
 }
@@ -107,7 +103,6 @@ class CartService {
     if (response.statusCode == 200) {
       if (res != null) {
         print('enter if');
-        print(res.runtimeType);
         int quantity = res["quantity"];
         print('quantity form server: $quantity');
         return quantity;

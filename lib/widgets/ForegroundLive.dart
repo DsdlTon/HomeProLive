@@ -33,12 +33,12 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
 
-  List cart = [];
   List<String> sku = [];
   List productSnap;
   List<dynamic> product = [];
-  int _quantity = 0;
   String _accessToken;
+
+  int _quantity = 0;
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
@@ -70,28 +70,29 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return sku;
   }
 
-  Future<void> getQuantityofItem(_accessToken, sku) async {
+  Future<int> getQuantityofItem(_accessToken, sku) async {
     final headers = {
       "access-token": _accessToken.toString(),
     };
     final body = {
       "sku": sku.toString(),
     };
-    print('Headers: $headers');
-    print('HeadersType: ${headers.runtimeType}');
-    print('body: $body');
-    print('bodyType: ${body.runtimeType}');
     await CartService.getItemQuantity(headers, body).then((quantity) {
-      if (quantity != null) {
-        setState(() {
-          _quantity = quantity;
-        });
-      } else {
+      print('_Quantity Before ifElse: $_quantity');
+      if (_quantity == null) {
+        print('ENTER IF');
         setState(() {
           _quantity = 0;
         });
+      } else {
+        print('ENTER ELSE');
+        setState(() {
+          _quantity = quantity;
+        });
       }
     });
+    print('_quantity In Function: $_quantity');
+    return _quantity;
   }
 
   Future<List<dynamic>> getProductInfo(sku) async {
@@ -149,6 +150,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   void initState() {
     super.initState();
     getAccessToken();
+
     FireStoreClass.saveViewer(
       widget.username,
       widget.liveAdmin,
@@ -532,17 +534,21 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                           getQuantityofItem(
                                             _accessToken,
                                             product[index]["sku"],
-                                          );
-                                          showQuantitySelection(
-                                            selectedProductSku: product[index]
-                                                ["sku"],
-                                            selectedProductTitle: product[index]
-                                                ["title"],
-                                            selectedProductImage: product[index]
-                                                ["image"],
-                                            selectedProductPrice: product[index]
-                                                ["price"],
-                                          );
+                                          ).then((quantityInCart) {
+                                            showQuantitySelection(
+                                              selectedProductSku: product[index]
+                                                  ["sku"],
+                                              selectedProductTitle:
+                                                  product[index]["title"],
+                                              selectedProductImage:
+                                                  product[index]["image"],
+                                              selectedProductPrice:
+                                                  product[index]["price"],
+                                              quantityInCart: quantityInCart,
+                                            );
+                                            print(
+                                                '${product[index]["sku"]} HAS: $_quantity');
+                                          });
                                         },
                                         icon: Icon(
                                           Icons.add_shopping_cart,
@@ -574,6 +580,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     selectedProductTitle,
     selectedProductImage,
     selectedProductPrice,
+    quantityInCart,
   }) {
     showModalBottomSheet(
       context: context,
@@ -605,10 +612,10 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  _quantity > 0
-                                      ? _quantity -= 1
-                                      : _quantity = 0;
-                                  print(_quantity);
+                                  quantityInCart > 0
+                                      ? quantityInCart -= 1
+                                      : quantityInCart = 0;
+                                  print(quantityInCart);
                                 });
                               },
                               child: Container(
@@ -622,7 +629,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                 child: Icon(
                                   Icons.remove,
                                   size: 15,
-                                  color: _quantity > 0
+                                  color: quantityInCart > 0
                                       ? Colors.black
                                       : Colors.grey[300],
                                 ),
@@ -631,7 +638,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
                               child: Text(
-                                '$_quantity',
+                                '$quantityInCart',
                                 style: TextStyle(
                                   fontSize: 15,
                                 ),
@@ -640,8 +647,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  _quantity += 1;
-                                  print(_quantity);
+                                  quantityInCart += 1;
+                                  print(quantityInCart);
                                 });
                               },
                               child: Container(
@@ -674,7 +681,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                     children: <Widget>[
                       buyNowButton(),
                       addToCartButton(
-                          selectedProductSku, _quantity, selectedProductTitle),
+                          selectedProductSku, quantityInCart, selectedProductTitle),
                     ],
                   ),
                 ],
@@ -771,13 +778,13 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     );
   }
 
-  Widget addToCartButton(sku, _quantity, title) {
+  Widget addToCartButton(sku, quantityInCart, title) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
           print('Tap ADD To Cart');
-          if (_quantity != 0) {
-            addProductToCart(sku, _quantity, title);
+          if (quantityInCart != 0) {
+            addProductToCart(sku, quantityInCart, title);
           } else {
             Fluttertoast.showToast(
               msg: "Please add Quantity of Product.",

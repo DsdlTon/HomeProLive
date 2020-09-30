@@ -71,8 +71,6 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
-  // ${_cartData.cartDetails[0].product.sku}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
