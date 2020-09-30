@@ -21,6 +21,7 @@ class UserService {
   static Future<User> login(body) async {
     final response = await Http.post("$baseUrl/auth/login", body: body);
     final String responseString = response.body;
+    print('response.body: ${response.body}');
     return userFromJson(responseString);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
@@ -14,6 +15,7 @@ class _CartPageState extends State<CartPage> {
   List cartItem = [];
   String _accessToken;
   int totalPrice = 0;
+  bool isLoaded = false;
 
   int calculateTotalPrice() {
     return totalPrice;
@@ -39,7 +41,6 @@ class _CartPageState extends State<CartPage> {
         cartItem = _cartData.cartDetails;
         cartLen = _cartData.cartDetails.length;
         print('_cartData: $_cartData');
-        print(cartLen);
       });
     });
   }
@@ -129,26 +130,67 @@ class _CartPageState extends State<CartPage> {
         controller: new ScrollController(keepScrollOffset: false),
         itemCount: cartLen,
         itemBuilder: (BuildContext context, int index) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.2,
-            width: MediaQuery.of(context).size.width * 0.2,
-            margin: EdgeInsets.symmetric(horizontal: 10),
-            padding: EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey[300],
-                ),
-              ),
-            ),
-            child: Row(
-              children: <Widget>[
-                showInCartImage(index),
-                showInCartDetail(index),
-              ],
-            ),
-          );
+          return cartItemCard(index);
         },
+      ),
+    );
+  }
+
+  Widget refreshBg() {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: EdgeInsets.only(right: 20.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(3),
+        color: Colors.red,
+      ),
+      child: Icon(
+        Icons.delete,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget cartItemCard(index) {
+    return Dismissible(
+      key: Key(cartItem[index].toString()),
+      background: refreshBg(),
+      onDismissed: (direction) async {
+        final headers = {
+          "access-token": _accessToken,
+        };
+        final body = {
+          "sku": cartItem[index].product.sku.toString(),
+        };
+        await CartService.removeItemInCart(headers, body);
+        cartItem.removeAt(index);
+        Fluttertoast.showToast(
+          msg: "Deleted Success.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red[800],
+          textColor: Colors.white,
+          fontSize: 13.0,
+        );
+      },
+      direction: DismissDirection.endToStart,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.2,
+        margin: EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey[300],
+            ),
+          ),
+        ),
+        child: Row(
+          children: <Widget>[
+            showInCartImage(index),
+            showInCartDetail(index),
+          ],
+        ),
       ),
     );
   }
@@ -225,9 +267,9 @@ class _CartPageState extends State<CartPage> {
           GestureDetector(
             onTap: () {
               setState(() {
-                cartItem[index].quantity > 0
+                cartItem[index].quantity > 1
                     ? cartItem[index].quantity -= 1
-                    : cartItem[index].quantity = 0;
+                    : cartItem[index].quantity = 1;
 
                 print(cartItem[index].quantity);
                 String sku = cartItem[index].product.sku;
@@ -247,7 +289,7 @@ class _CartPageState extends State<CartPage> {
               child: Icon(
                 Icons.remove,
                 size: 15,
-                color: cartItem[index].quantity > 0
+                color: cartItem[index].quantity > 1
                     ? Colors.black
                     : Colors.grey[300],
               ),
@@ -272,8 +314,10 @@ class _CartPageState extends State<CartPage> {
                 String sku = cartItem[index].product.sku;
                 int _quantity = cartItem[index].quantity;
                 String title = cartItem[index].product.title;
-                print('sku: $sku, _quantity: $_quantity, title: $title');
-                changeInCartQuantity(sku, _quantity, title);
+                print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title');
+                Future.delayed(Duration(seconds: 3), () {
+                  changeInCartQuantity(sku, _quantity, title);
+                });
               });
             },
             child: Container(
