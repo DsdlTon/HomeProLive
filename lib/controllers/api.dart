@@ -32,8 +32,8 @@ String userToJson(User data) => json.encode(data.toJson());
 //--------------------------------------------------------------------------
 
 class ProductService {
-  static Future<Product> getProductDetail(id) async {
-    final response = await Http.get("$baseUrl/api/product/{$id}");
+  static Future<Product> getProductDetail(sku) async {
+    final response = await Http.get("$baseUrl/api/product/$sku");
     print('PRODUCTDETAILS RESPONSE: ${response.body}');
     if (response.statusCode == 200) {
       final String responseString = response.body;

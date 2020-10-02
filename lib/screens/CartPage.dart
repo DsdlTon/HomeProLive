@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
+import 'package:test_live_app/providers/TotalPriceProvider.dart';
 
 class CartPage extends StatefulWidget {
   @override
@@ -14,12 +16,8 @@ class _CartPageState extends State<CartPage> {
   int cartLen = 0;
   List cartItem = [];
   String _accessToken;
-  int totalPrice = 0;
+  double totalPrice = 0;
   bool isLoaded = false;
-
-  int calculateTotalPrice() {
-    return totalPrice;
-  }
 
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -30,19 +28,13 @@ class _CartPageState extends State<CartPage> {
     return _accessToken;
   }
 
-  Future<void> getUserCartData() async {
+  Future<Cart> getUserCartData() async {
     print('ENTER GETUSERCARTDATA');
     final headers = {
       "access-token": _accessToken,
     };
-    CartService.getUserCart(headers).then((cartData) {
-      setState(() {
-        _cartData = cartData;
-        cartItem = _cartData.cartDetails;
-        cartLen = _cartData.cartDetails.length;
-        print('_cartData: $_cartData');
-      });
-    });
+    print(CartService);
+    return CartService.getUserCart(headers);
   }
 
   //same function as addProductToCart
@@ -64,23 +56,70 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
+  double initialCalculateTotalPrice() {
+    print('ENTER INITIALCALCULATETOTALPRICE');
+    for (int i = 0; i < cartLen; i++) {
+      double priceInDouble = double.parse(cartItem[i].product.price);
+      double quantityInDouble = cartItem[i].quantity.toDouble();
+      totalPrice += priceInDouble * quantityInDouble;
+    }
+    print('OUT INITIALCALCULATETOTALPRICE');
+    return totalPrice;
+  }
+
   @override
   void initState() {
     super.initState();
     getAccessToken().then((accessToken) {
-      getUserCartData();
+      getUserCartData().then((cartData) {
+        setState(() {
+          _cartData = cartData;
+          cartItem = _cartData.cartDetails;
+          cartLen = _cartData.cartDetails.length;
+        });
+        initialCalculateTotalPrice();
+        print('INITIAL TOTAL PRICE: $totalPrice');
+        print('cartLen: $cartLen');
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    TotalPriceProvider totalPriceProvider =
+        Provider.of<TotalPriceProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: <Widget>[
           customAppBar(),
-          cartPanel(),
-          showTotalPrice(),
+          cartItem.isEmpty
+              ? Container(
+                  height: MediaQuery.of(context).size.height * 0.65,
+                  width: MediaQuery.of(context).size.width,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          Icons.remove_shopping_cart,
+                          color: Colors.grey[400],
+                          size: 60,
+                        ),
+                        Text(
+                          'Nothing in Cart',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : cartPanel(totalPriceProvider),
+          showTotalPrice(totalPriceProvider),
           checkOutButton(),
         ],
       ),
@@ -120,17 +159,19 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget cartPanel() {
+  Widget cartPanel(totalPriceProvider) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.65,
       margin: EdgeInsets.symmetric(horizontal: 10),
       child: ListView.builder(
+        padding: EdgeInsets.all(0),
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
+        physics: BouncingScrollPhysics(),
         controller: new ScrollController(keepScrollOffset: false),
         itemCount: cartLen,
         itemBuilder: (BuildContext context, int index) {
-          return cartItemCard(index);
+          return cartItemCard(index, totalPriceProvider);
         },
       ),
     );
@@ -151,7 +192,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget cartItemCard(index) {
+  Widget cartItemCard(index, totalPriceProvider) {
     return Dismissible(
       key: Key(cartItem[index].toString()),
       background: refreshBg(),
@@ -188,7 +229,7 @@ class _CartPageState extends State<CartPage> {
         child: Row(
           children: <Widget>[
             showInCartImage(index),
-            showInCartDetail(index),
+            showInCartDetail(index, totalPriceProvider),
           ],
         ),
       ),
@@ -209,7 +250,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget showInCartDetail(index) {
+  Widget showInCartDetail(index, totalPriceProvider) {
     return Expanded(
       child: Container(
         margin: EdgeInsets.only(left: 12),
@@ -243,7 +284,7 @@ class _CartPageState extends State<CartPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                showQuantityPanel(index),
+                showQuantityPanel(index, totalPriceProvider),
                 SizedBox(width: 10),
                 Text(
                   '฿${cartItem[index].product.price}',
@@ -260,40 +301,16 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget showQuantityPanel(index) {
+  Widget showQuantityPanel(index, totalPriceProvider) {
     return Container(
       child: Row(
         children: <Widget>[
           GestureDetector(
             onTap: () {
-              setState(() {
-                cartItem[index].quantity > 1
-                    ? cartItem[index].quantity -= 1
-                    : cartItem[index].quantity = 1;
-
-                print(cartItem[index].quantity);
-                String sku = cartItem[index].product.sku;
-                int _quantity = cartItem[index].quantity;
-                String title = cartItem[index].product.title;
-                print('sku: $sku, _quantity: $_quantity, title: $title');
-                changeInCartQuantity(sku, _quantity, title);
-              });
+              decreaseProcess(index);
+              totalPriceProvider.deleteQuantity(totalPrice);
             },
-            child: Container(
-              width: 25,
-              height: 25,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(width: 1.5, color: Colors.grey[300]),
-              ),
-              child: Icon(
-                Icons.remove,
-                size: 15,
-                color: cartItem[index].quantity > 1
-                    ? Colors.black
-                    : Colors.grey[300],
-              ),
-            ),
+            child: decreaseButton(index),
           ),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 10),
@@ -308,41 +325,120 @@ class _CartPageState extends State<CartPage> {
           ),
           GestureDetector(
             onTap: () {
-              setState(() {
-                cartItem[index].quantity += 1;
-                print(cartItem[index].quantity);
-                String sku = cartItem[index].product.sku;
-                int _quantity = cartItem[index].quantity;
-                String title = cartItem[index].product.title;
-                print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title');
-                Future.delayed(Duration(seconds: 3), () {
-                  changeInCartQuantity(sku, _quantity, title);
-                });
-              });
+              increaseProcess(index);
+              print(totalPrice.runtimeType);
+              print(cartItem[index].product.price);
+              totalPriceProvider.addQuantity(
+                  initialPrice: totalPrice,
+                  productPrice: cartItem[index].product.price);
             },
-            child: Container(
-              width: 25,
-              height: 25,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  width: 1.5,
-                  color: Colors.grey[300],
-                ),
-              ),
-              child: Icon(
-                Icons.add,
-                size: 15,
-                color: Colors.black,
-              ),
-            ),
+            child: increaseButton(),
           ),
         ],
       ),
     );
   }
 
-  Widget showTotalPrice() {
+  // Widget increaseButton(index, totalPriceProvider) {
+  //   return Container(
+  //     width: 25,
+  //     height: 25,
+  //     decoration: BoxDecoration(
+  //       shape: BoxShape.circle,
+  //       border: Border.all(
+  //         width: 1.5,
+  //         color: Colors.grey[300],
+  //       ),
+  //     ),
+  //     child: IconButton(
+  //       icon: Icon(
+  //         Icons.add,
+  //         size: 15,
+  //         color: Colors.black,
+  //       ),
+  //       onPressed: () {
+  //         increaseProcess(index);
+  //         // totalPriceProvider.addQuantity(totalPrice);
+  //       },
+  //     ),
+  //   );
+  // }
+
+  Widget increaseButton() {
+    return Container(
+      width: 25,
+      height: 25,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          width: 1.5,
+          color: Colors.grey[300],
+        ),
+      ),
+      child: Icon(
+        Icons.add,
+        size: 15,
+        color: Colors.black,
+      ),
+    );
+  }
+
+  increaseProcess(index) {
+    //clear Delay...
+
+    setState(() {
+      cartItem[index].quantity += 1;
+    });
+
+    String sku = cartItem[index].product.sku;
+    int _quantity = cartItem[index].quantity;
+    String title = cartItem[index].product.title;
+    print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title,');
+
+    Future.delayed(Duration(seconds: 2), () {
+      changeInCartQuantity(sku, _quantity, title);
+    });
+  }
+
+  Widget decreaseButton(index) {
+    return Container(
+      width: 25,
+      height: 25,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(width: 1.5, color: Colors.grey[300]),
+      ),
+      child: Icon(
+        Icons.remove,
+        size: 15,
+        color: cartItem[index].quantity > 1 ? Colors.black : Colors.grey[300],
+      ),
+    );
+  }
+
+  decreaseProcess(index) {
+    //clear Delay...
+
+    setState(() {
+      cartItem[index].quantity > 1
+          ? cartItem[index].quantity -= 1
+          : cartItem[index].quantity = 1;
+
+      print(cartItem[index].quantity);
+
+      String sku = cartItem[index].product.sku;
+      int _quantity = cartItem[index].quantity;
+      String title = cartItem[index].product.title;
+
+      print('sku: $sku, _quantity: $_quantity, title: $title');
+
+      Future.delayed(Duration(seconds: 3), () {
+        changeInCartQuantity(sku, _quantity, title);
+      });
+    });
+  }
+
+  Widget showTotalPrice(totalPriceProvider) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.1,
       width: MediaQuery.of(context).size.width,
@@ -359,12 +455,26 @@ class _CartPageState extends State<CartPage> {
             ),
             SizedBox(width: 15),
             Text(
-              '฿455213',
+              '฿$totalPrice',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
+            // ChangeNotifierProvider<TotalPriceProvider>(
+            //   create: (context) => totalPriceProvider,
+            //   child: Consumer<TotalPriceProvider>(
+            //     builder: (context, data, child) {
+            //       return Text(
+            //         '฿$totalPrice',
+            //         style: TextStyle(
+            //           color: Colors.black,
+            //           fontWeight: FontWeight.bold,
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
           ],
         ),
       ),

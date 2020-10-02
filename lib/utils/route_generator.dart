@@ -9,7 +9,7 @@ import 'package:test_live_app/screens/RecentLivePage.dart';
 import 'package:test_live_app/screens/Register.dart';
 import 'package:test_live_app/screens/SplashPage.dart';
 import 'package:test_live_app/widgets/showFullImage.dart';
-import 'package:test_live_app/screens/ProductDetail.dart';
+import 'package:test_live_app/screens/ProductDetailPage.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -70,7 +70,13 @@ class RouteGenerator {
       case '/cartPage':
         return MaterialPageRoute(builder: (_) => CartPage());
       case '/productDetailPage':
-        return MaterialPageRoute(builder: (_) => ProductDetailPage());
+        final ProductDetailPage productDetailArgs = settings.arguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ProductDetailPage(
+            sku: productDetailArgs.sku,
+          ),
+        );
 
       default:
         return _errorRoute();

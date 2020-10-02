@@ -123,6 +123,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                   0.8,
                   Container(
                     child: GridView.builder(
+                      physics: BouncingScrollPhysics(),
                       itemCount: snapshot.data.documents.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         childAspectRatio: MediaQuery.of(context).size.width /

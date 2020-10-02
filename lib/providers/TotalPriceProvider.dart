@@ -1,7 +1,27 @@
 import 'package:flutter/cupertino.dart';
 
 class TotalPriceProvider with ChangeNotifier {
-  // String _price = "";
+  double initialPrice;
+  double productPrice;
 
-  // void calculate();
+  TotalPriceProvider({
+    this.initialPrice,
+    this.productPrice,
+  });
+
+  addQuantity(initialPrice, productPrice) {
+    print('Enter addQuantity');
+    print('newTotalPrice: $initialPrice += $productPrice');
+    initialPrice += productPrice;
+    print('newTotalPrice: $initialPrice');
+    notifyListeners();
+  }
+
+  deleteQuantity(initialPrice, productPrice) {
+    print('Enter deleteQuantity');
+    print('newTotalPrice: $initialPrice -= $productPrice');
+    initialPrice -= productPrice;
+    print('newTotalPrice: $initialPrice');
+    notifyListeners();
+  }
 }

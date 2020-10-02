@@ -2,7 +2,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
-import 'package:test_live_app/screens/CartPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/LivePage.dart';
 
@@ -125,6 +124,7 @@ class _ListLivePageState extends State<ListLivePage> {
                   0.8,
                   Container(
                     child: GridView.builder(
+                      physics: BouncingScrollPhysics(),
                       itemCount: snapshot.data.documents.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         childAspectRatio: MediaQuery.of(context).size.width /

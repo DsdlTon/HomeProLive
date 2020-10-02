@@ -8,6 +8,7 @@ import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/screens/ProductDetailPage.dart';
 
 class RecentForegroundLive extends StatefulWidget {
   final String title;
@@ -153,7 +154,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   }
 
   Future<void> getDataFromFirebase() async {
-    startLiveTime = int.parse(widget.channelName);
+    startLiveTime = int.parse(widget.channelName) + 2000;
 
     var totalComment = Firestore.instance
         .collection("CurrentLive")
@@ -510,6 +511,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                       height: MediaQuery.of(context).size.height * 0.47,
                       child: ListView.builder(
                         itemCount: product.length,
+                        physics: BouncingScrollPhysics(),
                         itemBuilder: (BuildContext context, int index) {
                           return Card(
                             color: Colors.black.withOpacity(0.3),
@@ -517,76 +519,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                               padding: EdgeInsets.all(10.0),
                               child: Row(
                                 children: <Widget>[
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.2,
-                                    height: MediaQuery.of(context).size.height *
-                                        0.1,
-                                    child: Image.network(
-                                      product[index]['image'],
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.03),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Container(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.57,
-                                        child: Text(
-                                          product[index]["title"],
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 2,
-                                        ),
-                                      ),
-                                      Text(
-                                        '฿ ' + product[index]["price"],
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      alignment: Alignment.centerRight,
-                                      child: IconButton(
-                                        onPressed: () {
-                                          getQuantityofItem(
-                                            _accessToken,
-                                            product[index]["sku"],
-                                          ).then((quantityInCart) {
-                                            showQuantitySelection(
-                                              selectedProductSku: product[index]
-                                                  ["sku"],
-                                              selectedProductTitle:
-                                                  product[index]["title"],
-                                              selectedProductImage:
-                                                  product[index]["image"],
-                                              selectedProductPrice:
-                                                  product[index]["price"],
-                                              quantityInCart: quantityInCart,
-                                            );
-                                            print(
-                                                '${product[index]["sku"]} HAS: $_quantity');
-                                          });
-                                        },
-                                        icon: Icon(
-                                          Icons.add_shopping_cart,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                                  productInFoPreview(index),
+                                  productAddToCartButton(index),
                                 ],
                               ),
                             ),
@@ -709,8 +643,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       buyNowButton(),
-                      addToCartButton(
-                          selectedProductSku, quantityInCart, selectedProductTitle),
+                      addToCartButton(selectedProductSku, quantityInCart,
+                          selectedProductTitle),
                     ],
                   ),
                 ],
@@ -860,6 +794,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         alignment: Alignment.bottomLeft,
         child: ListView.builder(
             shrinkWrap: true,
+            physics: BouncingScrollPhysics(),
             // reverse: true,
             itemCount: pushedComment.length,
             itemBuilder: (BuildContext context, index) {
@@ -937,6 +872,86 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           ],
         )
       ],
+    );
+  }
+
+  Widget productInFoPreview(index) {
+    return InkWell(
+      onTap: () {
+        print('Tap to go to productDetailPage sku: ${product[index]["sku"]}');
+        Navigator.pushNamed(
+          context,
+          '/productDetailPage',
+          arguments: ProductDetailPage(
+            sku: product[index]["sku"],
+          ),
+        );
+      },
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: MediaQuery.of(context).size.width * 0.2,
+            height: MediaQuery.of(context).size.height * 0.1,
+            child: Image.network(
+              product[index]['image'],
+              fit: BoxFit.cover,
+            ),
+          ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.03),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: MediaQuery.of(context).size.width * 0.57,
+                child: Text(
+                  product[index]["title"],
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                ),
+              ),
+              Text(
+                '฿ ' + product[index]["price"],
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget productAddToCartButton(index) {
+    return Expanded(
+      child: Container(
+        alignment: Alignment.centerRight,
+        child: IconButton(
+          onPressed: () {
+            getQuantityofItem(
+              _accessToken,
+              product[index]["sku"],
+            ).then((quantityInCart) {
+              showQuantitySelection(
+                selectedProductSku: product[index]["sku"],
+                selectedProductTitle: product[index]["title"],
+                selectedProductImage: product[index]["image"],
+                selectedProductPrice: product[index]["price"],
+                quantityInCart: quantityInCart,
+              );
+              print('${product[index]["sku"]} HAS: $_quantity');
+            });
+          },
+          icon: Icon(
+            Icons.add_shopping_cart,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'DetailProducts.dart';
+
 class Product {
   String sku;
   String image;
@@ -6,6 +8,7 @@ class Product {
   String price;
   String createdAt;
   String updatedAt;
+  List<DetailProducts> detailProducts;
 
   Product(
       {this.sku,
@@ -14,7 +17,8 @@ class Product {
       this.title,
       this.price,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt,
+      this.detailProducts});
 
   Product.fromJson(Map<String, dynamic> json) {
     sku = json['sku'];
@@ -24,6 +28,12 @@ class Product {
     price = json['price'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    if (json['detailProducts'] != null) {
+      detailProducts = new List<DetailProducts>();
+      json['detailProducts'].forEach((v) {
+        detailProducts.add(new DetailProducts.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -35,6 +45,10 @@ class Product {
     data['price'] = this.price;
     data['createdAt'] = this.createdAt;
     data['updatedAt'] = this.updatedAt;
+    if (this.detailProducts != null) {
+      data['detailProducts'] =
+          this.detailProducts.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }
