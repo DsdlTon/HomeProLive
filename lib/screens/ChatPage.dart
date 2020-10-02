@@ -15,7 +15,6 @@ class ChatPage extends StatefulWidget {
   final String channelName;
   final String username;
   final String liveAdmin;
-  final String isFromPage;
 
   const ChatPage({
     Key key,
@@ -23,7 +22,6 @@ class ChatPage extends StatefulWidget {
     this.channelName,
     this.username,
     this.liveAdmin,
-    this.isFromPage,
   }) : super(key: key);
 
   @override
@@ -48,8 +46,13 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     //update userRead
     FireStoreClass.userReaded(widget.channelName, widget.username);
-    print('Come From: ${widget.isFromPage}');
     checkIsLive(widget.channelName);
+    print('init');
+    print('title: ${widget.title}');
+    print('adminProfile :assets/logo.png');
+    print('liveAdmin ${widget.liveAdmin}');
+    print('channelName ${widget.channelName}');
+    print('username ${widget.username}');
   }
 
   Future getImageFromGallery() async {
@@ -100,13 +103,12 @@ class _ChatPageState extends State<ChatPage> {
   //   return totalChat.toString();
   // }
 
-  Future<bool> checkIsLive(channelName) async {
+  Future<void> checkIsLive(channelName) async {
     print('ENTER ISLIVE');
     return await Firestore.instance
         .collection("CurrentLive")
         .document(channelName)
         .get()
-        // ignore: missing_return
         .then((data) {
       setState(() {
         isLive = data["onLive"];
@@ -204,15 +206,21 @@ class _ChatPageState extends State<ChatPage> {
         color: Colors.white,
       ),
       onPressed: () {
+        print('onPreassed');
+        print('title: ${widget.title}');
+        print('adminProfile assets/logo.png');
+        print('liveAdmin ${widget.liveAdmin}');
+        print('channelName ${widget.channelName}');
+        print('username ${widget.username}');
         Navigator.pushNamed(
           context,
           '/livePage',
           arguments: LivePage(
-            // title: widget.title,
-            // adminProfile: adminProfile,
-            // liveAdmin: liveAdmin,
-            // channelName: widget.channelName,
-            // username: widget.username,
+            title: widget.title,
+            adminProfile: 'assets/logo.png',
+            liveAdmin: widget.liveAdmin,
+            channelName: widget.channelName,
+            username: widget.username,
           ),
         );
       },

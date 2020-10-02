@@ -82,7 +82,6 @@ class NotificationController {
         arguments: ChatPage(
           channelName: channelName,
           username: username,
-          isFromPage: 'noti',
         ),
       );
     }

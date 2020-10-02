@@ -34,6 +34,18 @@ class _LivePageState extends State<LivePage> {
   );
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print('From LivePage');
+    print('title: ${widget.title}');
+    print('adminProfile: assets/logo.png');
+    print('liveAdmin ${widget.liveAdmin}');
+    print('channelName ${widget.channelName}');
+    print('username ${widget.username}');
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();

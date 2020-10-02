@@ -28,9 +28,9 @@ class RouteGenerator {
           settings: settings,
           builder: (_) => ChatPage(
             title: chatArgs.title,
+            liveAdmin: chatArgs.liveAdmin,
             channelName: chatArgs.channelName,
             username: chatArgs.username,
-            isFromPage: chatArgs.isFromPage,
           ),
         );
       case '/fullImageScreen':

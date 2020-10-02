@@ -120,7 +120,6 @@ class _AllChatPageState extends State<AllChatPage> {
                                   title: title,
                                   channelName: channelName,
                                   username: username,
-                                  isFromPage: 'allChatPage',
                                 ),
                               );
                             },

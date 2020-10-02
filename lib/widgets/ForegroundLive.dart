@@ -382,6 +382,12 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       child: IconButton(
         icon: Icon(Icons.chat, color: Colors.white),
         onPressed: () {
+          print('From Foreground');
+          print('title: ${widget.title}');
+          print('adminProfile ${'assets/logo.png'}');
+          print('liveAdmin ${widget.liveAdmin}');
+          print('channelName ${widget.channelName}');
+          print('username ${widget.username}');
           FocusScope.of(context).unfocus();
           Navigator.pushNamed(
             context,
@@ -391,7 +397,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
               channelName: widget.channelName,
               username: widget.username,
               liveAdmin: widget.liveAdmin,
-              isFromPage: 'foreground',
             ),
           );
         },

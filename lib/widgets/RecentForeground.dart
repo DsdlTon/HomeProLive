@@ -429,7 +429,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
               channelName: widget.channelName,
               username: widget.username,
               liveAdmin: widget.liveAdmin,
-              isFromPage: 'RecentForeground',
             ),
           );
         },
