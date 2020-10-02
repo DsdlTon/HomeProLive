@@ -10,8 +10,12 @@ class AllChatPage extends StatefulWidget {
   final String liveAdmin;
   final String channelName;
 
-  const AllChatPage({Key key, this.title, this.liveAdmin, this.channelName})
-      : super(key: key);
+  const AllChatPage({
+    Key key,
+    this.title,
+    this.liveAdmin,
+    this.channelName,
+  }) : super(key: key);
 
   @override
   _AllChatPageState createState() => _AllChatPageState();
@@ -113,6 +117,12 @@ class _AllChatPageState extends State<AllChatPage> {
                     return usernameInFB == username
                         ? GestureDetector(
                             onTap: () {
+                              print('From allChatPage');
+                              print('title: $title');
+                              print('adminProfile ${'assets/logo.png'}');
+                              print('liveAdmin ${widget.liveAdmin}');
+                              print('channelName $channelName');
+                              print('username $username');
                               Navigator.pushNamed(
                                 context,
                                 '/chatPage',
@@ -120,6 +130,7 @@ class _AllChatPageState extends State<AllChatPage> {
                                   title: title,
                                   channelName: channelName,
                                   username: username,
+                                  liveAdmin: 'Homepro1',
                                 ),
                               );
                             },
