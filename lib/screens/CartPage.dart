@@ -6,6 +6,8 @@ import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
 
+import 'ProductDetailPage.dart';
+
 class CartPage extends StatefulWidget {
   @override
   _CartPageState createState() => _CartPageState();
@@ -90,38 +92,42 @@ class _CartPageState extends State<CartPage> {
         Provider.of<TotalPriceProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: <Widget>[
-          customAppBar(),
-          cartItem.isEmpty
-              ? Container(
-                  height: MediaQuery.of(context).size.height * 0.65,
-                  width: MediaQuery.of(context).size.width,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          Icons.remove_shopping_cart,
-                          color: Colors.grey[400],
-                          size: 60,
-                        ),
-                        Text(
-                          'Nothing in Cart',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : cartPanel(totalPriceProvider),
-          showTotalPrice(totalPriceProvider),
-          checkOutButton(),
-        ],
+      body: Container(
+        margin: EdgeInsets.only(bottom: 0),
+        child: Column(
+          children: <Widget>[
+            customAppBar(),
+            cartItem.isEmpty ? nothingInCart() : cartPanel(totalPriceProvider),
+            checkOutButton(totalPriceProvider),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget nothingInCart() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.77,
+      width: MediaQuery.of(context).size.width,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              Icons.remove_shopping_cart,
+              color: Colors.grey[400],
+              size: 60,
+            ),
+            Text(
+              'Nothing in Cart',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 18,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -161,7 +167,7 @@ class _CartPageState extends State<CartPage> {
 
   Widget cartPanel(totalPriceProvider) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.65,
+      height: MediaQuery.of(context).size.height * 0.77,
       margin: EdgeInsets.symmetric(horizontal: 10),
       child: ListView.builder(
         padding: EdgeInsets.all(0),
@@ -205,6 +211,7 @@ class _CartPageState extends State<CartPage> {
         };
         await CartService.removeItemInCart(headers, body);
         cartItem.removeAt(index);
+        (context as Element).reassemble();
         Fluttertoast.showToast(
           msg: "Deleted Success.",
           toastLength: Toast.LENGTH_LONG,
@@ -252,50 +259,64 @@ class _CartPageState extends State<CartPage> {
 
   Widget showInCartDetail(index, totalPriceProvider) {
     return Expanded(
-      child: Container(
-        margin: EdgeInsets.only(left: 12),
-        padding: EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  cartItem[index].product.title,
-                  style: TextStyle(
-                    height: 1.5,
-                    color: Colors.black,
-                    fontSize: 15,
+      child: GestureDetector(
+        onTap: () {
+          // if Navigate and change quantity in productDetailPage. This page is cannot update new Quantity data
+          // because it not initialize again when pop().
+
+          // Navigator.pushNamed(
+          //   context,
+          //   '/productDetailPage',
+          //   arguments: ProductDetailPage(
+          //     sku: cartItem[index].product.sku,
+          //   ),
+          // );
+        },
+        child: Container(
+          margin: EdgeInsets.only(left: 12),
+          padding: EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    cartItem[index].product.title,
+                    style: TextStyle(
+                      height: 1.5,
+                      color: Colors.black,
+                      fontSize: 15,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                Text(
-                  cartItem[index].product.brand,
-                  style: TextStyle(
-                    height: 1.5,
-                    color: Colors.grey[600],
+                  Text(
+                    cartItem[index].product.brand,
+                    style: TextStyle(
+                      height: 1.5,
+                      color: Colors.grey[600],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                showQuantityPanel(index, totalPriceProvider),
-                SizedBox(width: 10),
-                Text(
-                  '฿${cartItem[index].product.price}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  showQuantityPanel(index, totalPriceProvider),
+                  SizedBox(width: 10),
+                  Text(
+                    '฿${cartItem[index].product.price}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -338,31 +359,6 @@ class _CartPageState extends State<CartPage> {
       ),
     );
   }
-
-  // Widget increaseButton(index, totalPriceProvider) {
-  //   return Container(
-  //     width: 25,
-  //     height: 25,
-  //     decoration: BoxDecoration(
-  //       shape: BoxShape.circle,
-  //       border: Border.all(
-  //         width: 1.5,
-  //         color: Colors.grey[300],
-  //       ),
-  //     ),
-  //     child: IconButton(
-  //       icon: Icon(
-  //         Icons.add,
-  //         size: 15,
-  //         color: Colors.black,
-  //       ),
-  //       onPressed: () {
-  //         increaseProcess(index);
-  //         // totalPriceProvider.addQuantity(totalPrice);
-  //       },
-  //     ),
-  //   );
-  // }
 
   Widget increaseButton() {
     return Container(
@@ -440,58 +436,62 @@ class _CartPageState extends State<CartPage> {
 
   Widget showTotalPrice(totalPriceProvider) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.1,
-      width: MediaQuery.of(context).size.width,
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: <Widget>[
-            Text(
-              'TOTAL',
-              style: TextStyle(
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(width: 15),
-            Text(
-              '฿$totalPrice',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            // ChangeNotifierProvider<TotalPriceProvider>(
-            //   create: (context) => totalPriceProvider,
-            //   child: Consumer<TotalPriceProvider>(
-            //     builder: (context, data, child) {
-            //       return Text(
-            //         '฿$totalPrice',
-            //         style: TextStyle(
-            //           color: Colors.black,
-            //           fontWeight: FontWeight.bold,
-            //         ),
-            //       );
-            //     },
-            //   ),
-            // ),
-          ],
+      child: Text(
+        '฿ $totalPrice',
+        style: TextStyle(
+          color: Colors.white,
         ),
       ),
+      // ChangeNotifierProvider<TotalPriceProvider>(
+      //   create: (context) => totalPriceProvider,
+      //   child: Consumer<TotalPriceProvider>(
+      //     builder: (context, data, child) {
+      //       return Text(
+      //         '฿ $totalPrice',
+      //         style: TextStyle(
+      //           color: Colors.white,
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // ),
     );
   }
 
-  Widget checkOutButton() {
-    return ButtonTheme(
-      minWidth: MediaQuery.of(context).size.width * 0.9,
-      height: MediaQuery.of(context).size.height * 0.075,
-      child: RaisedButton(
-        color: Colors.blue[800],
-        onPressed: () {},
-        child: Text(
-          "Check Out",
-          style: TextStyle(
-            color: Colors.white,
+  Widget checkOutButton(totalPriceProvider) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {},
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          decoration: cartItem.isEmpty
+              ? BoxDecoration(
+                  color: Colors.grey,
+                )
+              : BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomLeft,
+                    colors: [
+                      Colors.blue[600],
+                      Colors.blue[700],
+                      Colors.blue[800],
+                      Colors.blue[800],
+                    ],
+                  ),
+                ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: <Widget>[
+              Text(
+                'CHECK OUT | ',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              showTotalPrice(totalPriceProvider),
+            ],
           ),
         ),
       ),

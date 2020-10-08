@@ -147,34 +147,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 cartButton(),
               ],
             ),
-            body: SingleChildScrollView(
-              physics: BouncingScrollPhysics(),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    productImagePreview(),
-                    productInfo(),
-                    SizedBox(height: 8),
-                    productDetail(),
-                    bottomBar(),
-                  ],
+            body: Stack(
+              children: [
+                SingleChildScrollView(
+                  physics: BouncingScrollPhysics(),
+                  child: Container(
+                    constraints: BoxConstraints(
+                      minHeight: MediaQuery.of(context).size.height * 0.87,
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        productImagePreview(),
+                        productInfo(),
+                        SizedBox(height: 8),
+                        productDetail(),
+                        SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                bottomBar(),
+              ],
             ),
           );
   }
 
   Widget bottomBar() {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 15),
-      width: MediaQuery.of(context).size.width,
-      child: Row(
-        children: <Widget>[
-          buyNowButton(),
-          addToCartButton(product.sku, _quantity, product.title)
-        ],
+    return Align(
+      alignment: FractionalOffset.bottomCenter,
+      child: Container(
+        margin: EdgeInsets.fromLTRB(20, 0, 20, 10),
+        width: MediaQuery.of(context).size.width,
+        child: Row(
+          children: <Widget>[
+            buyNowButton(),
+            addToCartButton(product.sku, _quantity, product.title)
+          ],
+        ),
       ),
     );
   }
@@ -302,7 +314,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget productImagePreview() {
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 0.5,
       margin: EdgeInsets.only(bottom: 20),
       child: Image.network(
         product.image,
@@ -351,11 +362,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         itemCount: product.detailProducts.length,
         itemBuilder: (context, index) {
           return Container(
-            child: Text(
-              '- ${product.detailProducts[index].text}',
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey,
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  WidgetSpan(
+                    child: Icon(
+                      Icons.arrow_right,
+                      size: 15,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '${product.detailProducts[index].text}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
               ),
             ),
           );

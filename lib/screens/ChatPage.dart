@@ -92,17 +92,6 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  // Future<String> totalChat(channelName, username) async {
-  //   var chatQuery = Firestore.instance
-  //       .collection('Chatroom')
-  //       .document(channelName + username)
-  //       .collection('ChatMessage');
-
-  //   var querySnapshot = await chatQuery.getDocuments();
-  //   int totalChat = querySnapshot.documents.length;
-  //   return totalChat.toString();
-  // }
-
   Future<void> checkIsLive(channelName) async {
     print('ENTER ISLIVE');
     return await Firestore.instance

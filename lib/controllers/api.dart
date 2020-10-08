@@ -101,17 +101,18 @@ class CartService {
         await Http.post("$baseUrl/api/cart/item", headers: headers, body: body);
     print('responseBody: ${response.body}');
     Map res = json.decode(response.body);
+    int quantity;
     if (response.statusCode == 200) {
       if (res != null) {
         print('enter if');
-        int quantity = res["quantity"];
+        quantity = res["quantity"];
         print('quantity form server: $quantity');
-        return quantity;
       } else if (res == null) {
         print('enter else');
-        int quantity = 0;
-        return quantity;
+        quantity = 0;
       }
+      print('Quantity is: $quantity');
+      return quantity;
     } else {
       throw Exception(
           'Status: ${response.statusCode} Failed to Load Quantity Data!!!');
