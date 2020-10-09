@@ -1,8 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
+import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/screens/LivePage.dart';
 
 class ListLivePage extends StatefulWidget {
@@ -11,9 +13,10 @@ class ListLivePage extends StatefulWidget {
 }
 
 class _ListLivePageState extends State<ListLivePage> {
+  Cart _cartData = Cart();
   String username = '';
-  String accessToken;
-
+  String _accessToken;
+  int cartLen = 1;
   getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -22,19 +25,37 @@ class _ListLivePageState extends State<ListLivePage> {
     return username;
   }
 
-  getAccessToken() async {
+  Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
     setState(() {
-      accessToken = prefs.getString('accessToken');
-      print('ACCESSTOKEN: $accessToken');
+      _accessToken = accessToken;
     });
+    return _accessToken;
+  }
+
+  Future<Cart> getUserCartData() async {
+    print('ENTER GETUSERCARTDATA');
+    final headers = {
+      "access-token": _accessToken,
+    };
+    print(headers);
+    return CartService.getUserCart(headers);
   }
 
   @override
   void initState() {
     super.initState();
     getUserData();
-    getAccessToken();
+    getAccessToken().then((accessToken) {
+      getUserCartData().then((cartData) {
+        setState(() {
+          _cartData = cartData;
+          cartLen = _cartData.cartDetails.length;
+        });
+        print('cartLen: $cartLen');
+      });
+    });
   }
 
   @override
@@ -353,15 +374,36 @@ class _ListLivePageState extends State<ListLivePage> {
   }
 
   Widget cartButton() {
-    return IconButton(
-      icon: Icon(
-        Icons.shopping_cart,
-        color: Colors.white,
-      ),
-      tooltip: 'Cart',
-      onPressed: () {
-        Navigator.of(context).pushNamed('/cartPage');
-      },
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.shopping_cart,
+            color: Colors.white,
+          ),
+          tooltip: 'Cart',
+          onPressed: () {
+            Navigator.of(context).pushNamed('/cartPage');
+          },
+        ),
+        cartLen != 0
+            ? Positioned(
+                top: 5,
+                right: 8,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: Center(
+                    child: Text('$cartLen'),
+                  ),
+                ),
+              )
+            : Container(),
+      ],
     );
   }
 

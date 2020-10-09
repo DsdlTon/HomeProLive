@@ -34,7 +34,6 @@ class _CartPageState extends State<CartPage> {
     final headers = {
       "access-token": _accessToken,
     };
-    print(CartService);
     return CartService.getUserCart(headers);
   }
 

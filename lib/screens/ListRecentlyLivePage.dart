@@ -2,7 +2,9 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
+import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
+import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/screens/CartPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/RecentLivePage.dart';
@@ -14,6 +16,9 @@ class ListRecentlyLivePage extends StatefulWidget {
 
 class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
   String username = '';
+  Cart _cartData = Cart();
+  String _accessToken;
+  int cartLen = 0;
 
   getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -24,10 +29,37 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
     return username;
   }
 
+  Future<String> getAccessToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String accessToken = prefs.getString('accessToken');
+    setState(() {
+      _accessToken = accessToken;
+    });
+    return _accessToken;
+  }
+
+  Future<Cart> getUserCartData() async {
+    print('ENTER GETUSERCARTDATA');
+    final headers = {
+      "access-token": _accessToken,
+    };
+    print(headers);
+    return CartService.getUserCart(headers);
+  }
+
   @override
   void initState() {
     super.initState();
     getUserData();
+    getAccessToken().then((accessToken) {
+      getUserCartData().then((cartData) {
+        setState(() {
+          _cartData = cartData;
+          cartLen = _cartData.cartDetails.length;
+        });
+        print('cartLen: $cartLen');
+      });
+    });
   }
 
   @override
@@ -352,15 +384,36 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
   }
 
   Widget cartButton() {
-    return IconButton(
-      icon: Icon(
-        Icons.shopping_cart,
-        color: Colors.white,
-      ),
-      tooltip: 'Cart',
-      onPressed: () {
-        Navigator.of(context).pushNamed('/cartPage');
-      },
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.shopping_cart,
+            color: Colors.white,
+          ),
+          tooltip: 'Cart',
+          onPressed: () {
+            Navigator.of(context).pushNamed('/cartPage');
+          },
+        ),
+        cartLen != 0
+            ? Positioned(
+                top: 5,
+                right: 8,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: Center(
+                    child: Text('$cartLen'),
+                  ),
+                ),
+              )
+            : Container(),
+      ],
     );
   }
 
