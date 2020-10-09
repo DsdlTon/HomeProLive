@@ -19,7 +19,6 @@ class _CartPageState extends State<CartPage> {
   List cartItem = [];
   String _accessToken;
   double totalPrice = 0;
-  bool isLoaded = false;
 
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -183,7 +182,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget refreshBg() {
+  Widget trashBg() {
     return Container(
       alignment: Alignment.centerRight,
       padding: EdgeInsets.only(right: 20.0),
@@ -200,8 +199,8 @@ class _CartPageState extends State<CartPage> {
 
   Widget cartItemCard(index, totalPriceProvider) {
     return Dismissible(
-      key: Key(cartItem[index].toString()),
-      background: refreshBg(),
+      key: UniqueKey(),
+      background: trashBg(),
       onDismissed: (direction) async {
         final headers = {
           "access-token": _accessToken,
@@ -210,8 +209,10 @@ class _CartPageState extends State<CartPage> {
           "sku": cartItem[index].product.sku.toString(),
         };
         await CartService.removeItemInCart(headers, body);
-        cartItem.removeAt(index);
-        (context as Element).reassemble();
+        setState(() {
+          cartItem.removeAt(index);
+          cartLen = cartItem.length;
+        });
         Fluttertoast.showToast(
           msg: "Deleted Success.",
           toastLength: Toast.LENGTH_LONG,
@@ -329,7 +330,7 @@ class _CartPageState extends State<CartPage> {
           GestureDetector(
             onTap: () {
               decreaseProcess(index);
-              totalPriceProvider.deleteQuantity(totalPrice);
+              // totalPriceProvider.deleteQuantity(totalPrice);
             },
             child: decreaseButton(index),
           ),
@@ -349,9 +350,10 @@ class _CartPageState extends State<CartPage> {
               increaseProcess(index);
               print(totalPrice.runtimeType);
               print(cartItem[index].product.price);
-              totalPriceProvider.addQuantity(
-                  initialPrice: totalPrice,
-                  productPrice: cartItem[index].product.price);
+              // totalPriceProvider.addQuantity(
+              //   initialPrice: totalPrice,
+              //   productPrice: cartItem[index].product.price,
+              // );
             },
             child: increaseButton(),
           ),
