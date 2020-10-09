@@ -5,7 +5,6 @@ import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/models/Cart.dart';
-import 'package:test_live_app/screens/CartPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/RecentLivePage.dart';
 
@@ -393,7 +392,15 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
           ),
           tooltip: 'Cart',
           onPressed: () {
-            Navigator.of(context).pushNamed('/cartPage');
+            Navigator.of(context).pushNamed('/cartPage').then((value) {
+              getUserCartData().then((cartData) {
+                setState(() {
+                  _cartData = cartData;
+                  cartLen = _cartData.cartDetails.length;
+                });
+                print('cartLen: $cartLen');
+              });
+            });
           },
         ),
         cartLen != 0
@@ -416,6 +423,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
       ],
     );
   }
+
 
   Widget signOutButton() {
     return IconButton(

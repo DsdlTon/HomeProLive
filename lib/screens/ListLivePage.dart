@@ -13,10 +13,11 @@ class ListLivePage extends StatefulWidget {
 }
 
 class _ListLivePageState extends State<ListLivePage> {
-  Cart _cartData = Cart();
   String username = '';
+  Cart _cartData = Cart();
   String _accessToken;
   int cartLen = 1;
+
   getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -383,7 +384,15 @@ class _ListLivePageState extends State<ListLivePage> {
           ),
           tooltip: 'Cart',
           onPressed: () {
-            Navigator.of(context).pushNamed('/cartPage');
+            Navigator.of(context).pushNamed('/cartPage').then((value) {
+              getUserCartData().then((cartData) {
+                setState(() {
+                  _cartData = cartData;
+                  cartLen = _cartData.cartDetails.length;
+                });
+                print('cartLen: $cartLen');
+              });
+            });
           },
         ),
         cartLen != 0

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
+import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/ProductDetailPage.dart';
@@ -50,6 +51,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   List productSnap;
   List<dynamic> product = [];
 
+  Cart _cartData = Cart();
+  int cartLen = 1;
+
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String accessToken = prefs.getString('accessToken');
@@ -57,6 +61,15 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       _accessToken = accessToken;
     });
     return _accessToken;
+  }
+
+  Future<Cart> getUserCartData() async {
+    print('ENTER GETUSERCARTDATA');
+    final headers = {
+      "access-token": _accessToken,
+    };
+    print(headers);
+    return CartService.getUserCart(headers);
   }
 
   Future<List<String>> getProductToShowInLive(channelName) async {
@@ -130,6 +143,13 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
+        getUserCartData().then((cartData) {
+          setState(() {
+            _cartData = cartData;
+            cartLen = _cartData.cartDetails.length;
+          });
+          print('cartLen: $cartLen');
+        });
         Fluttertoast.showToast(
           msg: "Added $_quantity $title to your Cart.",
           toastLength: Toast.LENGTH_LONG,
@@ -251,7 +271,15 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   void initState() {
     super.initState();
     getDataFromFirebase();
-    getAccessToken();
+    getAccessToken().then((accessToken) {
+      getUserCartData().then((cartData) {
+        setState(() {
+          _cartData = cartData;
+          cartLen = _cartData.cartDetails.length;
+        });
+        print('cartLen: $cartLen');
+      });
+    });
     replayComment();
     FireStoreClass.saveViewer(
       widget.username,
@@ -387,24 +415,44 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   }
 
   Widget cartButton() {
-    return Container(
-      width: 40,
-      height: 40,
-      margin: EdgeInsets.only(left: 5),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.2),
-      ),
-      child: IconButton(
-        icon: Icon(
-          Icons.shopping_cart,
-          color: Colors.white,
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.shopping_cart,
+            color: Colors.white,
+          ),
+          tooltip: 'Cart',
+          onPressed: () {
+            Navigator.of(context).pushNamed('/cartPage').then((value) {
+              getUserCartData().then((cartData) {
+                setState(() {
+                  _cartData = cartData;
+                  cartLen = _cartData.cartDetails.length;
+                });
+                print('cartLen: $cartLen');
+              });
+            });
+          },
         ),
-        tooltip: 'Cart',
-        onPressed: () {
-          Navigator.of(context).pushNamed('/cartPage');
-        },
-      ),
+        cartLen != 0
+            ? Positioned(
+                top: 5,
+                right: 8,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: Center(
+                    child: Text('$cartLen'),
+                  ),
+                ),
+              )
+            : Container(),
+      ],
     );
   }
 

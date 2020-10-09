@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
+import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:test_live_app/controllers/api.dart';
@@ -39,6 +40,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   List<dynamic> product = [];
   String _accessToken;
 
+  Cart _cartData = Cart();
+  int cartLen = 1;
   int _quantity = 0;
 
   KeyboardVisibilityNotification _keyboardVisibility =
@@ -51,6 +54,15 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       _accessToken = accessToken;
     });
     return _accessToken;
+  }
+
+  Future<Cart> getUserCartData() async {
+    print('ENTER GETUSERCARTDATA');
+    final headers = {
+      "access-token": _accessToken,
+    };
+    print(headers);
+    return CartService.getUserCart(headers);
   }
 
   Future<List<String>> getProductToShowInLive(channelName) async {
@@ -123,6 +135,13 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
+        getUserCartData().then((cartData) {
+          setState(() {
+            _cartData = cartData;
+            cartLen = _cartData.cartDetails.length;
+          });
+          print('cartLen: $cartLen');
+        });
         Fluttertoast.showToast(
           msg: "Added $_quantity $title to your Cart.",
           toastLength: Toast.LENGTH_LONG,
@@ -149,7 +168,15 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   @protected
   void initState() {
     super.initState();
-    getAccessToken();
+    getAccessToken().then((accessToken) {
+      getUserCartData().then((cartData) {
+        setState(() {
+          _cartData = cartData;
+          cartLen = _cartData.cartDetails.length;
+        });
+        print('cartLen: $cartLen');
+      });
+    });
 
     FireStoreClass.saveViewer(
       widget.username,
@@ -351,23 +378,49 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   }
 
   Widget cartButton() {
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withOpacity(0.2),
-      ),
-      child: IconButton(
-        icon: Icon(
-          Icons.shopping_cart,
-          color: Colors.white,
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.shopping_cart,
+            color: Colors.white,
+          ),
+          tooltip: 'Cart',
+          onPressed: () {
+            Navigator.of(context).pushNamed('/cartPage').then((value) {
+              getUserCartData().then((cartData) {
+                setState(() {
+                  _cartData = cartData;
+                  cartLen = _cartData.cartDetails.length;
+                });
+                print('cartLen: $cartLen');
+              });
+            });
+          },
         ),
-        tooltip: 'Cart',
-        onPressed: () {
-          Navigator.of(context).pushNamed('/cartPage');
-        },
-      ),
+        cartLen != 0
+            ? Positioned(
+                top: 5,
+                right: 8,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$cartLen',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : Container(),
+      ],
     );
   }
 
@@ -813,7 +866,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       },
       child: Container(
         height: 40,
-        width: MediaQuery.of(context).size.width / 2,
+        width: MediaQuery.of(context).size.width / 2.1,
         padding: EdgeInsets.symmetric(horizontal: 10.0),
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.2),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/models/Product.dart';
 import '../controllers/api.dart';
 
@@ -18,6 +19,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   String _accessToken;
   int _quantity = 0;
 
+  Cart _cartData = Cart();
+  int cartLen = 1;
+
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String accessToken = prefs.getString('accessToken');
@@ -25,6 +29,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       _accessToken = accessToken;
     });
     return _accessToken;
+  }
+
+  Future<Cart> getUserCartData() async {
+    print('ENTER GETUSERCARTDATA');
+    final headers = {
+      "access-token": _accessToken,
+    };
+    print(headers);
+    return CartService.getUserCart(headers);
   }
 
   Future<void> addProductToCart(sku, _quantity, title) async {
@@ -44,6 +57,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
+        getUserCartData().then((cartData) {
+          setState(() {
+            _cartData = cartData;
+            cartLen = _cartData.cartDetails.length;
+          });
+          print('cartLen: $cartLen');
+        });
         Fluttertoast.showToast(
           msg: "Added $_quantity $title to your Cart.",
           toastLength: Toast.LENGTH_LONG,
@@ -91,7 +111,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   void initState() {
     super.initState();
-    getAccessToken();
+    getAccessToken().then((accessToken) {
+      getUserCartData().then((cartData) {
+        setState(() {
+          _cartData = cartData;
+          cartLen = _cartData.cartDetails.length;
+        });
+        print('cartLen: $cartLen');
+      });
+    });
     ProductService.getProductDetail(widget.sku).then((res) {
       setState(() {
         product = res;
@@ -164,7 +192,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         productInfo(),
                         SizedBox(height: 8),
                         productDetail(),
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                        SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.1),
                       ],
                     ),
                   ),
@@ -299,15 +328,44 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   }
 
   Widget cartButton() {
-    return IconButton(
-      icon: Icon(
-        Icons.shopping_cart,
-        color: Colors.blue[800],
-      ),
-      tooltip: 'Cart',
-      onPressed: () {
-        Navigator.of(context).pushNamed('/cartPage');
-      },
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.shopping_cart,
+            color: Colors.blue[800],
+          ),
+          tooltip: 'Cart',
+          onPressed: () {
+            Navigator.of(context).pushNamed('/cartPage').then((value) {
+              getUserCartData().then((cartData) {
+                setState(() {
+                  _cartData = cartData;
+                  cartLen = _cartData.cartDetails.length;
+                });
+                print('cartLen: $cartLen');
+              });
+            });
+          },
+        ),
+        cartLen != 0
+            ? Positioned(
+                top: 5,
+                right: 8,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red,
+                  ),
+                  child: Center(
+                    child: Text('$cartLen'),
+                  ),
+                ),
+              )
+            : Container(),
+      ],
     );
   }
 

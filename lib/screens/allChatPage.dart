@@ -315,7 +315,15 @@ class _AllChatPageState extends State<AllChatPage> {
           ),
           tooltip: 'Cart',
           onPressed: () {
-            Navigator.of(context).pushNamed('/cartPage');
+            Navigator.of(context).pushNamed('/cartPage').then((value) {
+              getUserCartData().then((cartData) {
+                setState(() {
+                  _cartData = cartData;
+                  cartLen = _cartData.cartDetails.length;
+                });
+                print('cartLen: $cartLen');
+              });
+            });
           },
         ),
         cartLen != 0
