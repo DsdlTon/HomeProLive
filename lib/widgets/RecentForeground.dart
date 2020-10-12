@@ -52,7 +52,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   List<dynamic> product = [];
 
   Cart _cartData = Cart();
-  int cartLen = 1;
+  int cartLen = 0;
 
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

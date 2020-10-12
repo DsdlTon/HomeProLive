@@ -148,6 +148,7 @@ class _ChatPageState extends State<ChatPage> {
         children: <Widget>[
           Expanded(
             child: ListView(
+              physics: BouncingScrollPhysics(),
               reverse: true,
               shrinkWrap: true,
               children: <Widget>[

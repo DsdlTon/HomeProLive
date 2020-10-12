@@ -27,7 +27,7 @@ class _AllChatPageState extends State<AllChatPage> {
   String username = '';
   Cart _cartData = Cart();
   String _accessToken;
-  int cartLen = 1;
+  int cartLen = 0;
 
   getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

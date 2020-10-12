@@ -16,7 +16,7 @@ class _ListLivePageState extends State<ListLivePage> {
   String username = '';
   Cart _cartData = Cart();
   String _accessToken;
-  int cartLen = 1;
+  int cartLen = 0;
 
   getUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -226,7 +226,15 @@ class _ListLivePageState extends State<ListLivePage> {
             channelName: channelName,
             username: username,
           ),
-        );
+        ).then((value) {
+          getUserCartData().then((cartData) {
+            setState(() {
+              _cartData = cartData;
+              cartLen = _cartData.cartDetails.length;
+            });
+            print('cartLen: $cartLen');
+          });
+        });
       },
       child: Container(
         margin: EdgeInsets.all(2.0),

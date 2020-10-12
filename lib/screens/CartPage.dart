@@ -6,8 +6,6 @@ import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
 
-import 'ProductDetailPage.dart';
-
 class CartPage extends StatefulWidget {
   @override
   _CartPageState createState() => _CartPageState();
@@ -18,7 +16,7 @@ class _CartPageState extends State<CartPage> {
   int cartLen = 0;
   List cartItem = [];
   String _accessToken;
-  double totalPrice = 0;
+  double initialPrice = 0.0;
 
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -56,16 +54,17 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
-  double initialCalculateTotalPrice() {
-    print('ENTER INITIALCALCULATETOTALPRICE');
-    for (int i = 0; i < cartLen; i++) {
-      double priceInDouble = double.parse(cartItem[i].product.price);
-      double quantityInDouble = cartItem[i].quantity.toDouble();
-      totalPrice += priceInDouble * quantityInDouble;
-    }
-    print('OUT INITIALCALCULATETOTALPRICE');
-    return totalPrice;
-  }
+  // double initialCalculateInitialPrice() {
+  //   print('ENTER INITIALCALCULATEINITIALPRICE');
+  //   for (int i = 0; i < cartLen; i++) {
+  //     double priceInDouble = double.parse(cartItem[i].product.price);
+  //     double quantityInDouble = cartItem[i].quantity.toDouble();
+  //     initialPrice += priceInDouble * quantityInDouble;
+  //   }
+  //   print('initialPrice: $initialPrice');
+  //   print('OUT INITIALCALCULATEinitialPrice');
+  //   return initialPrice;
+  // }
 
   @override
   void initState() {
@@ -77,9 +76,9 @@ class _CartPageState extends State<CartPage> {
           cartItem = _cartData.cartDetails;
           cartLen = _cartData.cartDetails.length;
         });
-        initialCalculateTotalPrice();
-        print('INITIAL TOTAL PRICE: $totalPrice');
-        print('cartLen: $cartLen');
+        // initialCalculateInitialPrice();
+        Provider.of<TotalPriceProvider>(context, listen: false)
+            .calculateInitialPrice(cartLen, cartItem);
       });
     });
   }
@@ -211,6 +210,8 @@ class _CartPageState extends State<CartPage> {
         setState(() {
           cartItem.removeAt(index);
           cartLen = cartItem.length;
+          Provider.of<TotalPriceProvider>(context, listen: false)
+              .calculateInitialPrice(cartLen, cartItem);
         });
         Fluttertoast.showToast(
           msg: "Deleted Success.",
@@ -261,7 +262,7 @@ class _CartPageState extends State<CartPage> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          // if Navigate and change quantity in productDetailPage. This page is cannot update new Quantity data
+          // if Navigate and change quantity in productDetailPage. This page will not update the new Quantity data
           // because it not initialize again when pop().
 
           // Navigator.pushNamed(
@@ -329,7 +330,9 @@ class _CartPageState extends State<CartPage> {
           GestureDetector(
             onTap: () {
               decreaseProcess(index);
-              // totalPriceProvider.deleteQuantity(totalPrice);
+              double productPrice = double.parse(cartItem[index].product.price);
+              totalPriceProvider.deleteQuantity(
+                  totalPriceProvider.initialPrice, productPrice);
             },
             child: decreaseButton(index),
           ),
@@ -347,12 +350,9 @@ class _CartPageState extends State<CartPage> {
           GestureDetector(
             onTap: () {
               increaseProcess(index);
-              print(totalPrice.runtimeType);
-              print(cartItem[index].product.price);
-              // totalPriceProvider.addQuantity(
-              //   initialPrice: totalPrice,
-              //   productPrice: cartItem[index].product.price,
-              // );
+              double productPrice = double.parse(cartItem[index].product.price);
+              totalPriceProvider.addQuantity(
+                  totalPriceProvider.initialPrice, productPrice);
             },
             child: increaseButton(),
           ),
@@ -437,25 +437,19 @@ class _CartPageState extends State<CartPage> {
 
   Widget showTotalPrice(totalPriceProvider) {
     return Container(
-      child: Text(
-        '฿ $totalPrice',
-        style: TextStyle(
-          color: Colors.white,
+      child: ChangeNotifierProvider<TotalPriceProvider>.value(
+        value: totalPriceProvider,
+        child: Consumer<TotalPriceProvider>(
+          builder: (context, totalPriceProvider, child) {
+            return Text(
+              '฿ ${totalPriceProvider.initialPrice}',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            );
+          },
         ),
       ),
-      // ChangeNotifierProvider<TotalPriceProvider>(
-      //   create: (context) => totalPriceProvider,
-      //   child: Consumer<TotalPriceProvider>(
-      //     builder: (context, data, child) {
-      //       return Text(
-      //         '฿ $totalPrice',
-      //         style: TextStyle(
-      //           color: Colors.white,
-      //         ),
-      //       );
-      //     },
-      //   ),
-      // ),
     );
   }
 

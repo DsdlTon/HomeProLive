@@ -20,7 +20,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   int _quantity = 0;
 
   Cart _cartData = Cart();
-  int cartLen = 1;
+  int cartLen = 0;
 
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

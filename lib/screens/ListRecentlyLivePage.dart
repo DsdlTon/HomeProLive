@@ -234,7 +234,15 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
             username: username,
             role: ClientRole.Audience,
           ),
-        );
+        ).then((cartData) {
+          getUserCartData().then((cartData) {
+            setState(() {
+              _cartData = cartData;
+              cartLen = _cartData.cartDetails.length;
+            });
+            print('cartLen: $cartLen');
+          });
+        });
       },
       child: Container(
         margin: EdgeInsets.all(2.0),
@@ -423,7 +431,6 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
       ],
     );
   }
-
 
   Widget signOutButton() {
     return IconButton(

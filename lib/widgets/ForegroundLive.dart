@@ -41,7 +41,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   String _accessToken;
 
   Cart _cartData = Cart();
-  int cartLen = 1;
+  int cartLen = 0;
   int _quantity = 0;
 
   KeyboardVisibilityNotification _keyboardVisibility =
@@ -838,7 +838,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                       TextSpan(
                         text: '${snapshot.data.documents[index]["username"]}: ',
                         style: TextStyle(
-                          color: Colors.blue[800],
+                          color:  Colors.blue[800],
                           fontWeight: FontWeight.bold,
                         ),
                       ),
