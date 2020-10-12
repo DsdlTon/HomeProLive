@@ -18,6 +18,8 @@ class _CartPageState extends State<CartPage> {
   String _accessToken;
   double initialPrice = 0.0;
 
+  bool loading = true;
+
   Future<String> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String accessToken = prefs.getString('accessToken');
@@ -54,18 +56,6 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
-  // double initialCalculateInitialPrice() {
-  //   print('ENTER INITIALCALCULATEINITIALPRICE');
-  //   for (int i = 0; i < cartLen; i++) {
-  //     double priceInDouble = double.parse(cartItem[i].product.price);
-  //     double quantityInDouble = cartItem[i].quantity.toDouble();
-  //     initialPrice += priceInDouble * quantityInDouble;
-  //   }
-  //   print('initialPrice: $initialPrice');
-  //   print('OUT INITIALCALCULATEinitialPrice');
-  //   return initialPrice;
-  // }
-
   @override
   void initState() {
     super.initState();
@@ -75,8 +65,8 @@ class _CartPageState extends State<CartPage> {
           _cartData = cartData;
           cartItem = _cartData.cartDetails;
           cartLen = _cartData.cartDetails.length;
+          loading = false;
         });
-        // initialCalculateInitialPrice();
         Provider.of<TotalPriceProvider>(context, listen: false)
             .calculateInitialPrice(cartLen, cartItem);
       });
@@ -89,16 +79,26 @@ class _CartPageState extends State<CartPage> {
         Provider.of<TotalPriceProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
-        margin: EdgeInsets.only(bottom: 0),
-        child: Column(
-          children: <Widget>[
-            customAppBar(),
-            cartItem.isEmpty ? nothingInCart() : cartPanel(totalPriceProvider),
-            checkOutButton(totalPriceProvider),
-          ],
-        ),
-      ),
+      body: loading == true
+          ? Container(
+              child: Center(
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.blue[800],
+                ),
+              ),
+            )
+          : Container(
+              margin: EdgeInsets.only(bottom: 0),
+              child: Column(
+                children: <Widget>[
+                  customAppBar(),
+                  cartItem.isEmpty
+                      ? nothingInCart()
+                      : cartPanel(totalPriceProvider),
+                  checkOutButton(totalPriceProvider),
+                ],
+              ),
+            ),
     );
   }
 
@@ -392,9 +392,10 @@ class _CartPageState extends State<CartPage> {
     String title = cartItem[index].product.title;
     print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title,');
 
-    Future.delayed(Duration(seconds: 2), () {
-      changeInCartQuantity(sku, _quantity, title);
-    });
+    changeInCartQuantity(sku, _quantity, title);
+    // Future.delayed(Duration(seconds: 2), () {
+    //   changeInCartQuantity(sku, _quantity, title);
+    // });
   }
 
   Widget decreaseButton(index) {
@@ -429,9 +430,10 @@ class _CartPageState extends State<CartPage> {
 
       print('sku: $sku, _quantity: $_quantity, title: $title');
 
-      Future.delayed(Duration(seconds: 3), () {
-        changeInCartQuantity(sku, _quantity, title);
-      });
+      changeInCartQuantity(sku, _quantity, title);
+      // Future.delayed(Duration(seconds: 2), () {
+      //   changeInCartQuantity(sku, _quantity, title);
+      // });
     });
   }
 
