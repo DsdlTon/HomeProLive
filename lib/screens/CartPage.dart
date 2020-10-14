@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
+import 'package:flutter/services.dart';
 
 class CartPage extends StatefulWidget {
   @override
@@ -39,7 +40,8 @@ class _CartPageState extends State<CartPage> {
 
   //same function as addProductToCart
   Future<void> changeInCartQuantity(sku, _quantity, title) async {
-    print("Enter Change Quantity in Cart");
+    print("Enter changeInCartQuantity");
+    loading = true;
     final headers = {
       "access-token": _accessToken,
     };
@@ -49,8 +51,14 @@ class _CartPageState extends State<CartPage> {
     };
     CartService.addToCart(headers, body).then((res) {
       if (res == true) {
+        setState(() {
+          loading = false;
+        });
         print('Success');
       } else {
+        setState(() {
+          loading = false;
+        });
         print('Failed');
       }
     });
@@ -79,26 +87,34 @@ class _CartPageState extends State<CartPage> {
         Provider.of<TotalPriceProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: loading == true
-          ? Container(
-              child: Center(
-                child: CircularProgressIndicator(
-                  backgroundColor: Colors.blue[800],
-                ),
-              ),
-            )
-          : Container(
-              margin: EdgeInsets.only(bottom: 0),
-              child: Column(
-                children: <Widget>[
-                  customAppBar(),
-                  cartItem.isEmpty
+      body: Stack(
+        children: [
+          Container(
+            margin: EdgeInsets.only(bottom: 0),
+            child: Column(
+              children: <Widget>[
+                customAppBar(),
+                Expanded(
+                  child: cartItem.isEmpty
                       ? nothingInCart()
                       : cartPanel(totalPriceProvider),
-                  checkOutButton(totalPriceProvider),
-                ],
-              ),
+                ),
+                checkOutButton(totalPriceProvider),
+              ],
             ),
+          ),
+          loading == true
+              ? Container(
+                  color: Colors.white.withOpacity(0.5),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.blue[800],
+                    ),
+                  ),
+                )
+              : Container(),
+        ],
+      ),
     );
   }
 
@@ -197,7 +213,7 @@ class _CartPageState extends State<CartPage> {
 
   Widget cartItemCard(index, totalPriceProvider) {
     return Dismissible(
-      key: UniqueKey(),
+      key: ValueKey(cartItem[index].product.sku.toString()),
       background: trashBg(),
       onDismissed: (direction) async {
         final headers = {
@@ -327,41 +343,79 @@ class _CartPageState extends State<CartPage> {
     return Container(
       child: Row(
         children: <Widget>[
-          GestureDetector(
-            onTap: () {
-              decreaseProcess(index);
-              double productPrice = double.parse(cartItem[index].product.price);
-              totalPriceProvider.deleteQuantity(
-                  totalPriceProvider.initialPrice, productPrice);
-            },
-            child: decreaseButton(index),
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              '${cartItem[index].quantity}',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.blue[800],
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              increaseProcess(index);
-              double productPrice = double.parse(cartItem[index].product.price);
-              totalPriceProvider.addQuantity(
-                  totalPriceProvider.initialPrice, productPrice);
-            },
-            child: increaseButton(),
-          ),
+          decreaseButton(index, totalPriceProvider),
+          selectedQuantity(index),
+          increaseButton(index, totalPriceProvider),
         ],
       ),
     );
   }
 
-  Widget increaseButton() {
+  Widget selectedQuantity(index) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey[300],
+          width: 0.5,
+        ),
+      ),
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      constraints: BoxConstraints(
+        minWidth: MediaQuery.of(context).size.width * 0.07,
+        maxWidth: MediaQuery.of(context).size.width * 0.12,
+      ),
+      height: MediaQuery.of(context).size.height * 0.04,
+      child: TextField(
+        keyboardType: TextInputType.number,
+        inputFormatters: [WhitelistingTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          border: InputBorder.none,
+        ),
+        style: TextStyle(
+          fontSize: 15,
+          color: Colors.blue[800],
+          fontWeight: FontWeight.bold,
+        ),
+        maxLines: 1,
+        textAlign: TextAlign.center,
+        onSubmitted: (q) {
+          setState(() {
+            cartItem[index].quantity = int.parse(q);
+          });
+
+          String sku = cartItem[index].product.sku;
+          int _quantity = cartItem[index].quantity;
+          String title = cartItem[index].product.title;
+          print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title,');
+
+          changeInCartQuantity(sku, _quantity, title);
+        },
+        controller: TextEditingController()
+          ..text = '${cartItem[index].quantity}',
+        // onChanged: (text) {},
+      ),
+    );
+  }
+
+  Widget decreaseButton(index, totalPriceProvider) {
+    return GestureDetector(
+      onTap: () {
+        decreaseProcess(index, totalPriceProvider);
+      },
+      child: decreaseIcon(index),
+    );
+  }
+
+  Widget increaseButton(index, totalPriceProvider) {
+    return GestureDetector(
+      onTap: () {
+        increaseProcess(index, totalPriceProvider);
+      },
+      child: increaseIcon(),
+    );
+  }
+
+  Widget increaseIcon() {
     return Container(
       width: 25,
       height: 25,
@@ -380,7 +434,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  increaseProcess(index) {
+  increaseProcess(index, totalPriceProvider) {
     //clear Delay...
 
     setState(() {
@@ -393,12 +447,17 @@ class _CartPageState extends State<CartPage> {
     print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title,');
 
     changeInCartQuantity(sku, _quantity, title);
+
+    double productPrice = double.parse(cartItem[index].product.price);
+    totalPriceProvider.addQuantity(
+        totalPriceProvider.initialPrice, productPrice);
+
     // Future.delayed(Duration(seconds: 2), () {
     //   changeInCartQuantity(sku, _quantity, title);
     // });
   }
 
-  Widget decreaseButton(index) {
+  Widget decreaseIcon(index) {
     return Container(
       width: 25,
       height: 25,
@@ -414,7 +473,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  decreaseProcess(index) {
+  decreaseProcess(index, totalPriceProvider) {
     //clear Delay...
 
     setState(() {
@@ -431,6 +490,11 @@ class _CartPageState extends State<CartPage> {
       print('sku: $sku, _quantity: $_quantity, title: $title');
 
       changeInCartQuantity(sku, _quantity, title);
+
+      double productPrice = double.parse(cartItem[index].product.price);
+      totalPriceProvider.deleteQuantity(
+          totalPriceProvider.initialPrice, productPrice);
+
       // Future.delayed(Duration(seconds: 2), () {
       //   changeInCartQuantity(sku, _quantity, title);
       // });
@@ -456,40 +520,39 @@ class _CartPageState extends State<CartPage> {
   }
 
   Widget checkOutButton(totalPriceProvider) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          decoration: cartItem.isEmpty
-              ? BoxDecoration(
-                  color: Colors.grey,
-                )
-              : BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomLeft,
-                    colors: [
-                      Colors.blue[600],
-                      Colors.blue[700],
-                      Colors.blue[800],
-                      Colors.blue[800],
-                    ],
-                  ),
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        height: 48,
+        width: MediaQuery.of(context).size.width,
+        decoration: cartItem.isEmpty
+            ? BoxDecoration(
+                color: Colors.grey,
+              )
+            : BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomLeft,
+                  colors: [
+                    Colors.blue[600],
+                    Colors.blue[700],
+                    Colors.blue[800],
+                    Colors.blue[800],
+                  ],
                 ),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: <Widget>[
-              Text(
-                'CHECK OUT | ',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
-              showTotalPrice(totalPriceProvider),
-            ],
-          ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: <Widget>[
+            Text(
+              'CHECK OUT | ',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            showTotalPrice(totalPriceProvider),
+          ],
         ),
       ),
     );
