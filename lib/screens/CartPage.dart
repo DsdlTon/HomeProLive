@@ -344,14 +344,14 @@ class _CartPageState extends State<CartPage> {
       child: Row(
         children: <Widget>[
           decreaseButton(index, totalPriceProvider),
-          selectedQuantity(index),
+          selectedQuantity(index, totalPriceProvider),
           increaseButton(index, totalPriceProvider),
         ],
       ),
     );
   }
 
-  Widget selectedQuantity(index) {
+  Widget selectedQuantity(index, totalPriceProvider) {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
@@ -389,6 +389,8 @@ class _CartPageState extends State<CartPage> {
           print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title,');
 
           changeInCartQuantity(sku, _quantity, title);
+
+          totalPriceProvider.calculateInitialPrice(cartLen, cartItem);
         },
         controller: TextEditingController()
           ..text = '${cartItem[index].quantity}',
@@ -435,8 +437,6 @@ class _CartPageState extends State<CartPage> {
   }
 
   increaseProcess(index, totalPriceProvider) {
-    //clear Delay...
-
     setState(() {
       cartItem[index].quantity += 1;
     });
@@ -451,10 +451,6 @@ class _CartPageState extends State<CartPage> {
     double productPrice = double.parse(cartItem[index].product.price);
     totalPriceProvider.addQuantity(
         totalPriceProvider.initialPrice, productPrice);
-
-    // Future.delayed(Duration(seconds: 2), () {
-    //   changeInCartQuantity(sku, _quantity, title);
-    // });
   }
 
   Widget decreaseIcon(index) {
@@ -474,8 +470,6 @@ class _CartPageState extends State<CartPage> {
   }
 
   decreaseProcess(index, totalPriceProvider) {
-    //clear Delay...
-
     setState(() {
       cartItem[index].quantity > 1
           ? cartItem[index].quantity -= 1
@@ -494,10 +488,6 @@ class _CartPageState extends State<CartPage> {
       double productPrice = double.parse(cartItem[index].product.price);
       totalPriceProvider.deleteQuantity(
           totalPriceProvider.initialPrice, productPrice);
-
-      // Future.delayed(Duration(seconds: 2), () {
-      //   changeInCartQuantity(sku, _quantity, title);
-      // });
     });
   }
 
