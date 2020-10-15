@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/User.dart';
+import '../widgets/RegisterSuccessDialog.dart';
+import '../widgets/RegisterFailedDialog.dart';
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -47,28 +49,28 @@ class _RegisterPageState extends State<RegisterPage> {
         "email": email,
         "phone": phone,
       };
-      UserService.createUserInDB(body).then((success) {
-        print('Enter createUserInDB Method');
-        print('success: $success');
-        if (success) {
-          print('Add User Info in DB Success!!');
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(
-                  "Your Account has been Created. You're going to Login to the App"),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    loginProcess(body);
-                  },
-                )
-              ],
-            ),
-          );
-        }
-      });
+      UserService.createUserInDB(body).then(
+        (user) {
+          print('Enter createUserInDB Method');
+          print('Message: $user');
+          print('Message: ${user.runtimeType}');
+          if (user == 200) {
+            print('Add User Info in DB Success!!');
+            loginProcess(body);
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => RegisterSuccessDialog(),
+            );
+          } else {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => RegisterFailedDialog(user: user),
+            );
+          }
+        },
+      );
     }
   }
 
@@ -80,8 +82,6 @@ class _RegisterPageState extends State<RegisterPage> {
           _user = response;
           saveUserData();
         });
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil("/homePage", (route) => false);
       } else {
         //login failed
         showDialog(

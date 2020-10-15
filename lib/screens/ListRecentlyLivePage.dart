@@ -1,5 +1,4 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
@@ -7,6 +6,7 @@ import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/RecentLivePage.dart';
+import '../widgets/logoutDialog.dart';
 
 class ListRecentlyLivePage extends StatefulWidget {
   @override
@@ -220,7 +220,8 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
     );
   }
 
-  Widget liveContent({thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
+  Widget liveContent(
+      {thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
     return InkWell(
       onTap: () {
         print('Tap $liveAdmin');
@@ -442,44 +443,12 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
       ),
       tooltip: 'Logout',
       onPressed: () {
-        signOutAlert();
-      },
-    );
-  }
-
-  void signOutAlert() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Do you want to Logout?'),
-          content: Text('This method will logged you out'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            FlatButton(
-              onPressed: () {
-                processSignOut();
-              },
-              child: Text('Yes'),
-            ),
-          ],
+        print('OUT');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => LogoutDialog(username: username),
         );
       },
     );
-  }
-
-  Future<void> processSignOut() async {
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove("username");
-    _firebaseMessaging.unsubscribeFromTopic(username);
-
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil('/loginPage', (Route<dynamic> route) => false);
   }
 }

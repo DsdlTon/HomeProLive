@@ -6,6 +6,7 @@ import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/screens/LivePage.dart';
+import '../widgets/logoutDialog.dart';
 
 class ListLivePage extends StatefulWidget {
   @override
@@ -242,7 +243,8 @@ class _ListLivePageState extends State<ListLivePage> {
               cartLen = _cartData.cartDetails.length;
             });
 
-            print('=========================\n .then: $appId\n =========================');
+            print(
+                '=========================\n .then: $appId\n =========================');
           });
         });
       },
@@ -442,44 +444,12 @@ class _ListLivePageState extends State<ListLivePage> {
       ),
       tooltip: 'Logout',
       onPressed: () {
-        signOutAlert();
-      },
-    );
-  }
-
-  void signOutAlert() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Do you want to Logout?'),
-          content: Text('This method will logged you out'),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            FlatButton(
-              onPressed: () {
-                processSignOut();
-              },
-              child: Text('Yes'),
-            ),
-          ],
+        print('OUT');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => LogoutDialog(username: username),
         );
       },
     );
-  }
-
-  Future<void> processSignOut() async {
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove("username");
-    _firebaseMessaging.unsubscribeFromTopic(username);
-
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil('/loginPage', (Route<dynamic> route) => false);
   }
 }

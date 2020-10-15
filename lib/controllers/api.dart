@@ -7,14 +7,16 @@ import '../models/Cart.dart';
 String baseUrl = "https://188.166.189.84";
 
 class UserService {
-  static Future<bool> createUserInDB(body) async {
+  static Future createUserInDB(body) async {
     final response = await Http.post("$baseUrl/auth/register", body: body);
+    final String responseString = response.body;
     print('createUser: ${response.body}');
     if (response.statusCode == 200) {
-      return true;
+      return response.statusCode;
     } else {
+      print('Failed Because $responseString');
       print('Status: ${response.statusCode}');
-      return false;
+      return userFromJson(responseString);
     }
   }
 
