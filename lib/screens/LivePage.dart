@@ -9,6 +9,7 @@ class LivePage extends StatefulWidget {
   final String username;
   final String adminProfile;
   final String liveAdmin;
+  final String appId;
 
   /// non-modifiable client role of the page
   final ClientRole role;
@@ -22,6 +23,7 @@ class LivePage extends StatefulWidget {
     this.username,
     this.adminProfile,
     this.liveAdmin,
+    this.appId,
   }) : super(key: key);
 
   @override
@@ -37,12 +39,15 @@ class _LivePageState extends State<LivePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    print('=========================');
     print('From LivePage');
     print('title: ${widget.title}');
     print('adminProfile: assets/logo.png');
     print('liveAdmin ${widget.liveAdmin}');
     print('channelName ${widget.channelName}');
     print('username ${widget.username}');
+    print('appId ${widget.appId}');
+    print('=========================');
   }
 
   @override
@@ -59,6 +64,7 @@ class _LivePageState extends State<LivePage> {
           BackgroundLive(
             channelName: widget.channelName,
             role: ClientRole.Audience,
+            appId: widget.appId,
           ),
           PageView(
             controller: _pageController,

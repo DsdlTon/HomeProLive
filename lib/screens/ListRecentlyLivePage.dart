@@ -166,6 +166,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                       itemBuilder: (BuildContext context, int index) {
                         return Container(
                           child: liveContent(
+                            appId: '${snapshot.data.documents[index]["appId"]}',
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
@@ -219,7 +220,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
     );
   }
 
-  Widget liveContent({thumbnail, liveAdmin, adminProfile, channelName, title}) {
+  Widget liveContent({thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
     return InkWell(
       onTap: () {
         print('Tap $liveAdmin');
@@ -232,6 +233,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
             liveAdmin: liveAdmin,
             channelName: channelName,
             username: username,
+            appId: appId,
             role: ClientRole.Audience,
           ),
         ).then((cartData) {

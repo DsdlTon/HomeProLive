@@ -50,6 +50,7 @@ class RouteGenerator {
             username: liveArgs.username,
             liveAdmin: liveArgs.liveAdmin,
             adminProfile: liveArgs.adminProfile,
+            appId: liveArgs.appId,
             role: ClientRole.Audience,
           ),
         );
@@ -63,6 +64,7 @@ class RouteGenerator {
             username: recentLiveArgs.username,
             liveAdmin: recentLiveArgs.liveAdmin,
             adminProfile: recentLiveArgs.adminProfile,
+            appId: recentLiveArgs.appId,
             role: ClientRole.Audience,
           ),
         );

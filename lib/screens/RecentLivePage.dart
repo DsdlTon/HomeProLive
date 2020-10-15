@@ -9,6 +9,7 @@ class RecentLivePage extends StatefulWidget {
   final String username;
   final String adminProfile;
   final String liveAdmin;
+  final String appId;
 
   /// non-modifiable client role of the page
   final ClientRole role;
@@ -22,6 +23,7 @@ class RecentLivePage extends StatefulWidget {
     this.username,
     this.adminProfile,
     this.liveAdmin,
+    this.appId,
   }) : super(key: key);
 
   @override
@@ -47,6 +49,7 @@ class _RecentLivePageState extends State<RecentLivePage> {
           BackgroundLive(
             channelName: widget.channelName,
             role: ClientRole.Audience,
+            appId: widget.appId,
           ),
           PageView(
             controller: _pageController,

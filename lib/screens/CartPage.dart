@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+// import '../widgets/DeleteItemConfirmationDialog.dart';
+// import 'package:loader/loader.dart';
 
 class CartPage extends StatefulWidget {
   @override
@@ -87,33 +89,28 @@ class _CartPageState extends State<CartPage> {
         Provider.of<TotalPriceProvider>(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Container(
-            margin: EdgeInsets.only(bottom: 0),
-            child: Column(
-              children: <Widget>[
-                customAppBar(),
-                Expanded(
-                  child: cartItem.isEmpty
+      body: Container(
+        margin: EdgeInsets.only(bottom: 0),
+        child: Column(
+          children: <Widget>[
+            customAppBar(),
+            Expanded(
+              child: loading == true
+                  ? Container(
+                      color: Colors.white.withOpacity(0.5),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.blue[800],
+                        ),
+                      ),
+                    )
+                  : cartItem.isEmpty
                       ? nothingInCart()
                       : cartPanel(totalPriceProvider),
-                ),
-                checkOutButton(totalPriceProvider),
-              ],
             ),
-          ),
-          loading == true
-              ? Container(
-                  color: Colors.white.withOpacity(0.5),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.blue[800],
-                    ),
-                  ),
-                )
-              : Container(),
-        ],
+            checkOutButton(totalPriceProvider),
+          ],
+        ),
       ),
     );
   }
@@ -215,6 +212,17 @@ class _CartPageState extends State<CartPage> {
     return Dismissible(
       key: ValueKey(cartItem[index].product.sku.toString()),
       background: trashBg(),
+      // confirmDismiss: (direction) async {
+      //   return await showDialog(
+      //     context: context,
+      //     builder: (BuildContext context) => DeleteItemConfirmationDialog(
+      //       accessToken: _accessToken,
+      //       cartItemSku: cartItem[index].product.sku.toString(),
+      //       cartItem: cartItem,
+      //       index: index,
+      //     ),
+      //   );
+      // },
       onDismissed: (direction) async {
         final headers = {
           "access-token": _accessToken,
@@ -402,10 +410,50 @@ class _CartPageState extends State<CartPage> {
   Widget decreaseButton(index, totalPriceProvider) {
     return GestureDetector(
       onTap: () {
-        decreaseProcess(index, totalPriceProvider);
+        if (cartItem[index].quantity > 1) {
+          decreaseProcess(index, totalPriceProvider);
+        }
       },
       child: decreaseIcon(index),
     );
+  }
+
+  Widget decreaseIcon(index) {
+    return Container(
+      width: 25,
+      height: 25,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(width: 1.5, color: Colors.grey[300]),
+      ),
+      child: Icon(
+        Icons.remove,
+        size: 15,
+        color: cartItem[index].quantity > 1 ? Colors.black : Colors.grey[300],
+      ),
+    );
+  }
+
+  decreaseProcess(index, totalPriceProvider) {
+    setState(() {
+      cartItem[index].quantity > 1
+          ? cartItem[index].quantity -= 1
+          : cartItem[index].quantity = 1;
+
+      print(cartItem[index].quantity);
+
+      String sku = cartItem[index].product.sku;
+      int _quantity = cartItem[index].quantity;
+      String title = cartItem[index].product.title;
+
+      print('sku: $sku, _quantity: $_quantity, title: $title');
+
+      changeInCartQuantity(sku, _quantity, title);
+
+      double productPrice = double.parse(cartItem[index].product.price);
+      totalPriceProvider.deleteQuantity(
+          totalPriceProvider.initialPrice, productPrice);
+    });
   }
 
   Widget increaseButton(index, totalPriceProvider) {
@@ -451,44 +499,6 @@ class _CartPageState extends State<CartPage> {
     double productPrice = double.parse(cartItem[index].product.price);
     totalPriceProvider.addQuantity(
         totalPriceProvider.initialPrice, productPrice);
-  }
-
-  Widget decreaseIcon(index) {
-    return Container(
-      width: 25,
-      height: 25,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(width: 1.5, color: Colors.grey[300]),
-      ),
-      child: Icon(
-        Icons.remove,
-        size: 15,
-        color: cartItem[index].quantity > 1 ? Colors.black : Colors.grey[300],
-      ),
-    );
-  }
-
-  decreaseProcess(index, totalPriceProvider) {
-    setState(() {
-      cartItem[index].quantity > 1
-          ? cartItem[index].quantity -= 1
-          : cartItem[index].quantity = 1;
-
-      print(cartItem[index].quantity);
-
-      String sku = cartItem[index].product.sku;
-      int _quantity = cartItem[index].quantity;
-      String title = cartItem[index].product.title;
-
-      print('sku: $sku, _quantity: $_quantity, title: $title');
-
-      changeInCartQuantity(sku, _quantity, title);
-
-      double productPrice = double.parse(cartItem[index].product.price);
-      totalPriceProvider.deleteQuantity(
-          totalPriceProvider.initialPrice, productPrice);
-    });
   }
 
   Widget showTotalPrice(totalPriceProvider) {

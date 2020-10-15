@@ -156,8 +156,13 @@ class _ListLivePageState extends State<ListLivePage> {
                         mainAxisSpacing: 2.0,
                       ),
                       itemBuilder: (BuildContext context, int index) {
+                        print('=========================');
+                        print(
+                            'LiveContent Builder: ${snapshot.data.documents[index]["appId"]}');
+                        print('=========================');
                         return Container(
                           child: liveContent(
+                            appId: '${snapshot.data.documents[index]["appId"]}',
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
@@ -211,15 +216,19 @@ class _ListLivePageState extends State<ListLivePage> {
     );
   }
 
-  Widget liveContent({thumbnail, liveAdmin, adminProfile, channelName, title}) {
+  Widget liveContent(
+      {thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
     return InkWell(
       onTap: () {
+        print('=========================');
         print('Tap $liveAdmin');
-
+        print('From LiveContent: $appId');
+        print('=========================');
         Navigator.pushNamed(
           context,
           '/livePage',
           arguments: LivePage(
+            appId: appId,
             title: title,
             adminProfile: adminProfile,
             liveAdmin: liveAdmin,
@@ -232,7 +241,8 @@ class _ListLivePageState extends State<ListLivePage> {
               _cartData = cartData;
               cartLen = _cartData.cartDetails.length;
             });
-            print('cartLen: $cartLen');
+
+            print('=========================\n .then: $appId\n =========================');
           });
         });
       },

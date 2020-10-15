@@ -8,11 +8,13 @@ class BackgroundLive extends StatefulWidget {
   /// non-modifiable channel name of the page
   final String channelName;
 
+  final String appId;
+
   /// non-modifiable client role of the page
   final ClientRole role;
 
   /// Creates a call page with given channel name.
-  const BackgroundLive({Key key, this.channelName, this.role})
+  const BackgroundLive({Key key, this.channelName, this.role, this.appId})
       : super(key: key);
 
   @override
@@ -46,7 +48,7 @@ class _BackgroundLiveState extends State<BackgroundLive> {
   }
 
   Future<void> initialize() async {
-    if (APP_ID.isEmpty) {
+    if (widget.appId.isEmpty) {
       setState(() {
         _infoStrings.add(
           'APP_ID missing, please provide your APP_ID in settings.dart',
@@ -67,7 +69,7 @@ class _BackgroundLiveState extends State<BackgroundLive> {
 
   /// Create agora sdk instance and initialize
   Future<void> _initAgoraRtcEngine() async {
-    await AgoraRtcEngine.create(APP_ID);
+    await AgoraRtcEngine.create(widget.appId);
     await AgoraRtcEngine.enableVideo();
     await AgoraRtcEngine.setChannelProfile(ChannelProfile.LiveBroadcasting);
     await AgoraRtcEngine.setClientRole(widget.role);
