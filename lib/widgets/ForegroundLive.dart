@@ -264,7 +264,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
           begin: Alignment.topRight,
           colors: [
             Colors.black.withOpacity(0.6),
-            // Colors.black.withOpacity(0.4),
             Colors.black.withOpacity(0.1),
             Colors.transparent,
           ],
@@ -275,19 +274,41 @@ class _ForegroundLiveState extends State<ForegroundLive> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(
-                  widget.title,
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      widget.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                    SizedBox(height: 10.0),
+                    showUserInfo(),
+                  ],
                 ),
-                SizedBox(height: 10.0),
-                showUserInfo(),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(0.0),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: Icon(
+                        Icons.close,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -380,28 +401,36 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   Widget cartButton() {
     return Stack(
       children: [
-        IconButton(
-          icon: Icon(
-            Icons.shopping_cart,
-            color: Colors.white,
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black.withOpacity(0.2),
           ),
-          tooltip: 'Cart',
-          onPressed: () {
-            Navigator.of(context).pushNamed('/cartPage').then((value) {
-              getUserCartData().then((cartData) {
-                setState(() {
-                  _cartData = cartData;
-                  cartLen = _cartData.cartDetails.length;
+          child: IconButton(
+            icon: Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+            ),
+            tooltip: 'Cart',
+            onPressed: () {
+              Navigator.of(context).pushNamed('/cartPage').then((value) {
+                getUserCartData().then((cartData) {
+                  setState(() {
+                    _cartData = cartData;
+                    cartLen = _cartData.cartDetails.length;
+                  });
+                  print('cartLen: $cartLen');
                 });
-                print('cartLen: $cartLen');
               });
-            });
-          },
+            },
+          ),
         ),
         cartLen != 0
             ? Positioned(
-                top: 5,
-                right: 8,
+                top: 0,
+                right: 3,
                 child: Container(
                   width: 18,
                   height: 18,
@@ -838,7 +867,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                       TextSpan(
                         text: '${snapshot.data.documents[index]["username"]}: ',
                         style: TextStyle(
-                          color:  Colors.blue[800],
+                          color: Colors.blue[800],
                           fontWeight: FontWeight.bold,
                         ),
                       ),

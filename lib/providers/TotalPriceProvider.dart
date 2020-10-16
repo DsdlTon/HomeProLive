@@ -2,40 +2,41 @@ import 'package:flutter/cupertino.dart';
 
 class TotalPriceProvider with ChangeNotifier {
   var initialPrice;
-  var productPrice;
+  List<double> productPrice = List<double>();
 
   TotalPriceProvider({
     this.initialPrice,
     this.productPrice,
   });
 
-  calculateInitialPrice(cartLen, cartItem) {
-    print('Enter calculateInitialPrice');
+  calculateTotalPrice(cartLen, cartItem) {
+    print('Enter calculateTotalPrice');
     initialPrice = 0;
     for (int i = 0; i < cartLen; i++) {
       double priceInDouble = double.parse(cartItem[i].product.price);
       double quantityInDouble = cartItem[i].quantity.toDouble();
-      print('////////////////////////////////');
-      print('$initialPrice = $priceInDouble * $quantityInDouble');
-      print('////////////////////////////////');
+      // print('//////////////////////');
+      // print('$initialPrice += ($priceInDouble * $quantityInDouble)');
+      // print('//////////////////////');
       initialPrice += (priceInDouble * quantityInDouble);
       notifyListeners();
     }
+    print('OUT calculateTotalPrice');
   }
 
-  addQuantity(initialPrice, productPrice) {
-    print('Enter addQuantity');
-    double.parse(initialPrice.toStringAsFixed(2));
-    double.parse(productPrice.toStringAsFixed(2));
-    this.initialPrice += productPrice;
-    notifyListeners();
-  }
-
-  deleteQuantity(initialPrice, productPrice) {
-    print('Enter deleteQuantity');
-    double.parse(initialPrice.toStringAsFixed(2));
-    double.parse(productPrice.toStringAsFixed(2));
-    this.initialPrice -= productPrice;
+  calculateTotalPricePerItem(cartItem, index) {
+    print('Enter calculateTotalPricePerItem');
+    double priceInDouble = double.parse(cartItem[index].product.price);
+    double quantityInDouble = cartItem[index].quantity.toDouble();
+    print('//////////////////////');
+    print('i = $index \nprice = $priceInDouble \nquantity = $quantityInDouble');
+    print('//////////////////////');
+    double price = priceInDouble * quantityInDouble;
+    if (productPrice.asMap().containsKey(index)) {
+      productPrice.removeAt(index);
+    }
+    productPrice.insert(index, price);
+    print(productPrice);
     notifyListeners();
   }
 }

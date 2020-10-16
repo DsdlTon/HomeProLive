@@ -78,7 +78,11 @@ class _CartPageState extends State<CartPage> {
           loading = false;
         });
         Provider.of<TotalPriceProvider>(context, listen: false)
-            .calculateInitialPrice(cartLen, cartItem);
+            .calculateTotalPrice(cartLen, cartItem);
+        for (int i = 0; i < cartLen; i++) {
+          Provider.of<TotalPriceProvider>(context, listen: false)
+              .calculateTotalPricePerItem(cartItem, i);
+        }
       });
     });
   }
@@ -234,8 +238,12 @@ class _CartPageState extends State<CartPage> {
         setState(() {
           cartItem.removeAt(index);
           cartLen = cartItem.length;
+          for (int i = 0; i < cartLen; i++) {
+            Provider.of<TotalPriceProvider>(context, listen: false)
+                .calculateTotalPricePerItem(cartItem, i);
+          }
           Provider.of<TotalPriceProvider>(context, listen: false)
-              .calculateInitialPrice(cartLen, cartItem);
+              .calculateTotalPrice(cartLen, cartItem);
         });
         Fluttertoast.showToast(
           msg: "Deleted Success.",
@@ -331,11 +339,20 @@ class _CartPageState extends State<CartPage> {
                 children: <Widget>[
                   showQuantityPanel(index, totalPriceProvider),
                   SizedBox(width: 10),
-                  Text(
-                    '฿${cartItem[index].product.price}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    child: ChangeNotifierProvider<TotalPriceProvider>.value(
+                      value: totalPriceProvider,
+                      child: Consumer<TotalPriceProvider>(
+                        builder: (context, totalPriceProvider, child) {
+                          return Text(
+                            '฿ ${totalPriceProvider.productPrice[index]}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -398,7 +415,8 @@ class _CartPageState extends State<CartPage> {
 
           changeInCartQuantity(sku, _quantity, title);
 
-          totalPriceProvider.calculateInitialPrice(cartLen, cartItem);
+          totalPriceProvider.calculateTotalPrice(cartLen, cartItem);
+          totalPriceProvider.calculateTotalPricePerItem(cartItem, index);
         },
         controller: TextEditingController()
           ..text = '${cartItem[index].quantity}',
@@ -439,20 +457,14 @@ class _CartPageState extends State<CartPage> {
       cartItem[index].quantity > 1
           ? cartItem[index].quantity -= 1
           : cartItem[index].quantity = 1;
-
       print(cartItem[index].quantity);
-
       String sku = cartItem[index].product.sku;
       int _quantity = cartItem[index].quantity;
       String title = cartItem[index].product.title;
-
       print('sku: $sku, _quantity: $_quantity, title: $title');
-
       changeInCartQuantity(sku, _quantity, title);
-
-      double productPrice = double.parse(cartItem[index].product.price);
-      totalPriceProvider.deleteQuantity(
-          totalPriceProvider.initialPrice, productPrice);
+      totalPriceProvider.calculateTotalPrice(cartLen, cartItem);
+      totalPriceProvider.calculateTotalPricePerItem(cartItem, index);
     });
   }
 
@@ -488,17 +500,13 @@ class _CartPageState extends State<CartPage> {
     setState(() {
       cartItem[index].quantity += 1;
     });
-
     String sku = cartItem[index].product.sku;
     int _quantity = cartItem[index].quantity;
     String title = cartItem[index].product.title;
     print('sku: $sku,\n_quantity: $_quantity,\ntitle: $title,');
-
     changeInCartQuantity(sku, _quantity, title);
-
-    double productPrice = double.parse(cartItem[index].product.price);
-    totalPriceProvider.addQuantity(
-        totalPriceProvider.initialPrice, productPrice);
+    totalPriceProvider.calculateTotalPrice(cartLen, cartItem);
+    totalPriceProvider.calculateTotalPricePerItem(cartItem, index);
   }
 
   Widget showTotalPrice(totalPriceProvider) {

@@ -126,7 +126,7 @@ class _DeleteItemConfirmationDialogState
           widget.cartItem.removeAt(widget.index);
           int cartLen = widget.cartItem.length;
           Provider.of<TotalPriceProvider>(context, listen: false)
-              .calculateInitialPrice(cartLen, widget.cartItem);
+              .calculateTotalPrice(cartLen, widget.cartItem);
         });
         Navigator.of(context).popAndPushNamed('/cartPage');
         Fluttertoast.showToast(

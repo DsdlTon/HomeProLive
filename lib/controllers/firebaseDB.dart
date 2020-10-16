@@ -156,9 +156,13 @@ class FireStoreClass {
   }
 
   static void deleteChatroom({channelName, username}) async {
-    await _db.collection("Chatroom").document(channelName + username).delete();
-    print(
-        '-------------------- delete Chatroom channelName: $channelName$username --------------------------------');
+    await _db.collection("Chatroom").getDocuments().then((snapshot) {
+      for (DocumentSnapshot ds in snapshot.documents) {
+        ds.reference.delete();
+      }
+      print(
+          '-------------------- delete Chatroom channelName: $channelName$username --------------------------------');
+    });
   }
 
   // ---Chat In ChatRoom with Admin-----------------------------------------------------------------

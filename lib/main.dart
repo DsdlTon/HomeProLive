@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Provider(
-      create: (context) => TotalPriceProvider(initialPrice: 0, productPrice: 0),
+      create: (context) => TotalPriceProvider(initialPrice: 0, productPrice: List<double>()),
       child: MaterialApp(
         title: 'HomePro Live',
         navigatorKey: navigatorKey,
