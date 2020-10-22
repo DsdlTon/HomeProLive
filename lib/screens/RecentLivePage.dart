@@ -1,5 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:test_live_app/widgets/WebViewPlayBack.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/Playback.dart';
 import '../widgets/RecentForeground.dart';
@@ -65,19 +66,7 @@ class _RecentLivePageState extends State<RecentLivePage> {
         fit: StackFit.expand,
         children: <Widget>[
           Container(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: PlaybackVideo(
-                // videoPlayerController: VideoPlayerController.asset(
-                //     'assets/video/testVideo.mov'),
-                videoPlayerController: VideoPlayerController.network(
-                  // 'https://188.166.189.84${widget.pathVideo}',
-                  // 'https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4',
-                  // 'https://188.166.189.84/recorder/video/8f5cbe16-906c-4011-84f0-e1c485cd56ce/0_20201015084314783.mp4',
-                  'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4',
-                ),
-              ),
-            ),
+            child: WebViewPlayback(pathVideo: widget.pathVideo),
           ),
           PageView(
             controller: _pageController,
