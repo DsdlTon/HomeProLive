@@ -174,6 +174,8 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                             adminProfile: 'assets/logo.png',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
+                            pathVideo:
+                                '${snapshot.data.documents[index]["pathVideo"]}',
                           ),
                         );
                       },
@@ -221,7 +223,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
   }
 
   Widget liveContent(
-      {thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
+      {thumbnail, liveAdmin, adminProfile, channelName, title, appId, pathVideo}) {
     return InkWell(
       onTap: () {
         print('Tap $liveAdmin');
@@ -235,6 +237,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
             channelName: channelName,
             username: username,
             appId: appId,
+            pathVideo: pathVideo,
             role: ClientRole.Audience,
           ),
         ).then((cartData) {

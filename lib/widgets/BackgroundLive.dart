@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
-import '../utils/settings.dart';
 
 class BackgroundLive extends StatefulWidget {
   /// non-modifiable channel name of the page

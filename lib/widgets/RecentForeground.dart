@@ -423,7 +423,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     return Container(
       width: 40,
       height: 40,
-      margin: EdgeInsets.only(left: 5),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.black.withOpacity(0.2),
@@ -444,6 +443,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.black.withOpacity(0.2),
+          ),
+          margin: EdgeInsets.symmetric(
+            horizontal: 5,
           ),
           child: IconButton(
             icon: Icon(
@@ -520,7 +522,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
 
   Widget bottomBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(5, 0, 20, 0),
+      padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
       child: Align(
         alignment: Alignment.bottomLeft,
         child: Row(
@@ -530,8 +532,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
             Row(
               children: [
                 chatIcon(),
-                favIcon(),
                 cartButton(),
+                favIcon(),
               ],
             ),
           ],

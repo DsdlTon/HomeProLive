@@ -46,6 +46,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     //update userRead
     FireStoreClass.userReaded(widget.channelName, widget.username);
+    // getChatroomDoc(widget.channelName, widget.username);
     checkIsLive(widget.channelName);
     print('init');
     print('title: ${widget.title}');
@@ -54,6 +55,16 @@ class _ChatPageState extends State<ChatPage> {
     print('channelName ${widget.channelName}');
     print('username ${widget.username}');
   }
+
+  // Future<void> getChatroomDoc(channelName, username) async {
+  //   await Firestore.instance
+  //       .collection("Chatroom")
+  //       .document(channelName + username)
+  //       .get()
+  //       .then((snapshot) {
+  //     print('snapshot: ${snapshot['title']}');
+  //   });
+  // }
 
   Future getImageFromGallery() async {
     // ignore: deprecated_member_use

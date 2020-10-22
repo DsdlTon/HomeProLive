@@ -1,6 +1,8 @@
 // import 'dart:convert';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
@@ -29,9 +31,9 @@ class NotificationController {
           String title = 'title';
           String body = 'body';
           if (Platform.isIOS) {
-            body = message['aps']['alert']['body'];
-            title = message['aps']['alert']['title'];
-            sendLocalNotification(title, body);
+            // body = message['aps']['alert']['body'];
+            // title = message['aps']['alert']['title'];
+            // sendLocalNotification(title, body);
           } else {
             body = message['notification']['body'];
             title = message['notification']['title'];
@@ -57,6 +59,20 @@ class NotificationController {
     }
   }
 
+  String title;
+  String liveAdmin;
+  DocumentSnapshot chatroomSnap;
+
+  Future<void> getChatroomDoc(channelName, username) async {
+    await Firestore.instance
+        .collection("Chatroom")
+        .document(channelName + username)
+        .get()
+        .then((snapshot) {
+      chatroomSnap = snapshot;
+    });
+  }
+
   void navigateToChatPage(message) {
     if (Platform.isIOS) {
       // String chatroomId = message['aps']['alert']['chatroomid'];
@@ -77,12 +93,25 @@ class NotificationController {
       String channelName = chatroomId.substring(0, 13);
       String username = chatroomId.substring(13, len);
 
-      MyApp.navigatorKey.currentState.pushNamed(
-        '/chatPage',
-        arguments: ChatPage(
-          channelName: channelName,
-          username: username,
-        ),
+      getChatroomDoc(channelName, username).then(
+        (value) {
+          print('GET CHATROOMDOC');
+          print('chatroomId: $chatroomId');
+          print('channelName: $channelName');
+          print('username: $username');
+          print('liveAdmin: ${chatroomSnap['liveAdmin']}');
+          print('title: ${chatroomSnap['title']}');
+
+          MyApp.navigatorKey.currentState.pushNamed(
+            '/chatPage',
+            arguments: ChatPage(
+              channelName: channelName,
+              username: username,
+              title: chatroomSnap['title'],
+              liveAdmin: chatroomSnap['liveAdmin'],
+            ),
+          );
+        },
       );
     }
   }

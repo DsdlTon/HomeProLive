@@ -65,6 +65,7 @@ class RouteGenerator {
             liveAdmin: recentLiveArgs.liveAdmin,
             adminProfile: recentLiveArgs.adminProfile,
             appId: recentLiveArgs.appId,
+            pathVideo: recentLiveArgs.pathVideo,
             role: ClientRole.Audience,
           ),
         );

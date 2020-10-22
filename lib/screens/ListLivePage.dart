@@ -167,7 +167,7 @@ class _ListLivePageState extends State<ListLivePage> {
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
-                            liveAdmin: 'Homepro1',
+                            liveAdmin: 'Homepro1', //mocked data wait for fb update
                             adminProfile: 'assets/logo.png',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',

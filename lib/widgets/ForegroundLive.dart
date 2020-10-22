@@ -867,7 +867,10 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                       TextSpan(
                         text: '${snapshot.data.documents[index]["username"]}: ',
                         style: TextStyle(
-                          color: Colors.blue[800],
+                          color:
+                              snapshot.data.documents[index]["role"] == "admin"
+                                  ? Colors.yellow[700]
+                                  : Colors.blue[800],
                           fontWeight: FontWeight.bold,
                         ),
                       ),
