@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
@@ -159,18 +158,13 @@ class NotificationController {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         '10000', 'your channel name', 'your channel description',
         importance: Importance.Max, priority: Priority.High);
-    print('enter sendLocalNotification2');
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    print('enter sendLocalNotification3');
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    print('enter sendLocalNotification4');
     print('title: $title');
     print('body: $body');
     print('platformChannelSpecifics: $platformChannelSpecifics');
-    // print('payload: $payload');
     await _flutterLocalNotificationsPlugin.show(
         1, title, body, platformChannelSpecifics);
-    print('enter sendLocalNotification5');
   }
 }

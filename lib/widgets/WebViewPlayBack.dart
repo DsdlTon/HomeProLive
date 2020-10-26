@@ -5,7 +5,6 @@ class WebViewPlayback extends StatefulWidget {
   final String pathVideo;
 
   const WebViewPlayback({Key key, this.pathVideo}) : super(key: key);
-
   @override
   createState() => _WebViewPlaybackState();
 }
@@ -27,14 +26,17 @@ class _WebViewPlaybackState extends State<WebViewPlayback> {
 <!DOCTYPE html>
 <html>
 <body style="background-color:black">
+<script>
+
+</script>
+
 <section>
-  <video src="https://188.166.189.84${widget.pathVideo}" autoplay loop muted></video>
+  <video src="https://188.166.189.84${widget.pathVideo}" autoplay muted></video>
 </section>
 </body>
 <style>
 video{
 position:absolute;
-  outline: none;
   top:0;
   left:0;
   display:block;
@@ -45,10 +47,7 @@ position:absolute;
 body{
   margin:0}
 
-:focus { outline: none; }
-
 section{
-  outline: none;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -58,6 +57,7 @@ section{
 </style>
 </html>
                   """),
+//                    initialUrl: "https://188.166.189.84/recorder/video/8f5cbe16-906c-4011-84f0-e1c485cd56ce/0_20201015084314783.mp4",
                 initialOptions: InAppWebViewGroupOptions(
                     crossPlatform: InAppWebViewOptions(
                   debuggingEnabled: true,

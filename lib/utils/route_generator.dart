@@ -2,6 +2,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/screens/CartPage.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
+import 'package:test_live_app/screens/Checkout.dart';
 import 'package:test_live_app/screens/HomePage.dart';
 import 'package:test_live_app/screens/LivePage.dart';
 import 'package:test_live_app/screens/LogInPage.dart';
@@ -78,6 +79,14 @@ class RouteGenerator {
           settings: settings,
           builder: (_) => ProductDetailPage(
             sku: productDetailArgs.sku,
+          ),
+        );
+      case '/checkoutPage':
+      final CheckOutPage checkoutArgs = settings.arguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => CheckOutPage(
+            totalPrice: checkoutArgs.totalPrice,
           ),
         );
 

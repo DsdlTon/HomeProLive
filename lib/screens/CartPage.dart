@@ -6,6 +6,7 @@ import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:test_live_app/screens/Checkout.dart';
 // import '../widgets/DeleteItemConfirmationDialog.dart';
 // import 'package:loader/loader.dart';
 
@@ -18,6 +19,7 @@ class _CartPageState extends State<CartPage> {
   Cart _cartData = Cart();
   int cartLen = 0;
   List cartItem = [];
+  double totalPrice;
   String _accessToken;
   double initialPrice = 0.0;
 
@@ -515,6 +517,7 @@ class _CartPageState extends State<CartPage> {
         value: totalPriceProvider,
         child: Consumer<TotalPriceProvider>(
           builder: (context, totalPriceProvider, child) {
+            totalPrice = totalPriceProvider.initialPrice;
             return Text(
               '฿ ${totalPriceProvider.initialPrice}',
               style: TextStyle(
@@ -529,7 +532,16 @@ class _CartPageState extends State<CartPage> {
 
   Widget checkOutButton(totalPriceProvider) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        print(totalPrice);
+        Navigator.pushNamed(
+          context,
+          '/checkoutPage',
+          arguments: CheckOutPage(
+            totalPrice: this.totalPrice,
+          ),
+        );
+      },
       child: Container(
         height: 48,
         width: MediaQuery.of(context).size.width,

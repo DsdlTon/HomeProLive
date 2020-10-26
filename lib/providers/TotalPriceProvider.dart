@@ -28,9 +28,9 @@ class TotalPriceProvider with ChangeNotifier {
     print('Enter calculateTotalPricePerItem');
     double priceInDouble = double.parse(cartItem[index].product.price);
     double quantityInDouble = cartItem[index].quantity.toDouble();
-    print('//////////////////////');
-    print('i = $index \nprice = $priceInDouble \nquantity = $quantityInDouble');
-    print('//////////////////////');
+    // print('//////////////////////');
+    // print('i = $index \nprice = $priceInDouble \nquantity = $quantityInDouble');
+    // print('//////////////////////');
     double price = priceInDouble * quantityInDouble;
     if (productPrice.asMap().containsKey(index)) {
       productPrice.removeAt(index);

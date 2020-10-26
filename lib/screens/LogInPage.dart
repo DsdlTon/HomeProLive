@@ -80,6 +80,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         child: Container(
           height: MediaQuery.of(context).size.height,
           width: double.infinity,

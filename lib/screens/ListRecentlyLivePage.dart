@@ -106,6 +106,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
         ],
       ),
       body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         child: Container(
           width: double.infinity,
           height: MediaQuery.of(context).size.height * 0.79,

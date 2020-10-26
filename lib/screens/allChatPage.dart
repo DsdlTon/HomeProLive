@@ -108,6 +108,7 @@ class _AllChatPageState extends State<AllChatPage> {
         ],
       ),
       body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         child: Container(
           padding: EdgeInsets.only(bottom: 5),
           child: StreamBuilder(

@@ -212,7 +212,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         width: MediaQuery.of(context).size.width,
         child: Row(
           children: <Widget>[
-            buyNowButton(),
+            buyNowButton(product.sku, _quantity, product.title),
             addToCartButton(product.sku, _quantity, product.title)
           ],
         ),
@@ -220,29 +220,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget buyNowButton() {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.055,
-      width: MediaQuery.of(context).size.width * 0.6,
-      margin: EdgeInsets.only(right: 3),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.bottomLeft,
-          colors: [
-            Colors.blue[600],
-            Colors.blue[700],
-            Colors.blue[700],
-            Colors.blue[800],
-          ],
+  Widget buyNowButton(sku, quantityInCart, title) {
+    return GestureDetector(
+      onTap: () {
+        if (quantityInCart != 0) {
+          addProductToCart(sku, quantityInCart, title);
+          Navigator.pushNamed(context, '/cartPage');
+        } else {
+          Fluttertoast.showToast(
+            msg: "Please add Quantity of Product.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 13.0,
+          );
+        }
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.055,
+        width: MediaQuery.of(context).size.width * 0.6,
+        margin: EdgeInsets.only(right: 3),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomLeft,
+            colors: [
+              Colors.blue[600],
+              Colors.blue[700],
+              Colors.blue[700],
+              Colors.blue[800],
+            ],
+          ),
+          borderRadius: BorderRadius.circular(3.0),
         ),
-        borderRadius: BorderRadius.circular(3.0),
-      ),
-      child: Center(
-        child: Text(
-          'Buy Now',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 11,
+        child: Center(
+          child: Text(
+            'Buy Now',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+            ),
           ),
         ),
       ),
