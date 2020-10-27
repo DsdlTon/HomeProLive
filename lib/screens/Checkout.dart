@@ -50,6 +50,11 @@ class _CheckOutPageState extends State<CheckOutPage> {
       onChange: (bool visible) {
         setState(() {
           _keyboardState = visible;
+          if (_keyboardState != true) {
+            setState(() {
+              FocusScope.of(context).unfocus();
+            });
+          }
         });
       },
     );
@@ -73,6 +78,19 @@ class _CheckOutPageState extends State<CheckOutPage> {
         backgroundColor: Colors.blue[800],
         automaticallyImplyLeading: false,
         centerTitle: true,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              colors: [
+                Colors.blue[600],
+                Colors.blue[700],
+                Colors.blue[800],
+                Colors.blue[800],
+              ],
+            ),
+          ),
+        ),
         leading: IconButton(
           onPressed: () {
             Navigator.of(context).pop();
@@ -191,6 +209,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
     return GestureDetector(
       onTap: () {
         print('Tap addressBar');
+        Navigator.pushNamed(context, '/selectedAddressPage');
       },
       child: Container(
         padding: EdgeInsets.all(5),

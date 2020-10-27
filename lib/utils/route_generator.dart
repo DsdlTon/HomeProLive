@@ -9,6 +9,8 @@ import 'package:test_live_app/screens/LogInPage.dart';
 import 'package:test_live_app/screens/RecentLivePage.dart';
 import 'package:test_live_app/screens/Register.dart';
 import 'package:test_live_app/screens/SplashPage.dart';
+import 'package:test_live_app/screens/createNewAddress.dart';
+import 'package:test_live_app/screens/selectedAddress.dart';
 import 'package:test_live_app/widgets/showFullImage.dart';
 import 'package:test_live_app/screens/ProductDetailPage.dart';
 
@@ -82,12 +84,24 @@ class RouteGenerator {
           ),
         );
       case '/checkoutPage':
-      final CheckOutPage checkoutArgs = settings.arguments;
+        final CheckOutPage checkoutArgs = settings.arguments;
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => CheckOutPage(
             totalPrice: checkoutArgs.totalPrice,
           ),
+        );
+      case '/selectedAddressPage':
+        // final SelectedAddressPage checkoutArgs = settings.arguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => SelectedAddressPage(),
+        );
+      case '/newAddressPage':
+        // final SelectedAddressPage checkoutArgs = settings.arguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => NewAddressPage(),
         );
 
       default:

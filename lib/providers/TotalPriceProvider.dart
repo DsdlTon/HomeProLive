@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 class TotalPriceProvider with ChangeNotifier {
-  var initialPrice;
+  double initialPrice;
   List<double> productPrice = List<double>();
 
   TotalPriceProvider({

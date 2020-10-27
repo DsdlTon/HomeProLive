@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test_live_app/controllers/notification.dart';
 import 'package:test_live_app/screens/ListLivePage.dart';
 import 'package:test_live_app/screens/ListRecentlyLivePage.dart';
+import 'package:test_live_app/screens/OrderList.dart';
 
 import 'package:test_live_app/screens/allChatPage.dart';
 
@@ -31,6 +32,7 @@ class _HomePageState extends State<HomePage> {
     ListLivePage(),
     ListRecentlyLivePage(),
     AllChatPage(),
+    OrderListPage(),
   ];
 
   @override
@@ -38,60 +40,22 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: _pageOptions[_selectedIndex],
       bottomNavigationBar: SizedBox(
-        height: MediaQuery.of(context).size.height / 13.1,
+        height: MediaQuery.of(context).size.height / 13,
         child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.live_tv,
-                size: 20,
-              ),
-              title: Text(
-                'HomePro Live',
-                style: TextStyle(
-                  fontSize: 10.0,
-                ),
-              ),
-            ),
+                icon: Icon(Icons.live_tv, size: 20),
+                title: Text('HomePro Live', style: TextStyle(fontSize: 10.0))),
             BottomNavigationBarItem(
-              icon: Icon(
-                Icons.history,
-                size: 20,
-              ),
-              title: Text(
-                'Recently Live',
-                style: TextStyle(
-                  fontSize: 10.0,
-                ),
-              ),
-            ),
+                icon: Icon(Icons.history, size: 20),
+                title: Text('Recently Live', style: TextStyle(fontSize: 10.0))),
             BottomNavigationBarItem(
-              icon: Stack(
-                children: [
-                  Icon(
-                    Icons.chat_bubble,
-                    size: 20,
-                  ),
-                  // Positioned(
-                  //   right: 0,
-                  //   child: Container(
-                  //     height: 10,
-                  //     width: 10,
-                  //     decoration: BoxDecoration(
-                  //       shape: BoxShape.circle,
-                  //       color: Colors.red,
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-              title: Text(
-                'Chat',
-                style: TextStyle(
-                  fontSize: 10.0,
-                ),
-              ),
-            ),
+                icon: Icon(Icons.chat_bubble, size: 20),
+                title: Text('Inbox', style: TextStyle(fontSize: 10.0))),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.receipt, size: 20),
+                title: Text('Order', style: TextStyle(fontSize: 10.0))),
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Colors.blue[800],

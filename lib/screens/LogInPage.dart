@@ -23,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', _user.accessToken);
     prefs.setString('username', _user.username);
+    prefs.setString('phone', _user.phone);
   }
 
   void loginProcess(body) {

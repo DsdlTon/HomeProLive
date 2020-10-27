@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../models/Product.dart';
 import '../models/User.dart';
 import '../models/Cart.dart';
+import '../models/Address.dart';
 
 String baseUrl = "https://188.166.189.84";
 
@@ -52,11 +53,8 @@ class ProductService {
       "sku_list": sku,
     };
     String body = json.encode(data);
-    final response = await Http.post(
-      "$baseUrl/api/product/sku",
-      headers: {"Content-Type": "application/json"},
-      body: body,
-    );
+    final response = await Http.post("$baseUrl/api/product/sku",
+        headers: {"Content-Type": "application/json"}, body: body);
     List<dynamic> res = json.decode(response.body);
     print('response after decode: $res');
     return res;
@@ -138,3 +136,25 @@ class CartService {
 Cart cartFromJson(String responseString) =>
     Cart.fromJson(json.decode(responseString));
 String cartToJson(Cart cart) => json.encode(cart.toJson());
+
+// -------------------------------------------------------------------------
+
+class AddressService {
+  static Future<Address> addAddress(headers, body) async {
+    print('Enter addAddress');
+    final response =
+        await Http.post("$baseUrl/api/address", headers: headers, body: body);
+    print('responseBody: ${response.body}');
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+      return addressFromJson(responseString);
+    } else {
+      throw Exception(
+          'Status: ${response.statusCode} Failed to add Address!!!');
+    }
+  }
+}
+
+Address addressFromJson(String responseString) =>
+    Address.fromJson(json.decode(responseString));
+String addressToJson(Cart cart) => json.encode(cart.toJson());

@@ -534,6 +534,7 @@ class _CartPageState extends State<CartPage> {
     return GestureDetector(
       onTap: () {
         print(totalPrice);
+        cartItem.isEmpty ? print("Can't Process due to empty cart") :
         Navigator.pushNamed(
           context,
           '/checkoutPage',

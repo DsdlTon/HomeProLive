@@ -24,9 +24,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   void saveUserData() async {
+    print("ENTER SAVE USER DATA");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('accessToken', _user.accessToken);
     prefs.setString('username', _user.username);
+    prefs.setString('phone', _user.phone);
   }
 
   void _validateInputs() {

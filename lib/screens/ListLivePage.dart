@@ -158,17 +158,14 @@ class _ListLivePageState extends State<ListLivePage> {
                         mainAxisSpacing: 2.0,
                       ),
                       itemBuilder: (BuildContext context, int index) {
-                        print('=========================');
-                        print(
-                            'LiveContent Builder: ${snapshot.data.documents[index]["appId"]}');
-                        print('=========================');
                         return Container(
                           child: liveContent(
                             appId: '${snapshot.data.documents[index]["appId"]}',
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
-                            liveAdmin: 'Homepro1', //mocked data wait for fb update
+                            liveAdmin:
+                                'Homepro1', //mocked data wait for fb update
                             adminProfile: 'assets/logo.png',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
@@ -222,10 +219,6 @@ class _ListLivePageState extends State<ListLivePage> {
       {thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
     return InkWell(
       onTap: () {
-        print('=========================');
-        print('Tap $liveAdmin');
-        print('From LiveContent: $appId');
-        print('=========================');
         Navigator.pushNamed(
           context,
           '/livePage',
@@ -243,9 +236,6 @@ class _ListLivePageState extends State<ListLivePage> {
               _cartData = cartData;
               cartLen = _cartData.cartDetails.length;
             });
-
-            print(
-                '=========================\n .then: $appId\n =========================');
           });
         });
       },
