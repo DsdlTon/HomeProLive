@@ -3,11 +3,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:test_live_app/screens/selectedAddress.dart';
 
 class CheckOutPage extends StatefulWidget {
   final double totalPrice;
 
-  const CheckOutPage({Key key, this.totalPrice}) : super(key: key);
+  const CheckOutPage({
+    Key key,
+    @required this.totalPrice,
+  }) : super(key: key);
   @override
   _CheckOutPageState createState() => _CheckOutPageState();
 }
@@ -19,6 +23,9 @@ class _CheckOutPageState extends State<CheckOutPage> {
   String _accessToken;
   int deliveryCost = 30;
   double totalPayment;
+  var headers;
+
+  int _defaultLocation;
 
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
@@ -42,6 +49,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
     return CartService.getUserCart(headers);
   }
 
+  readDefaultLocationInPref() async {
+    print('read default location as index');
+    final prefs = await SharedPreferences.getInstance();
+    int defaultLocation = prefs.getInt('defaultLocationIndex');
+    return defaultLocation;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +73,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
       },
     );
 
-    getAccessToken().then((accessToken) {
+    readDefaultLocationInPref().then((defaultLocation) {
+      setState(() {
+        _defaultLocation = defaultLocation;
+        print('This is defaultLocation index: $_defaultLocation');
+      });
+    });
+
+    getAccessToken().then((accesstoken) {
+      headers = {"access-token": accesstoken};
       getUserCartData().then((cartData) {
         setState(() {
           _cartData = cartData;
@@ -209,7 +231,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
     return GestureDetector(
       onTap: () {
         print('Tap addressBar');
-        Navigator.pushNamed(context, '/selectedAddressPage');
+        Navigator.pushReplacementNamed(
+          context,
+          '/selectedAddressPage',
+          arguments: SelectedAddressPage(
+            totalPrice: widget.totalPrice,
+          ),
+        );
       },
       child: Container(
         padding: EdgeInsets.all(5),
@@ -250,16 +278,122 @@ class _CheckOutPageState extends State<CheckOutPage> {
           ],
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(21, 3, 8, 3),
-          child: Text(
-            'No default address to delivery. Please add a new one.',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 10,
-            ),
-          ),
+          padding: EdgeInsets.fromLTRB(21, 0, 8, 3),
+          child: _defaultLocation == null
+              ? Text(
+                  'No default address to delivery. Please add a new one.',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                  ),
+                )
+              : defaultLocationDetail(),
         )
       ],
+    );
+  }
+
+  Widget defaultLocationDetail() {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.85,
+      child: FutureBuilder(
+        future: AddressService.getAllUserAddress(headers),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return addressPanel(snapshot, _defaultLocation);
+          } else {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget addressPanel(snapshot, _defaultLocation) {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Text(
+                '${snapshot.data[_defaultLocation].firstname} ${snapshot.data[_defaultLocation].lastname}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                ' | ${snapshot.data[_defaultLocation].phone}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            '${snapshot.data[_defaultLocation].homeNo} หมู่ที่${snapshot.data[_defaultLocation].moo} ${snapshot.data[_defaultLocation].villageCondoname} ห้องเลขที่${snapshot.data[_defaultLocation].roomNo} ชั้น${snapshot.data[_defaultLocation].floor} ถนน${snapshot.data[_defaultLocation].street} ซอย ${snapshot.data[_defaultLocation].soi} เขต/อำเภอ ${snapshot.data[_defaultLocation].district} แขวง/ตำบล ${snapshot.data[_defaultLocation].subDistrict} ${snapshot.data[_defaultLocation].province}',
+            style: TextStyle(color: Colors.black, fontSize: 12, height: 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  //Fix This by remove _defaultLocation and find another parameter insteat
+  // Widget addressPanel(snapshot, _defaultLocation) {
+  //   print('///////// $_defaultLocation');
+  //   return Container(
+  //     child: ListView.builder(
+  //       scrollDirection: Axis.vertical,
+  //       shrinkWrap: true,
+  //       physics: BouncingScrollPhysics(),
+  //       controller: new ScrollController(keepScrollOffset: false),
+  //       itemCount: 1,
+  //       itemBuilder: (context, index) {
+  //         index = _defaultLocation;
+  //         return addressCard(snapshot, index);
+  //       },
+  //     ),
+  //   );
+  // }
+
+  Widget addressCard(snapshot, index) {
+    return Container(
+      padding: EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Text(
+                '${snapshot.data[index].firstname} ${snapshot.data[index].lastname}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                ' | ${snapshot.data[index].phone}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            '${snapshot.data[index].homeNo} หมู่ที่${snapshot.data[index].moo} ${snapshot.data[index].villageCondoname} ห้องเลขที่${snapshot.data[index].roomNo} ชั้น${snapshot.data[index].floor} ถนน${snapshot.data[index].street} ซอย ${snapshot.data[index].soi} เขต/อำเภอ ${snapshot.data[index].district} แขวง/ตำบล ${snapshot.data[index].subDistrict} ${snapshot.data[index].province}',
+            style: TextStyle(color: Colors.black, fontSize: 12, height: 1),
+          ),
+        ],
+      ),
     );
   }
 

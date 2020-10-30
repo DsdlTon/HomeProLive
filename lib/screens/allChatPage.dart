@@ -6,6 +6,7 @@ import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
+import 'package:test_live_app/widgets/logoutDialog.dart';
 
 class AllChatPage extends StatefulWidget {
   final String title;
@@ -91,14 +92,7 @@ class _AllChatPageState extends State<AllChatPage> {
         ),
         automaticallyImplyLeading: false,
         centerTitle: true,
-        leading: CircleAvatar(
-          radius: 16,
-          backgroundColor: Colors.transparent,
-          child: CircleAvatar(
-            radius: 15,
-            backgroundImage: AssetImage('assets/me.jpg'),
-          ),
-        ),
+        leading: signOutButton(),
         title: Text(
           'Chats',
           style: TextStyle(fontSize: 15),
@@ -378,6 +372,23 @@ class _AllChatPageState extends State<AllChatPage> {
               )
             : Container(),
       ],
+    );
+  }
+
+  Widget signOutButton() {
+    return IconButton(
+      icon: Icon(
+        Icons.exit_to_app,
+        color: Colors.white,
+      ),
+      tooltip: 'Logout',
+      onPressed: () {
+        print('OUT');
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => LogoutDialog(username: username),
+        );
+      },
     );
   }
 }

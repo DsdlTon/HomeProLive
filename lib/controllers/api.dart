@@ -1,28 +1,39 @@
 import 'package:http/http.dart' as Http;
+import 'package:dio/dio.dart';
 import 'dart:convert';
 import '../models/Product.dart';
 import '../models/User.dart';
 import '../models/Cart.dart';
 import '../models/Address.dart';
 
-String baseUrl = "https://188.166.189.84";
+String baseUrl = "https://homeprolive-test.ml";
+var dio = Dio();
 
 class UserService {
   static Future createUserInDB(body) async {
-    final response = await Http.post("$baseUrl/auth/register", body: body);
-    final String responseString = response.body;
-    print('createUser: ${response.body}');
-    if (response.statusCode == 200) {
+    FormData formData = new FormData.fromMap(body);
+    print(body);
+    Response response;
+    try {
+      response = await dio.post("$baseUrl/auth/register", data: formData);
+      print('message: ${response.statusCode}');
       return response.statusCode;
-    } else {
-      print('Failed Because $responseString');
-      print('Status: ${response.statusCode}');
-      return userFromJson(responseString);
+    } on DioError catch (e) {
+      print('e res msg: ${e.response.statusMessage}');
+      print('e res data: ${e.response.data}');
+      return e.response.statusMessage.toString();
     }
   }
 
-  static Future<User> login(body) async {
+  static Future<User> login(username, password) async {
+    print('enter loginAPI');
+    final body = {
+      "username": username,
+      "password": password,
+    };
+    print(body);
     final response = await Http.post("$baseUrl/auth/login", body: body);
+    print('enter loginAPI2');
     final String responseString = response.body;
     print('response.body: ${response.body}');
     return userFromJson(responseString);
@@ -48,7 +59,7 @@ class ProductService {
   }
 
   static Future<List<dynamic>> getProduct(sku) async {
-    print('ENTER GETALLPRODUCT');
+    print('ENTER GETPRODUCT');
     Map<String, List<String>> data = {
       "sku_list": sku,
     };
@@ -56,7 +67,6 @@ class ProductService {
     final response = await Http.post("$baseUrl/api/product/sku",
         headers: {"Content-Type": "application/json"}, body: body);
     List<dynamic> res = json.decode(response.body);
-    print('response after decode: $res');
     return res;
   }
 }
@@ -68,6 +78,7 @@ String productToJson(Product data) => json.encode(data.toJson());
 
 class CartService {
   static Future<Cart> getUserCart(headers) async {
+    print('enter getUserCart');
     print('headers: $headers');
     final response = await Http.get("$baseUrl/api/cart", headers: headers);
     print('cartResponse: ${response.body}');
@@ -147,14 +158,31 @@ class AddressService {
     print('responseBody: ${response.body}');
     if (response.statusCode == 200) {
       final String responseString = response.body;
-      return addressFromJson(responseString);
+      return Address.fromJson(json.decode(responseString));
     } else {
       throw Exception(
           'Status: ${response.statusCode} Failed to add Address!!!');
     }
   }
+
+  static Future<List<Address>> getAllUserAddress(headers) async {
+    print('Enter getAllUserAddress');
+    final response = await Http.get("$baseUrl/api/address", headers: headers);
+    print('addressResponse: ${response.body}');
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+      List<dynamic> rawAddressList = json.decode(responseString);
+      List<Address> listAddress = [];
+      rawAddressList.forEach((element) {
+        Address.fromJson(element);
+        listAddress.add(Address.fromJson(element));
+      });
+      return listAddress;
+    } else {
+      throw Exception(
+          'Status: ${response.statusCode} Failed to Load Address Data!!!');
+    }
+  }
 }
 
-Address addressFromJson(String responseString) =>
-    Address.fromJson(json.decode(responseString));
-String addressToJson(Cart cart) => json.encode(cart.toJson());
+String addressToJson(Address address) => json.encode(address.toJson());

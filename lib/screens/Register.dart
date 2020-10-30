@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/User.dart';
@@ -19,6 +24,11 @@ class _RegisterPageState extends State<RegisterPage> {
   String email;
   String phone;
 
+  String fileName;
+  File _image;
+  String path;
+  String base64Image;
+
   User _user;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -31,18 +41,23 @@ class _RegisterPageState extends State<RegisterPage> {
     prefs.setString('phone', _user.phone);
   }
 
+  Future getImageFromGallery() async {
+    // ignore: deprecated_member_use
+    await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
+      setState(() {
+        _image = image;
+        // path = basename(_image.path);
+      });
+    });
+    if (_image == null) return;
+    fileName = _image.path.split("/").last;
+    base64Image = base64Encode(_image.readAsBytesSync());
+  }
+
   void _validateInputs() {
     final form = _formKey.currentState;
     if (form.validate()) {
       form.save();
-      print('name: $name');
-      print('surname: $surname');
-      print('username: $username');
-      print('password: $password');
-      print('confirmPassword: $confirmPassword');
-      print('email: $email');
-      print('phone: $phone');
-
       final body = {
         "name": name,
         "lastname": surname,
@@ -52,23 +67,21 @@ class _RegisterPageState extends State<RegisterPage> {
         "phone": phone,
       };
       UserService.createUserInDB(body).then(
-        (user) {
+        (status) {
           print('Enter createUserInDB Method');
-          print('Message: $user');
-          print('Message: ${user.runtimeType}');
-          if (user == 200) {
+          if (status == 200) {
             print('Add User Info in DB Success!!');
-            loginProcess(body);
+            loginProcess(username, password);
             showDialog(
-              context: context,
+              context: this.context,
               barrierDismissible: false,
               builder: (context) => RegisterSuccessDialog(),
             );
           } else {
             showDialog(
-              context: context,
+              context: this.context,
               barrierDismissible: false,
-              builder: (context) => RegisterFailedDialog(user: user),
+              builder: (context) => RegisterFailedDialog(status: status),
             );
           }
         },
@@ -76,8 +89,9 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void loginProcess(body) {
-    UserService.login(body).then((response) {
+  void loginProcess(username, password) {
+    UserService.login(username, password).then((response) {
+      print('enter loginProcess');
       //login success
       if (response.message == "success") {
         setState(() {
@@ -87,7 +101,7 @@ class _RegisterPageState extends State<RegisterPage> {
       } else {
         //login failed
         showDialog(
-          context: context,
+          context: this.context,
           builder: (context) => AlertDialog(
             title: Text(response.message),
             actions: <Widget>[
@@ -117,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               showLogo(),
-              SizedBox(height: 40.0),
+              SizedBox(height: 20.0),
               Form(
                 key: _formKey,
                 child: Column(
@@ -220,6 +234,49 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  Widget chooseImageContainer() {
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          getImageFromGallery();
+        },
+        child: _image == null
+            ? Container(
+                width: MediaQuery.of(this.context).size.width * 0.4,
+                height: MediaQuery.of(this.context).size.height * 0.25,
+                child: Icon(
+                  Icons.account_circle,
+                  color: Colors.grey[400],
+                  size: 150,
+                ),
+              )
+            : Container(
+                width: MediaQuery.of(this.context).size.width * 0.4,
+                height: MediaQuery.of(this.context).size.height * 0.25,
+                child: Stack(
+                  children: [
+                    Image.file(
+                      _image,
+                      fit: BoxFit.cover,
+                    ),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        icon: Icon(Icons.cancel, color: Colors.black),
+                        onPressed: () {
+                          setState(() {
+                            _image = null;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
   Widget showLogo() {
     return Center(
       child: Container(
@@ -247,7 +304,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Container(
       margin: EdgeInsets.only(bottom: 5.0),
       padding: EdgeInsets.symmetric(horizontal: 10.0),
-      width: MediaQuery.of(context).size.width / 2.3,
+      width: MediaQuery.of(this.context).size.width / 2.3,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(
@@ -278,7 +335,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Container(
       margin: EdgeInsets.only(bottom: 5.0),
       padding: EdgeInsets.symmetric(horizontal: 10.0),
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery.of(this.context).size.width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10.0),
         border: Border.all(

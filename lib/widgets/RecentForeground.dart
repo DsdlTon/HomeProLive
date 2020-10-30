@@ -68,7 +68,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     final headers = {
       "access-token": _accessToken,
     };
-    print(headers);
     return CartService.getUserCart(headers);
   }
 
@@ -115,7 +114,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
 
   Future<List<dynamic>> getProductInfo(sku) async {
     await ProductService.getProduct(sku).then((res) {
-      print('resWhenGet: $res');
       setState(() {
         product = res;
       });
@@ -134,10 +132,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       "sku": sku.toString(),
       "quantity": _quantity.toString(),
     };
-    print('Headers: $headers');
-    print('HeadersType: ${headers.runtimeType}');
-    print('body: $body');
-    print('bodyType: ${body.runtimeType}');
     CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {

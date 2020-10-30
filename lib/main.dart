@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
 import 'package:test_live_app/utils/route_generator.dart';
@@ -21,18 +20,16 @@ class MyApp extends StatelessWidget {
     return Provider(
       create: (context) =>
           TotalPriceProvider(initialPrice: 0, productPrice: List<double>()),
-      child: OverlaySupport(
-        child: MaterialApp(
-          title: 'HomePro Live',
-          navigatorKey: navigatorKey,
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-          ),
-          initialRoute: '/',
-          onGenerateRoute: RouteGenerator.generateRoute,
+      child: MaterialApp(
+        title: 'HomePro Live',
+        navigatorKey: navigatorKey,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        initialRoute: '/',
+        onGenerateRoute: RouteGenerator.generateRoute,
       ),
     );
   }

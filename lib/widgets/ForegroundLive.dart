@@ -10,8 +10,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/screens/ProductDetailPage.dart';
 
-import 'Particles.dart';
-
 class ForegroundLive extends StatefulWidget {
   final String title;
   final String adminProfile;
@@ -395,9 +393,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       ),
       child: IconButton(
         icon: Icon(Icons.favorite_border, color: Colors.white),
-        onPressed: () {
-          Positioned.fill(child: Particles(30));
-        },
+        onPressed: () {},
       ),
     );
   }

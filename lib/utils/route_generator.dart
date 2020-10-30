@@ -92,10 +92,12 @@ class RouteGenerator {
           ),
         );
       case '/selectedAddressPage':
-        // final SelectedAddressPage checkoutArgs = settings.arguments;
+        final SelectedAddressPage selectedAddressArgs = settings.arguments;
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => SelectedAddressPage(),
+          builder: (_) => SelectedAddressPage(
+            totalPrice: selectedAddressArgs.totalPrice,
+          ),
         );
       case '/newAddressPage':
         // final SelectedAddressPage checkoutArgs = settings.arguments;

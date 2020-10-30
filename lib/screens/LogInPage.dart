@@ -3,6 +3,7 @@ import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/screens/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/widgets/LoginDialog.dart';
 import '../models/User.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,11 +27,10 @@ class _LoginPageState extends State<LoginPage> {
     prefs.setString('phone', _user.phone);
   }
 
-  void loginProcess(body) {
+  void loginProcess(username, password) {
     print('ENTER LOGIN PROCESS');
-    UserService.login(body).then((user) {
+    UserService.login(username, password).then((user) {
       print('userMessage: ${user.message}');
-
       if (user.message == "success") {
         setState(() {
           _user = user;
@@ -40,20 +40,25 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.of(context).pushNamedAndRemoveUntil(
             '/homePage', (Route<dynamic> route) => false);
       } else {
+        String err = user.message;
         showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(user.message),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              )
-            ],
-          ),
+          context: this.context,
+          builder: (context) => LoginDialog(err: err),
         );
+        // showDialog(
+        //   context: context,
+        //   builder: (context) => AlertDialog(
+        //     title: Text(user.message),
+        //     actions: <Widget>[
+        //       FlatButton(
+        //         child: Text('OK'),
+        //         onPressed: () {
+        //           Navigator.pop(context);
+        //         },
+        //       )
+        //     ],
+        //   ),
+        // );
       }
     }).catchError((e) {
       print('ERROR: $e');
@@ -67,12 +72,7 @@ class _LoginPageState extends State<LoginPage> {
       print('username: $username');
       print('password: $password');
 
-      final body = {
-        "username": username,
-        "password": password,
-      };
-
-      loginProcess(body);
+      loginProcess(username, password);
     }
   }
 

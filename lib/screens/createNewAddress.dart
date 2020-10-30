@@ -13,6 +13,7 @@ class NewAddressPage extends StatefulWidget {
 class _NewAddressPageState extends State<NewAddressPage> {
   final _formKey = GlobalKey<FormState>();
   String _accessToken;
+  bool isLoading = false;
 
   String firstName,
       lastName,
@@ -36,7 +37,7 @@ class _NewAddressPageState extends State<NewAddressPage> {
     ListItem(1, "Single House"),
     ListItem(2, "Town House"),
     ListItem(3, "Condominium"),
-    ListItem(4, "Commercial Builder"),
+    ListItem(4, "Commercial Building"),
     ListItem(5, "Others"),
   ];
 
@@ -68,6 +69,9 @@ class _NewAddressPageState extends State<NewAddressPage> {
   }
 
   void validateInputs() {
+    setState(() {
+      isLoading = true;
+    });
     final form = _formKey.currentState;
     if (form.validate()) {
       form.save();
@@ -105,6 +109,9 @@ class _NewAddressPageState extends State<NewAddressPage> {
             fontSize: 13.0,
           );
         }
+        setState(() {
+          isLoading = false;
+        });
         Navigator.of(context).pop();
       });
     }
@@ -170,40 +177,56 @@ class _NewAddressPageState extends State<NewAddressPage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
+        child: Stack(
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  fnameTextFormField(),
-                  lnameTextFormField(),
+                  Row(
+                    children: <Widget>[
+                      fnameTextFormField(),
+                      lnameTextFormField(),
+                    ],
+                  ),
+                  phoneTextFormField(),
+                  typeTextFormField(),
+                  Row(
+                    children: <Widget>[
+                      homeNoTextFormField(),
+                      roomNoTextFormField(),
+                    ],
+                  ),
+                  villageTextFormField(),
+                  Row(
+                    children: <Widget>[
+                      mooTextFormField(),
+                      soiTextFormField(),
+                      floorTextFormField(),
+                    ],
+                  ),
+                  streetTextFormField(),
+                  provinceTextFormField(),
+                  districtTextFormField(),
+                  subDistrictTextFormField(),
+                  addAddressButton(),
                 ],
               ),
-              phoneTextFormField(),
-              typeTextFormField(),
-              Row(
-                children: <Widget>[
-                  homeNoTextFormField(),
-                  roomNoTextFormField(),
-                ],
-              ),
-              villageTextFormField(),
-              Row(
-                children: <Widget>[
-                  mooTextFormField(),
-                  soiTextFormField(),
-                  floorTextFormField(),
-                ],
-              ),
-              streetTextFormField(),
-              provinceTextFormField(),
-              districtTextFormField(),
-              subDistrictTextFormField(),
-              addAddressButton(),
-            ],
-          ),
+            ),
+            isLoading == true
+                ? Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.8,
+                    color: Colors.white.withOpacity(0.5),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.blue[800],
+                      ),
+                    ),
+                  )
+                : Container()
+          ],
         ),
       ),
     );

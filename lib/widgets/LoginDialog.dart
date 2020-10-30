@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class RegisterFailedDialog extends StatelessWidget {
-  final String status;
+class LoginDialog extends StatelessWidget {
+  final String err;
 
-  const RegisterFailedDialog({Key key, this.status}) : super(key: key);
+  const LoginDialog({Key key, this.err}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,8 @@ class RegisterFailedDialog extends StatelessWidget {
   _buildChild(BuildContext context) {
     return Container(
       constraints: BoxConstraints(
-        minHeight: MediaQuery.of(context).size.height * 0.38,
-        maxHeight: MediaQuery.of(context).size.height * 0.40,
+        minHeight: MediaQuery.of(context).size.height * 0.2,
+        maxHeight: MediaQuery.of(context).size.height * 0.33,
       ),
       padding: EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
@@ -50,18 +50,10 @@ class RegisterFailedDialog extends StatelessWidget {
                   ),
                   SizedBox(height: 15),
                   Text(
-                    '$status',
+                    '$err',
                     style: TextStyle(
                       color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                    ),
-                  ),
-                  SizedBox(height: 15),
-                  Text(
-                    'Email and Username must be unique',
-                    style: TextStyle(
-                      color: Colors.black,
+                      fontSize: 15,
                     ),
                   ),
                 ],

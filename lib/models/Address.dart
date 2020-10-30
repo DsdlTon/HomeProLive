@@ -1,4 +1,5 @@
 class Address {
+  int id;
   String firstname;
   String lastname;
   String phone;
@@ -13,9 +14,13 @@ class Address {
   String province;
   String district;
   String subDistrict;
+  String createdAt;
+  String updatedAt;
+  int userId;
 
   Address(
-      {this.firstname,
+      {this.id,
+      this.firstname,
       this.lastname,
       this.phone,
       this.type,
@@ -28,9 +33,13 @@ class Address {
       this.street,
       this.province,
       this.district,
-      this.subDistrict});
+      this.subDistrict,
+      this.createdAt,
+      this.updatedAt,
+      this.userId});
 
   Address.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
     firstname = json['firstname'];
     lastname = json['lastname'];
     phone = json['phone'];
@@ -45,10 +54,14 @@ class Address {
     province = json['province'];
     district = json['district'];
     subDistrict = json['sub_district'];
+    createdAt = json['createdAt'];
+    updatedAt = json['updatedAt'];
+    userId = json['user_id'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
     data['firstname'] = this.firstname;
     data['lastname'] = this.lastname;
     data['phone'] = this.phone;
@@ -63,6 +76,9 @@ class Address {
     data['province'] = this.province;
     data['district'] = this.district;
     data['sub_district'] = this.subDistrict;
+    data['createdAt'] = this.createdAt;
+    data['updatedAt'] = this.updatedAt;
+    data['user_id'] = this.userId;
     return data;
   }
 }

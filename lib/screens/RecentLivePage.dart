@@ -1,8 +1,6 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
-import 'package:test_live_app/widgets/WebViewPlayBack.dart';
-import 'package:video_player/video_player.dart';
-import '../widgets/Playback.dart';
+import 'package:test_live_app/widgets/VlcPlayerPage.dart';
 import '../widgets/RecentForeground.dart';
 
 class RecentLivePage extends StatefulWidget {
@@ -14,10 +12,8 @@ class RecentLivePage extends StatefulWidget {
   final String appId;
   final String pathVideo;
 
-  /// non-modifiable client role of the page
   final ClientRole role;
 
-  /// Creates a call page with given channel name.
   const RecentLivePage({
     Key key,
     this.channelName,
@@ -41,7 +37,6 @@ class _RecentLivePageState extends State<RecentLivePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     print('channelName: ${widget.channelName}');
     print('title: ${widget.title}');
@@ -66,7 +61,12 @@ class _RecentLivePageState extends State<RecentLivePage> {
         fit: StackFit.expand,
         children: <Widget>[
           Container(
-            child: WebViewPlayback(pathVideo: widget.pathVideo),
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.blue,
+            child: ClipRRect(
+              child: VlcPlayerPage(pathVideo: widget.pathVideo),
+            ),
           ),
           PageView(
             controller: _pageController,
