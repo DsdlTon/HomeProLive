@@ -621,6 +621,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     selectedProductImage,
     selectedProductPrice,
     quantityInCart,
+    index,
   }) {
     showModalBottomSheet(
       context: context,
@@ -687,8 +688,13 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                             GestureDetector(
                               onTap: () {
                                 state(() {
-                                  quantityInCart += 1;
-                                  print(quantityInCart);
+                                  if (quantityInCart <
+                                      product[index]['quantity']) {
+                                    quantityInCart += 1;
+                                  }
+                                  print(
+                                      'productQuantity: ${product[index]['quantity']}');
+                                  print('quantityInCart: $quantityInCart');
                                 });
                               },
                               child: Container(
@@ -704,7 +710,10 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                 child: Icon(
                                   Icons.add,
                                   size: 15,
-                                  color: Colors.black,
+                                  color: quantityInCart ==
+                                          product[index]['quantity']
+                                      ? Colors.grey[300]
+                                      : Colors.black,
                                 ),
                               ),
                             ),
@@ -1045,6 +1054,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                   selectedProductImage: product[index]["image"],
                   selectedProductPrice: product[index]["price"],
                   quantityInCart: quantityInCart,
+                  index: index,
                 );
                 print('${product[index]["sku"]} HAS: $_quantity');
               });
@@ -1052,7 +1062,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           },
           icon: Icon(
             Icons.add_shopping_cart,
-            color: product[index]['quantity'] != 0 ? Colors.white : Colors.grey[800],
+            color: product[index]['quantity'] != 0
+                ? Colors.white
+                : Colors.grey[800],
             size: 20,
           ),
         ),
