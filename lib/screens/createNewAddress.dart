@@ -4,8 +4,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../models/ListItem.dart';
 import '../controllers/api.dart';
+import 'selectedAddress.dart';
 
 class NewAddressPage extends StatefulWidget {
+  final double totalPrice;
+
+  const NewAddressPage({Key key, this.totalPrice}) : super(key: key);
+
   @override
   _NewAddressPageState createState() => _NewAddressPageState();
 }
@@ -38,7 +43,7 @@ class _NewAddressPageState extends State<NewAddressPage> {
     ListItem(2, "Town House"),
     ListItem(3, "Condominium"),
     ListItem(4, "Commercial Building"),
-    ListItem(5, "Others"),
+    ListItem(5, "Other"),
   ];
 
   int _keyboardVisibilitySubscriberId;
@@ -112,7 +117,13 @@ class _NewAddressPageState extends State<NewAddressPage> {
         setState(() {
           isLoading = false;
         });
-        Navigator.of(context).pop();
+        Navigator.pushReplacementNamed(
+          context,
+          '/selectedAddressPage',
+          arguments: SelectedAddressPage(
+            totalPrice: widget.totalPrice,
+          ),
+        );
       });
     }
   }
@@ -160,7 +171,13 @@ class _NewAddressPageState extends State<NewAddressPage> {
         ),
         leading: IconButton(
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.pushReplacementNamed(
+              context,
+              '/selectedAddressPage',
+              arguments: SelectedAddressPage(
+                totalPrice: widget.totalPrice,
+              ),
+            );
           },
           icon: Icon(
             Icons.arrow_back_ios,
@@ -177,6 +194,7 @@ class _NewAddressPageState extends State<NewAddressPage> {
         ),
       ),
       body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         child: Stack(
           children: [
             Form(
@@ -245,18 +263,18 @@ class _NewAddressPageState extends State<NewAddressPage> {
           validateInputs();
         },
         child: Container(
-            decoration: BoxDecoration(
-                color: Colors.blue[800],
-                borderRadius: BorderRadius.circular(3)),
-            child: Center(
-              child: Text(
-                'Confirm',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
+          decoration: BoxDecoration(
+              color: Colors.blue[800], borderRadius: BorderRadius.circular(3)),
+          child: Center(
+            child: Text(
+              'Confirm',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white,
               ),
-            )),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/models/Address.dart';
 import 'package:test_live_app/screens/Checkout.dart';
+import 'package:test_live_app/screens/createNewAddress.dart';
 
 class SelectedAddressPage extends StatefulWidget {
   final double totalPrice;
@@ -180,9 +181,7 @@ class _SelectedAddressPageState extends State<SelectedAddressPage> {
                       fontSize: 12,
                       fontWeight: FontWeight.w600),
                 ),
-                defaultLocation == index
-                    ? defaultLocationTag()
-                    : Container(),
+                defaultLocation == index ? defaultLocationTag() : Container(),
               ],
             ),
             SizedBox(height: 5),
@@ -214,7 +213,13 @@ class _SelectedAddressPageState extends State<SelectedAddressPage> {
     return GestureDetector(
       onTap: () {
         print('Tap add new Address');
-        Navigator.pushNamed(context, '/newAddressPage');
+        Navigator.pushReplacementNamed(
+          context,
+          '/newAddressPage',
+          arguments: NewAddressPage(
+            totalPrice: widget.totalPrice,
+          ),
+        );
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

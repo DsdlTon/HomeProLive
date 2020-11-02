@@ -63,7 +63,7 @@ class _RecentLivePageState extends State<RecentLivePage> {
           Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
-            color: Colors.blue,
+            color: Colors.black,
             child: ClipRRect(
               child: VlcPlayerPage(pathVideo: widget.pathVideo),
             ),

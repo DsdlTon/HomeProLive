@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
+import 'package:test_live_app/models/Order.dart';
+import 'package:test_live_app/screens/ItemInOrder.dart';
 import '../widgets/logoutDialog.dart';
 
 class OrderListPage extends StatefulWidget {
@@ -10,8 +12,9 @@ class OrderListPage extends StatefulWidget {
 }
 
 class _OrderListPageState extends State<OrderListPage> {
-  String username = '';
   Cart _cartData = Cart();
+  Order _orderData = Order();
+  String username = '';
   String _accessToken;
   int cartLen = 0;
 
@@ -37,8 +40,15 @@ class _OrderListPageState extends State<OrderListPage> {
     final headers = {
       "access-token": _accessToken,
     };
-    print(headers);
     return CartService.getUserCart(headers);
+  }
+
+  Future<Order> getAllOrderInDB() async {
+    print('Enter getAllOrderInDB');
+    final headers = {
+      "access-token": _accessToken,
+    };
+    return OrderService.getAllOrder(headers);
   }
 
   @override
@@ -59,6 +69,7 @@ class _OrderListPageState extends State<OrderListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.blue[800],
         elevation: 0,
@@ -84,6 +95,163 @@ class _OrderListPageState extends State<OrderListPage> {
         ),
         actions: <Widget>[
           cartButton(),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
+        child: Container(
+          child: FutureBuilder(
+            future: getAllOrderInDB(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return orderPanel(snapshot);
+              } else {
+                return Container(
+                  height: MediaQuery.of(context).size.height * 0.75,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget orderPanel(snapshot) {
+    return Container(
+      child: ListView.builder(
+        scrollDirection: Axis.vertical,
+        shrinkWrap: true,
+        reverse: true,
+        physics: BouncingScrollPhysics(),
+        controller: new ScrollController(keepScrollOffset: false),
+        itemCount: snapshot.data.orders.length,
+        itemBuilder: (context, index) {
+          return orderCard(snapshot.data.orders, index);
+        },
+      ),
+    );
+  }
+
+  Widget orderCard(orders, index) {
+    return GestureDetector(
+      onTap: () {
+        print('Tap order id ${orders[index].id}');
+        print('order length ${orders.length}');
+        print(index);
+        Navigator.pushNamed(
+          context,
+          '/itemInOrder',
+          arguments: ItemInOrder(
+            orderId: orders[index].id,
+            index: index,
+          ),
+        );
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.2,
+        margin: EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey[300],
+            ),
+          ),
+        ),
+        child: Row(
+          children: <Widget>[
+            showOrderImage(orders[index].orderItem[0].product.image),
+            showOrderDetail(orders, index),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget showOrderImage(image) {
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width * 0.3,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: Image.network(
+          image,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Widget showOrderDetail(orders, index) {
+    int orderNum = index + 1;
+    return Container(
+      margin: EdgeInsets.only(left: 12),
+      padding: EdgeInsets.symmetric(vertical: 3),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'Order #$orderNum',
+                style: TextStyle(
+                  height: 1.5,
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              orders[index].paymentStatus == false
+                  ? Text(
+                      'Payment: waiting for payment',
+                      style: TextStyle(
+                        height: 1.5,
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
+                    )
+                  : Text(
+                      'Payment: Completed',
+                      style: TextStyle(
+                        height: 1.5,
+                        color: Colors.black,
+                        fontSize: 12,
+                      ),
+                    ),
+              // Text(
+              //   'Payment Type: ${orders[index].paymentType}',
+              //   style: TextStyle(
+              //     height: 1.5,
+              //     color: Colors.black,
+              //     fontSize: 12,
+              //   ),
+              // ),
+              Text(
+                'Delivery: ${orders[index].deliveryStatus}',
+                style: TextStyle(
+                  height: 1.5,
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                'data: ${orders[index].createdAt}',
+                style: TextStyle(
+                  height: 1.5,
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

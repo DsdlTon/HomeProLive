@@ -177,17 +177,14 @@ class _ForegroundLiveState extends State<ForegroundLive> {
         print('cartLen: $cartLen');
       });
     });
-
+    getProductToShowInLive(widget.channelName).then((sku) {
+      getProductInfo(sku);
+    });
     FireStoreClass.saveViewer(
       widget.username,
       widget.liveAdmin,
       widget.channelName,
     );
-
-    getProductToShowInLive(widget.channelName).then((sku) {
-      getProductInfo(sku);
-    });
-
     _keyboardState = _keyboardVisibility.isKeyboardVisible;
     _keyboardVisibilitySubscriberId = _keyboardVisibility.addNewListener(
       onChange: (bool visible) {
@@ -1029,6 +1026,14 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                 ),
               ),
               Text(
+                'QTY: ${product[index]['quantity']}',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                  height: 1.5,
+                ),
+              ),
+              Text(
                 '฿ ' + product[index]["price"],
                 style: TextStyle(
                   color: Colors.white,
@@ -1047,23 +1052,25 @@ class _ForegroundLiveState extends State<ForegroundLive> {
         alignment: Alignment.centerRight,
         child: IconButton(
           onPressed: () {
-            getQuantityofItem(
-              _accessToken,
-              product[index]["sku"],
-            ).then((quantityInCart) {
-              showQuantitySelection(
-                selectedProductSku: product[index]["sku"],
-                selectedProductTitle: product[index]["title"],
-                selectedProductImage: product[index]["image"],
-                selectedProductPrice: product[index]["price"],
-                quantityInCart: quantityInCart,
-              );
-              print('${product[index]["sku"]} HAS: $_quantity');
-            });
+            if (product[index]['quantity'] != 0) {
+              getQuantityofItem(
+                _accessToken,
+                product[index]["sku"],
+              ).then((quantityInCart) {
+                showQuantitySelection(
+                  selectedProductSku: product[index]["sku"],
+                  selectedProductTitle: product[index]["title"],
+                  selectedProductImage: product[index]["image"],
+                  selectedProductPrice: product[index]["price"],
+                  quantityInCart: quantityInCart,
+                );
+                print('${product[index]["sku"]} HAS: $_quantity');
+              });
+            }
           },
           icon: Icon(
             Icons.add_shopping_cart,
-            color: Colors.white,
+            color: product[index]['quantity'] != 0 ? Colors.white : Colors.grey[800],
             size: 20,
           ),
         ),

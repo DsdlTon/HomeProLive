@@ -4,8 +4,10 @@ import 'package:test_live_app/screens/CartPage.dart';
 import 'package:test_live_app/screens/ChatPage.dart';
 import 'package:test_live_app/screens/Checkout.dart';
 import 'package:test_live_app/screens/HomePage.dart';
+import 'package:test_live_app/screens/ItemInOrder.dart';
 import 'package:test_live_app/screens/LivePage.dart';
 import 'package:test_live_app/screens/LogInPage.dart';
+import 'package:test_live_app/screens/OrderList.dart';
 import 'package:test_live_app/screens/RecentLivePage.dart';
 import 'package:test_live_app/screens/Register.dart';
 import 'package:test_live_app/screens/SplashPage.dart';
@@ -24,7 +26,11 @@ class RouteGenerator {
       case '/loginPage':
         return MaterialPageRoute(builder: (_) => LoginPage());
       case '/homePage':
-        return MaterialPageRoute(builder: (_) => HomePage());
+        // final HomePage homeArgs = settings.arguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => HomePage(),
+        );
       case '/chatPage':
         final ChatPage chatArgs = settings.arguments;
         return MaterialPageRoute(
@@ -100,12 +106,24 @@ class RouteGenerator {
           ),
         );
       case '/newAddressPage':
-        // final SelectedAddressPage checkoutArgs = settings.arguments;
+        final NewAddressPage newAddressArgs = settings.arguments;
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => NewAddressPage(),
+          builder: (_) => NewAddressPage(
+            totalPrice: newAddressArgs.totalPrice,
+          ),
         );
-
+      case '/orderListPage':
+        return MaterialPageRoute(builder: (_) => OrderListPage());
+      case '/itemInOrder':
+        final ItemInOrder itemInOrderArgs = settings.arguments;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => ItemInOrder(
+            orderId: itemInOrderArgs.orderId,
+            index: itemInOrderArgs.index,
+          ),
+        );
       default:
         return _errorRoute();
     }

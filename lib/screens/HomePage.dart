@@ -24,6 +24,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    // if (widget.toOrder != null) {
+    //   setState(() {
+    //     _selectedIndex = 3;
+    //   });
+    // }
     NotificationController.instance.subscribeWhenAppLaunch();
     NotificationController.instance.initLocalNotification();
   }

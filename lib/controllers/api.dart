@@ -1,5 +1,7 @@
 import 'package:http/http.dart' as Http;
 import 'package:dio/dio.dart';
+import 'package:test_live_app/models/Order.dart';
+import 'package:test_live_app/models/ProductInOrder.dart';
 import 'dart:convert';
 import '../models/Product.dart';
 import '../models/User.dart';
@@ -186,3 +188,56 @@ class AddressService {
 }
 
 String addressToJson(Address address) => json.encode(address.toJson());
+
+// -------------------------------------------------------------------------
+
+class OrderService {
+  static Future checkout(body, headers) async {
+    print('Enter checkout api');
+    final response = await Http.post("$baseUrl/api/cart/checkout",
+        body: body, headers: headers);
+    print('checkout response: ${response.body}');
+    if (response.statusCode == 200) {
+      print('Checkout success');
+      return true;
+    } else {
+      return response;
+    }
+  }
+
+  static Future<ProductInOrder> getOrder(id, headers) async {
+    print('Enter getOrder id$id');
+    final response = await Http.get('$baseUrl/api/order/$id', headers: headers);
+    print('getOrder response: ${response.body}');
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+      return productInOrderFromJson(responseString);
+    } else {
+      throw Exception('Status: ${response.statusCode} getOrder Failed!!!');
+    }
+  }
+
+  static Future<Order> getAllOrder(headers) async {
+    print('Enter getAllOrder');
+    final response = await Http.get("$baseUrl/api/order", headers: headers);
+    print('getAllOrder Response: ${response.body}');
+    if (response.statusCode == 200) {
+      final String responseString = response.body;
+      return orderFromJson(responseString);
+    } else {
+      throw Exception('Status: ${response.statusCode} getAllOrder Failed!!!');
+    }
+  }
+}
+
+ProductInOrder productInOrderFromJson(String responseString) {
+  return ProductInOrder.fromJson(json.decode(responseString));
+}
+
+Order orderFromJson(String responseString) {
+  return Order.fromJson(json.decode(responseString));
+}
+
+String orderToJson(Cart cart) {
+  return json.encode(cart.toJson());
+}

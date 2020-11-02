@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
+import 'package:test_live_app/screens/HomePage.dart';
 import 'package:test_live_app/screens/selectedAddress.dart';
 
 class CheckOutPage extends StatefulWidget {
@@ -20,13 +22,13 @@ class _CheckOutPageState extends State<CheckOutPage> {
   Cart _cartData = Cart();
   int cartLen = 0;
   List cartItem = [];
+  List totalPriceList = [];
   String _accessToken;
   int deliveryCost = 30;
   double totalPayment;
   var headers;
-
   int _defaultLocation;
-
+  int addressId;
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
   KeyboardVisibilityNotification _keyboardVisibility =
@@ -56,6 +58,15 @@ class _CheckOutPageState extends State<CheckOutPage> {
     return defaultLocation;
   }
 
+  calculatePrice() {
+    cartItem.forEach((element) {
+      double dbPrice = double.parse(element.product.price);
+      int quantity = element.quantity;
+      double calculatedPrice = dbPrice * quantity;
+      totalPriceList.add(calculatedPrice);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -72,14 +83,12 @@ class _CheckOutPageState extends State<CheckOutPage> {
         });
       },
     );
-
     readDefaultLocationInPref().then((defaultLocation) {
       setState(() {
         _defaultLocation = defaultLocation;
         print('This is defaultLocation index: $_defaultLocation');
       });
     });
-
     getAccessToken().then((accesstoken) {
       headers = {"access-token": accesstoken};
       getUserCartData().then((cartData) {
@@ -211,15 +220,53 @@ class _CheckOutPageState extends State<CheckOutPage> {
 
   Widget confirmButton() {
     return Expanded(
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        color: Colors.blue[800],
-        child: Center(
-          child: Text(
-            'Confirm',
-            style: TextStyle(
-              color: Colors.white,
+      child: GestureDetector(
+        onTap: () {
+          String addressIdStr = addressId.toString();
+          final body = {"address_id": addressIdStr};
+          final headers = {"access-token": _accessToken};
+          body["address_id"] != "null"
+              ? OrderService.checkout(body, headers).then((value) {
+                  if (value == true) {
+                    Navigator.pushReplacementNamed(context, '/homePage');
+                    Fluttertoast.showToast(
+                      msg: "Checkout Success.",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.blue[800],
+                      textColor: Colors.white,
+                      fontSize: 13.0,
+                    );
+                  } else {
+                    Fluttertoast.showToast(
+                      msg: "Your Item is Out of Stock",
+                      toastLength: Toast.LENGTH_LONG,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.red[800],
+                      textColor: Colors.white,
+                      fontSize: 13.0,
+                    );
+                  }
+                })
+              : Fluttertoast.showToast(
+                  msg: "Select Delivery Address Before Checkout.",
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.red[800],
+                  textColor: Colors.white,
+                  fontSize: 13.0,
+                );
+        },
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          color: Colors.blue[800],
+          child: Center(
+            child: Text(
+              'Confirm',
+              style: TextStyle(
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -300,6 +347,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         future: AddressService.getAllUserAddress(headers),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            addressId = snapshot.data[_defaultLocation].id;
             return addressPanel(snapshot, _defaultLocation);
           } else {
             return Container(
@@ -346,57 +394,6 @@ class _CheckOutPageState extends State<CheckOutPage> {
     );
   }
 
-  //Fix This by remove _defaultLocation and find another parameter insteat
-  // Widget addressPanel(snapshot, _defaultLocation) {
-  //   print('///////// $_defaultLocation');
-  //   return Container(
-  //     child: ListView.builder(
-  //       scrollDirection: Axis.vertical,
-  //       shrinkWrap: true,
-  //       physics: BouncingScrollPhysics(),
-  //       controller: new ScrollController(keepScrollOffset: false),
-  //       itemCount: 1,
-  //       itemBuilder: (context, index) {
-  //         index = _defaultLocation;
-  //         return addressCard(snapshot, index);
-  //       },
-  //     ),
-  //   );
-  // }
-
-  Widget addressCard(snapshot, index) {
-    return Container(
-      padding: EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Text(
-                '${snapshot.data[index].firstname} ${snapshot.data[index].lastname}',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                ),
-              ),
-              Text(
-                ' | ${snapshot.data[index].phone}',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            '${snapshot.data[index].homeNo} หมู่ที่${snapshot.data[index].moo} ${snapshot.data[index].villageCondoname} ห้องเลขที่${snapshot.data[index].roomNo} ชั้น${snapshot.data[index].floor} ถนน${snapshot.data[index].street} ซอย ${snapshot.data[index].soi} เขต/อำเภอ ${snapshot.data[index].district} แขวง/ตำบล ${snapshot.data[index].subDistrict} ${snapshot.data[index].province}',
-            style: TextStyle(color: Colors.black, fontSize: 12, height: 1),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget boughtProduct() {
     return Container(
       child: ListView.builder(
@@ -406,6 +403,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
         controller: new ScrollController(keepScrollOffset: false),
         itemCount: cartLen,
         itemBuilder: (BuildContext context, int index) {
+          calculatePrice();
           return cartItemCard(index);
         },
       ),
@@ -486,7 +484,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                       ),
                     ),
                     Text(
-                      '฿${cartItem[index].product.price}',
+                      '฿${totalPriceList[index]}',
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 10,
