@@ -223,19 +223,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget buyNowButton(sku, quantityInCart, title) {
     return GestureDetector(
       onTap: () {
-        if (quantityInCart != 0) {
-          addProductToCart(sku, quantityInCart, title);
-          Navigator.pushNamed(context, '/cartPage');
-        } else {
-          Fluttertoast.showToast(
-            msg: "Please add Quantity of Product.",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-            fontSize: 13.0,
+        getQuantityofItem(_accessToken, sku).then((quantityInCart) {
+          showBuyNowQuantitySelection(
+            selectedProductSku: product.sku,
+            selectedProductTitle: product.title,
+            selectedProductImage: product.image,
+            selectedProductPrice: product.price,
+            quantityInCart: quantityInCart,
           );
-        }
+        });
       },
       child: Container(
         height: MediaQuery.of(context).size.height * 0.055,
@@ -274,7 +270,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           print(_accessToken);
           print(sku);
           getQuantityofItem(_accessToken, sku).then((quantityInCart) {
-            showQuantitySelection(
+            showAddtoCartQuantitySelection(
               selectedProductSku: product.sku,
               selectedProductTitle: product.title,
               selectedProductImage: product.image,
@@ -463,7 +459,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  showQuantitySelection({
+  showAddtoCartQuantitySelection({
     selectedProductSku,
     selectedProductTitle,
     selectedProductImage,
@@ -552,7 +548,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   child: Icon(
                                     Icons.remove,
                                     size: 15,
-                                    color: quantityInCart > 1
+                                    color: quantityInCart > 0
                                         ? Colors.black
                                         : Colors.grey[300],
                                   ),
@@ -607,6 +603,188 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           },
         );
       },
+    );
+  }
+
+  showBuyNowQuantitySelection({
+    selectedProductSku,
+    selectedProductTitle,
+    selectedProductImage,
+    selectedProductPrice,
+    quantityInCart,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white.withOpacity(0.95),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, state) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.26,
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(bottom: 5),
+                    margin: EdgeInsets.only(bottom: 5),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          'Buy Now',
+                          style: TextStyle(
+                            color: Colors.blue[800],
+                            fontSize: 15,
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: BoxConstraints(),
+                          icon: Icon(
+                            Icons.close,
+                            size: 15,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            showProductImage(selectedProductImage),
+                            showProductInfo(
+                              selectedProductTitle: selectedProductTitle,
+                              selectedProductPrice: selectedProductPrice,
+                            ),
+                          ],
+                        ),
+                        Container(
+                          child: Row(
+                            children: <Widget>[
+                              GestureDetector(
+                                onTap: () {
+                                  state(() {
+                                    quantityInCart > 0
+                                        ? quantityInCart -= 1
+                                        : quantityInCart = 0;
+                                    print(quantityInCart);
+                                  });
+                                },
+                                child: Container(
+                                  width: 25,
+                                  height: 25,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        width: 1.5, color: Colors.grey[300]),
+                                  ),
+                                  child: Icon(
+                                    Icons.remove,
+                                    size: 15,
+                                    color: quantityInCart > 0
+                                        ? Colors.black
+                                        : Colors.grey[300],
+                                        
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  '$quantityInCart',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  state(() {
+                                    quantityInCart += 1;
+                                    print(quantityInCart);
+                                  });
+                                },
+                                child: Container(
+                                  width: 25,
+                                  height: 25,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      width: 1.5,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 15,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.01,
+                  ),
+                  confirmQuantityAndNavigate(quantityInCart),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget confirmQuantityAndNavigate(quantityInCart) {
+    return GestureDetector(
+      onTap: () {
+        if (quantityInCart != 0) {
+          addProductToCart(product.sku, quantityInCart, product.title)
+              .then((value) => Navigator.pushNamed(context, '/cartPage'));
+        } else {
+          Fluttertoast.showToast(
+            msg: "Please add Quantity of Product.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 13.0,
+          );
+        }
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.055,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Colors.blue[800],
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Center(
+          child: Text(
+            'Confirm',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
     );
   }
 

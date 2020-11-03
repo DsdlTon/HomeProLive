@@ -132,7 +132,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       "sku": sku.toString(),
       "quantity": _quantity.toString(),
     };
-    CartService.addToCart(headers, body).then((res) {
+    await CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
         getUserCartData().then((cartData) {
@@ -359,9 +359,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                     ],
                   ),
                 ),
-                Positioned(
-                  top: 0,
-                  right: 0,
+                Align(
+                  alignment: Alignment.topRight,
                   child: Container(
                     padding: const EdgeInsets.all(0.0),
                     child: IconButton(
@@ -803,8 +802,9 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     return GestureDetector(
       onTap: () {
         if (quantityInCart != 0) {
-          addProductToCart(sku, quantityInCart, title);
-          Navigator.pushNamed(context, '/cartPage');
+          addProductToCart(sku, quantityInCart, title).then((value) {
+            Navigator.pushNamed(context, '/cartPage');
+          });
         } else {
           Fluttertoast.showToast(
             msg: "Please add Quantity of Product.",

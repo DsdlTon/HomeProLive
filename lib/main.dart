@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_live_app/providers/TotalPriceProvider.dart';
@@ -9,7 +7,6 @@ import 'package:test_live_app/utils/route_generator.dart';
 
 void main() {
   runApp(MyApp());
-  HttpOverrides.global = new MyHttpOverrides();
 }
 
 class MyApp extends StatelessWidget {
@@ -35,11 +32,5 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
+
+

@@ -120,7 +120,6 @@ class _ForegroundLiveState extends State<ForegroundLive> {
 
   Future<void> addProductToCart(sku, _quantity, title) async {
     print("Enter Add to Cart");
-
     final headers = {
       "access-token": _accessToken,
     };
@@ -129,10 +128,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       "quantity": _quantity.toString(),
     };
     print('Headers: $headers');
-    print('HeadersType: ${headers.runtimeType}');
     print('body: $body');
-    print('bodyType: ${body.runtimeType}');
-    CartService.addToCart(headers, body).then((res) {
+    await CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
         getUserCartData().then((cartData) {
@@ -290,9 +287,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                     showUserInfo(),
                   ],
                 ),
-                Positioned(
-                  top: 0,
-                  right: 0,
+                Align(
+                  alignment: Alignment.topRight,
                   child: Container(
                     padding: const EdgeInsets.all(0.0),
                     child: IconButton(
@@ -669,7 +665,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                       product[index]['quantity']) {
                                     quantityInCart += 1;
                                   }
-                                  print('productQuantity: ${product[index]['quantity']}');
+                                  print(
+                                      'productQuantity: ${product[index]['quantity']}');
                                   print('quantityInCart: $quantityInCart');
                                 });
                               },
@@ -683,12 +680,14 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                                     color: Colors.grey[300],
                                   ),
                                 ),
-                                child: Icon(Icons.add,
-                                    size: 15,
-                                    color: quantityInCart ==
-                                            product[index]['quantity']
-                                        ? Colors.grey[300]
-                                        : Colors.black),
+                                child: Icon(
+                                  Icons.add,
+                                  size: 15,
+                                  color: quantityInCart ==
+                                          product[index]['quantity']
+                                      ? Colors.grey[300]
+                                      : Colors.black,
+                                ),
                               ),
                             ),
                           ],
@@ -777,8 +776,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return GestureDetector(
       onTap: () {
         if (quantityInCart != 0) {
-          addProductToCart(sku, quantityInCart, title);
-          Navigator.pushNamed(context, '/cartPage');
+          addProductToCart(sku, quantityInCart, title)
+              .then((value) => Navigator.pushNamed(context, '/cartPage'));
         } else {
           Fluttertoast.showToast(
             msg: "Please add Quantity of Product.",

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:test_live_app/controllers/notification.dart';
 import 'package:test_live_app/screens/ListLivePage.dart';
 import 'package:test_live_app/screens/ListRecentlyLivePage.dart';
@@ -24,11 +25,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // if (widget.toOrder != null) {
-    //   setState(() {
-    //     _selectedIndex = 3;
-    //   });
-    // }
+
     NotificationController.instance.subscribeWhenAppLaunch();
     NotificationController.instance.initLocalNotification();
   }

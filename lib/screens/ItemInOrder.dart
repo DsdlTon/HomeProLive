@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/api.dart';
+import 'package:test_live_app/screens/ProductDetailPage.dart';
 
 class ItemInOrder extends StatefulWidget {
   @required
@@ -34,8 +35,6 @@ class _ItemInOrderState extends State<ItemInOrder> {
 
   @override
   void initState() {
-    print('index ${widget.index}');
-    print('orderId ${widget.orderId}');
     getAccessToken().then((accessToken) {
       setState(() {
         headers = {
@@ -121,21 +120,33 @@ class _ItemInOrderState extends State<ItemInOrder> {
 
   // item = snapshot.data.order.orderItem
   Widget itemCard(items, index) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey[300],
+    return GestureDetector(
+      onTap: () {
+        String productSku = items[index].product.sku;
+        Navigator.pushNamed(
+          context,
+          '/productDetailPage',
+          arguments: ProductDetailPage(
+            sku: productSku,
+          ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey[300],
+            ),
           ),
         ),
-      ),
-      child: Row(
-        children: <Widget>[
-          showItemsImage(items[index].product.image),
-          showItemsDetail(items, index),
-        ],
+        child: Row(
+          children: <Widget>[
+            showItemsImage(items[index].product.image),
+            showItemsDetail(items, index),
+          ],
+        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
+import 'package:test_live_app/controllers/notification.dart';
 
 import 'LivePage.dart';
 
@@ -37,7 +38,6 @@ class _ChatPageState extends State<ChatPage> {
   String _uploadedFileURL = '';
   String path;
   final picker = ImagePicker();
-  // String titleFromFB;
 
   //---------------------------------------------------------
 
@@ -46,7 +46,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     //update userRead
     FireStoreClass.userReaded(widget.channelName, widget.username);
-    // getChatroomDoc(widget.channelName, widget.username);
+    
     checkIsLive(widget.channelName);
     print('init');
     print('title: ${widget.title}');
@@ -54,17 +54,16 @@ class _ChatPageState extends State<ChatPage> {
     print('liveAdmin ${widget.liveAdmin}');
     print('channelName ${widget.channelName}');
     print('username ${widget.username}');
+    NotificationController.instance.setRouteName('/${widget.channelName}${widget.username}');
+    print('routeName: ${NotificationController.instance.routeName}');
   }
 
-  // Future<void> getChatroomDoc(channelName, username) async {
-  //   await Firestore.instance
-  //       .collection("Chatroom")
-  //       .document(channelName + username)
-  //       .get()
-  //       .then((snapshot) {
-  //     print('snapshot: ${snapshot['title']}');
-  //   });
-  // }
+  @override
+  void dispose(){
+    NotificationController.instance.routeName = null;
+    super.dispose();
+
+  }
 
   Future getImageFromGallery() async {
     // ignore: deprecated_member_use

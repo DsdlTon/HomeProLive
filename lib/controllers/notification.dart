@@ -9,12 +9,20 @@ import 'package:test_live_app/screens/ChatPage.dart';
 import '../main.dart';
 
 class NotificationController {
-  String chatroomTitle;
+  String routeName;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  static NotificationController get instance => NotificationController();
+  static final NotificationController _instance = NotificationController._();
+
+  NotificationController._();
+
+  static NotificationController get instance => _instance;
+
+  void setRouteName(name) {
+    routeName = name;
+  }
 
   Future subscribeWhenAppLaunch() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -30,27 +38,31 @@ class NotificationController {
           String title = 'title';
           String body = 'body';
           if (Platform.isIOS) {
-            // body = message['aps']['alert']['body'];
-            // title = message['aps']['alert']['title'];
-            // sendLocalNotification(title, body);
+          
           } else {
             body = message['notification']['body'];
             title = message['notification']['title'];
             print('BEFORE ENTER SENTLOCAL');
             print('BODY: $body TITLE: $title');
-            sendLocalNotification(title, body);
-            // navigateToChatPage(message);
+            String chatroomId = message['data']['chatroomid'];
+            print('chatroomId1: $chatroomId');
+            if (routeName != '/$chatroomId') {
+              print('chatroomId2: $chatroomId');
+              sendLocalNotification(title, body, chatroomId);
+            }
           }
         },
         // call when the app is in the background and opened by noti directly
         onResume: (Map<String, dynamic> message) async {
           print("onResume: $message");
-          navigateToChatPage(message);
+          String chatroomId = message['data']['chatroomid'];
+          navigateToChatPage(chatroomId);
         },
         // call when app has been close completely and it's opened form the noti directly
         onLaunch: (Map<String, dynamic> message) async {
           print("onLaunch: $message");
-          navigateToChatPage(message);
+          String chatroomId = message['data']['chatroomid'];
+          navigateToChatPage(chatroomId);
         },
       );
     } catch (e) {
@@ -72,26 +84,14 @@ class NotificationController {
     });
   }
 
-  void navigateToChatPage(message) {
+  void navigateToChatPage(chatroomId) {
     if (Platform.isIOS) {
-      // String chatroomId = message['aps']['alert']['chatroomid'];
-      // int len = chatroomId.length;
-      // String channelName = chatroomId.substring(0, 13);
-      // String username = chatroomId.substring(13, len);
-      // MyApp.navigatorKey.currentState.pushNamed(
-      //   '/chatPage',
-      //   arguments: ChatPage(
-      //     title: 'WaitForApi',
-      //     channelName: channelName,
-      //     username: username,
-      //   ),
-      // );
+      
     } else {
-      String chatroomId = message['data']['chatroomid'];
+      print('Android navigateToChatPage($chatroomId)');
       int len = chatroomId.length;
       String channelName = chatroomId.substring(0, 13);
       String username = chatroomId.substring(13, len);
-
       getChatroomDoc(channelName, username).then(
         (value) {
           print('GET CHATROOMDOC');
@@ -149,11 +149,16 @@ class NotificationController {
     print("_onDidReceiveLocalNotification called.");
   }
 
-  Future _selectNotification(String payload) async {
+  Future _selectNotification(chatroomId) async {
     print("onSelectNotification called.");
+    print(chatroomId);
+    if (chatroomId != null) {
+      navigateToChatPage(chatroomId);
+    }
+    // print("onSelectNotification called.");
   }
 
-  sendLocalNotification(title, body) async {
+  sendLocalNotification(title, body, chatroomId) async {
     print('enter sendLocalNotification');
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         '10000', 'your channel name', 'your channel description',
@@ -163,8 +168,7 @@ class NotificationController {
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     print('title: $title');
     print('body: $body');
-    print('platformChannelSpecifics: $platformChannelSpecifics');
-    await _flutterLocalNotificationsPlugin.show(
-        1, title, body, platformChannelSpecifics);
+    await _flutterLocalNotificationsPlugin
+        .show(1, title, body, platformChannelSpecifics, payload: chatroomId);
   }
 }

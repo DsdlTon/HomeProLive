@@ -7,8 +7,6 @@ import 'package:test_live_app/providers/TotalPriceProvider.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:test_live_app/screens/Checkout.dart';
-// import '../widgets/DeleteItemConfirmationDialog.dart';
-// import 'package:loader/loader.dart';
 
 class CartPage extends StatefulWidget {
   @override
@@ -55,16 +53,13 @@ class _CartPageState extends State<CartPage> {
     };
     CartService.addToCart(headers, body).then((res) {
       if (res == true) {
-        setState(() {
-          loading = false;
-        });
         print('Success');
       } else {
-        setState(() {
-          loading = false;
-        });
         print('Failed');
       }
+      setState(() {
+        loading = false;
+      });
     });
   }
 
@@ -77,8 +72,17 @@ class _CartPageState extends State<CartPage> {
           _cartData = cartData;
           cartItem = _cartData.cartDetails;
           cartLen = _cartData.cartDetails.length;
+          print('CartLen: $cartLen');
           loading = false;
         });
+        // if (cartLen == 0) {
+        //   loading = true;
+        // } else {
+        //   setState(() {
+        //     loading = false;
+        //   });
+        // }
+
         Provider.of<TotalPriceProvider>(context, listen: false)
             .calculateTotalPrice(cartLen, cartItem);
         for (int i = 0; i < cartLen; i++) {
@@ -218,17 +222,6 @@ class _CartPageState extends State<CartPage> {
     return Dismissible(
       key: ValueKey(cartItem[index].product.sku.toString()),
       background: trashBg(),
-      // confirmDismiss: (direction) async {
-      //   return await showDialog(
-      //     context: context,
-      //     builder: (BuildContext context) => DeleteItemConfirmationDialog(
-      //       accessToken: _accessToken,
-      //       cartItemSku: cartItem[index].product.sku.toString(),
-      //       cartItem: cartItem,
-      //       index: index,
-      //     ),
-      //   );
-      // },
       onDismissed: (direction) async {
         final headers = {
           "access-token": _accessToken,
@@ -534,14 +527,15 @@ class _CartPageState extends State<CartPage> {
     return GestureDetector(
       onTap: () {
         print(totalPrice);
-        cartItem.isEmpty ? print("Can't Process due to empty cart") :
-        Navigator.pushNamed(
-          context,
-          '/checkoutPage',
-          arguments: CheckOutPage(
-            totalPrice: this.totalPrice,
-          ),
-        );
+        cartItem.isEmpty
+            ? print("Can't Process due to empty cart")
+            : Navigator.pushNamed(
+                context,
+                '/checkoutPage',
+                arguments: CheckOutPage(
+                  totalPrice: this.totalPrice,
+                ),
+              );
       },
       child: Container(
         height: 48,
