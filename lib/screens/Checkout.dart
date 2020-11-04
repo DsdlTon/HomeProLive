@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
-import 'package:test_live_app/screens/HomePage.dart';
 import 'package:test_live_app/screens/selectedAddress.dart';
 
 class CheckOutPage extends StatefulWidget {
@@ -226,8 +225,8 @@ class _CheckOutPageState extends State<CheckOutPage> {
           final body = {"address_id": addressIdStr};
           final headers = {"access-token": _accessToken};
           body["address_id"] != "null"
-              ? OrderService.checkout(body, headers).then((value) {
-                  if (value == true) {
+              ? OrderService.checkout(body, headers).then((res) {
+                  if (res == true) {
                     Navigator.pushReplacementNamed(context, '/homePage');
                     Fluttertoast.showToast(
                       msg: "Checkout Success.",
@@ -239,7 +238,7 @@ class _CheckOutPageState extends State<CheckOutPage> {
                     );
                   } else {
                     Fluttertoast.showToast(
-                      msg: "Your Item is Out of Stock",
+                      msg: "${res.product.title} is Out of Stock (${res.product.quantity} left)",
                       toastLength: Toast.LENGTH_LONG,
                       gravity: ToastGravity.BOTTOM,
                       backgroundColor: Colors.red[800],

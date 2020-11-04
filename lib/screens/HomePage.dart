@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:test_live_app/controllers/notification.dart';
 import 'package:test_live_app/screens/ListLivePage.dart';
 import 'package:test_live_app/screens/ListRecentlyLivePage.dart';

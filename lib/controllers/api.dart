@@ -1,7 +1,9 @@
 import 'package:http/http.dart' as Http;
 import 'package:dio/dio.dart';
+import 'package:test_live_app/models/CheckOutRes.dart';
 import 'package:test_live_app/models/Order.dart';
 import 'package:test_live_app/models/ProductInOrder.dart';
+import 'package:test_live_app/screens/Checkout.dart';
 import 'dart:convert';
 import '../models/Product.dart';
 import '../models/User.dart';
@@ -201,7 +203,8 @@ class OrderService {
       print('Checkout success');
       return true;
     } else {
-      return response;
+      final String responseString = response.body;
+      return checkoutResFromJson(responseString);
     }
   }
 
@@ -228,6 +231,10 @@ class OrderService {
       throw Exception('Status: ${response.statusCode} getAllOrder Failed!!!');
     }
   }
+}
+
+CheckOutRes checkoutResFromJson(String responseString) {
+  return CheckOutRes.fromJson(json.decode(responseString));
 }
 
 ProductInOrder productInOrderFromJson(String responseString) {

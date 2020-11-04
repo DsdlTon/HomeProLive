@@ -125,6 +125,10 @@ class _NewAddressPageState extends State<NewAddressPage> {
           ),
         );
       });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 

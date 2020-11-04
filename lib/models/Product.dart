@@ -8,6 +8,7 @@ class Product {
   String price;
   String createdAt;
   String updatedAt;
+  int quantity;
   List<DetailProducts> detailProducts;
 
   Product(
@@ -18,6 +19,7 @@ class Product {
       this.price,
       this.createdAt,
       this.updatedAt,
+      this.quantity,
       this.detailProducts});
 
   Product.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class Product {
     price = json['price'];
     createdAt = json['createdAt'];
     updatedAt = json['updatedAt'];
+    quantity = json['quantity'];
     if (json['detailProducts'] != null) {
       detailProducts = new List<DetailProducts>();
       json['detailProducts'].forEach((v) {
@@ -45,6 +48,7 @@ class Product {
     data['price'] = this.price;
     data['createdAt'] = this.createdAt;
     data['updatedAt'] = this.updatedAt;
+    data['quantity'] = this.quantity;
     if (this.detailProducts != null) {
       data['detailProducts'] =
           this.detailProducts.map((v) => v.toJson()).toList();

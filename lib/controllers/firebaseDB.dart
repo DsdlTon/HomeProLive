@@ -10,41 +10,6 @@ class FireStoreClass {
   String url = '';
   List<String> allUserToken = [];
 
-  // ---Token----------------------------------------------------------------------
-
-  // Future<List<String>> getOldUserToken(username) async {
-  //   print('ENTER getUserToken FUNCTION');
-  //   return await _db
-  //       .collection('Users')
-  //       .document(username)
-  //       .get()
-  //       .then((snapshot) {
-  //     List<String> oldToken = List.from(snapshot['FCMToken']);
-  //     print('oldToken: $oldToken');
-  //     return oldToken;
-  //   });
-  // }
-
-  // //userToken that pass in here Included both oldToken and newToken already
-  // Future<void> saveUserToken(username, userToken) async {
-  //   print('ENTER SAVEUSERTOKEN FUNCTION');
-  //   getUserTokenList(userToken);
-  //   print('SAVE $username, $allUserToken, ${allUserToken.runtimeType}');
-  //   await Firestore.instance.collection('Users').document(username).setData({
-  //     'FCMToken': allUserToken,
-  //   });
-  // }
-
-  // List<String> getUserTokenList(userToken) {
-  //   userToken.forEach((token) {
-  //     print('Enter forEach!!!!!!!!!!!!!!!');
-  //     print('$token');
-  //     allUserToken.add(token.toString());
-  //     print('allUserToken: $allUserToken');
-  //   });
-  //   return allUserToken.toList();
-  // }
-
 // ---Chat In Live-----------------------------------------------------------------
 
   static void saveChat(username, chatText, channelName) {
@@ -214,6 +179,7 @@ class FireStoreClass {
 
   // ---Read Status----------------------------------------------------------------------------
   static void userReaded(channelName, username) {
+    print('enter userReaded');
     _db
         .collection("Chatroom")
         .document(channelName + username)

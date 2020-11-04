@@ -120,7 +120,7 @@ class LogoutDialog extends StatelessWidget {
   Future<void> processSignOut(context) async {
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.remove("username");
+    prefs.clear();
     _firebaseMessaging.unsubscribeFromTopic(username);
 
     Navigator.of(context)

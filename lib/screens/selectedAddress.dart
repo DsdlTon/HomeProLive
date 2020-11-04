@@ -164,6 +164,13 @@ class _SelectedAddressPageState extends State<SelectedAddressPage> {
           print('defaultLocation: index $defaultLocation');
         });
         saveDefaultLocationToPref();
+        Navigator.pushReplacementNamed(
+          context,
+          '/checkoutPage',
+          arguments: CheckOutPage(
+            totalPrice: widget.totalPrice,
+          ),
+        );
       },
       child: Container(
         padding: EdgeInsets.all(10),

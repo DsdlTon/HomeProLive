@@ -39,6 +39,19 @@ class _ChatPageState extends State<ChatPage> {
   String path;
   final picker = ImagePicker();
 
+  String adminProfile;
+  String liveAdmin;
+  String appId;
+
+  Future getLiveDoc(channelName) async {
+    print('enter getLiveDoc');
+    var snapshot = await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .get();
+    return snapshot;
+  }
+
   //---------------------------------------------------------
 
   @override
@@ -46,23 +59,22 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     //update userRead
     FireStoreClass.userReaded(widget.channelName, widget.username);
-    
+    getLiveDoc(widget.channelName).then((snapshot) {
+      setState(() {
+        adminProfile = snapshot.data["broadcaster"]["profile"]["imageProfile"];
+        liveAdmin = snapshot.data["broadcaster"]["username"];
+        appId = snapshot.data["appId"];
+      });
+    });
+    NotificationController.instance
+        .setRouteName('/${widget.channelName}${widget.username}');
     checkIsLive(widget.channelName);
-    print('init');
-    print('title: ${widget.title}');
-    print('adminProfile :assets/logo.png');
-    print('liveAdmin ${widget.liveAdmin}');
-    print('channelName ${widget.channelName}');
-    print('username ${widget.username}');
-    NotificationController.instance.setRouteName('/${widget.channelName}${widget.username}');
-    print('routeName: ${NotificationController.instance.routeName}');
   }
 
   @override
-  void dispose(){
+  void dispose() {
     NotificationController.instance.routeName = null;
     super.dispose();
-
   }
 
   Future getImageFromGallery() async {
@@ -109,6 +121,7 @@ class _ChatPageState extends State<ChatPage> {
         .document(channelName)
         .get()
         .then((data) {
+      print('setState');
       setState(() {
         isLive = data["onLive"];
         print("isLive: $isLive");
@@ -208,17 +221,19 @@ class _ChatPageState extends State<ChatPage> {
       onPressed: () {
         print('onPreassed');
         print('title: ${widget.title}');
-        print('adminProfile assets/logo.png');
-        print('liveAdmin ${widget.liveAdmin}');
+        print('adminProfile: $adminProfile');
+        print('liveAdmin $liveAdmin');
+        print('appId: $appId');
         print('channelName ${widget.channelName}');
         print('username ${widget.username}');
-        Navigator.pushNamed(
+        Navigator.pushReplacementNamed(
           context,
           '/livePage',
           arguments: LivePage(
             title: widget.title,
-            adminProfile: 'assets/logo.png',
-            liveAdmin: widget.liveAdmin,
+            appId: appId,
+            adminProfile: adminProfile,
+            liveAdmin: liveAdmin,
             channelName: widget.channelName,
             username: widget.username,
           ),
@@ -290,87 +305,94 @@ class _ChatPageState extends State<ChatPage> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           chatMsgSnap['url'] != ''
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Text(
-                        '$formattedDate',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 10.0,
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Navigator.of(context).pushNamed(
-                          '/fullImageScreen',
-                          arguments: chatMsgSnap['url'],
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.only(top: 4, bottom: 4),
-                        height: MediaQuery.of(context).size.height * 0.45,
-                        constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.6),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            bottomLeft: Radius.circular(8),
-                          ),
-                          child: Image.network(
-                            chatMsgSnap['url'],
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+              ? userChatImage(chatMsgSnap, formattedDate)
               : Container(),
           chatMsgSnap['msg'] != ""
-              ? Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomLeft,
-                      colors: [
-                        Colors.blue[500],
-                        Colors.blue[700],
-                      ],
-                    ),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(15.0),
-                      bottomLeft: Radius.circular(15.0),
-                    ),
-                  ),
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.6,
-                  ),
-                  margin: EdgeInsets.only(top: 3.0, bottom: 3.0),
-                  padding:
-                      EdgeInsets.only(left: 20, right: 15, top: 10, bottom: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        '$formattedDate',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10.0,
-                        ),
-                      ),
-                      SizedBox(height: 5.0),
-                      Text(
-                        '${chatMsgSnap['msg']}',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                )
+              ? userChatText(chatMsgSnap, formattedDate)
               : Container()
+        ],
+      ),
+    );
+  }
+
+  Widget userChatImage(chatMsgSnap, formattedDate) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(4),
+          child: Text(
+            '$formattedDate',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 10.0,
+            ),
+          ),
+        ),
+        InkWell(
+          onTap: () {
+            Navigator.of(this.context).pushNamed(
+              '/fullImageScreen',
+              arguments: chatMsgSnap['url'],
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            height: MediaQuery.of(this.context).size.height * 0.45,
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(this.context).size.width * 0.6),
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                bottomLeft: Radius.circular(8),
+              ),
+              child: Image.network(
+                chatMsgSnap['url'],
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget userChatText(chatMsgSnap, formattedDate) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomLeft,
+          colors: [
+            Colors.blue[500],
+            Colors.blue[700],
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(15.0),
+          bottomLeft: Radius.circular(15.0),
+        ),
+      ),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(this.context).size.width * 0.6,
+      ),
+      margin: EdgeInsets.only(top: 3.0, bottom: 3.0),
+      padding: EdgeInsets.only(left: 20, right: 15, top: 10, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '$formattedDate',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10.0,
+            ),
+          ),
+          SizedBox(height: 5.0),
+          Text(
+            '${chatMsgSnap['msg']}',
+            style: TextStyle(color: Colors.white),
+          ),
         ],
       ),
     );
@@ -382,86 +404,141 @@ class _ChatPageState extends State<ChatPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          chatMsgSnap['reply'] != null
+              ? adminReplyBox(chatMsgSnap)
+              : Container(),
           chatMsgSnap['url'] != ''
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    InkWell(
-                      onTap: () {
-                        Navigator.of(context).pushNamed(
-                          '/fullImageScreen',
-                          arguments: chatMsgSnap['url'],
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.only(top: 4, bottom: 4),
-                        height: MediaQuery.of(context).size.height * 0.45,
-                        constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.6),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            bottomRight: Radius.circular(8),
-                          ),
-                          child: Image.network(
-                            chatMsgSnap['url'],
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Text(
-                        '$formattedDate',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 10.0,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+              ? adminChatImage(chatMsgSnap, formattedDate)
               : Container(),
           chatMsgSnap['msg'] != ""
-              ? Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue[300],
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(15.0),
-                      bottomRight: Radius.circular(15.0),
-                    ),
-                  ),
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.6,
-                  ),
-                  margin: EdgeInsets.only(top: 3.0, bottom: 3.0),
-                  padding:
-                      EdgeInsets.only(left: 15, right: 20, top: 10, bottom: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        '$formattedDate',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10.0,
-                        ),
-                      ),
-                      SizedBox(height: 5.0),
-                      Text(
-                        '${chatMsgSnap['msg']}',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                )
+              ? adminChatText(chatMsgSnap, formattedDate)
               : Container()
         ],
       ),
     );
   }
 
+  Widget adminChatImage(chatMsgSnap, formattedDate) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: <Widget>[
+        InkWell(
+          onTap: () {
+            Navigator.of(this.context).pushNamed(
+              '/fullImageScreen',
+              arguments: chatMsgSnap['url'],
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.only(top: 4, bottom: 4),
+            height: MediaQuery.of(this.context).size.height * 0.45,
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(this.context).size.width * 0.6),
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(8),
+                bottomRight: Radius.circular(8),
+              ),
+              child: Image.network(
+                chatMsgSnap['url'],
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(4),
+          child: Text(
+            '$formattedDate',
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 10.0,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget adminChatText(chatMsgSnap, formattedDate) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue[300],
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(15.0),
+          bottomRight: Radius.circular(15.0),
+        ),
+      ),
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(this.context).size.width * 0.6,
+      ),
+      margin: chatMsgSnap['reply'] != null
+          ? EdgeInsets.only(bottom: 3.0)
+          : EdgeInsets.only(top: 3.0, bottom: 3.0),
+      padding: EdgeInsets.only(left: 15, right: 20, top: 10, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '$formattedDate',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10.0,
+            ),
+          ),
+          SizedBox(height: 5.0),
+          Text(
+            '${chatMsgSnap['msg']}',
+            style: TextStyle(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget adminReplyBox(chatMsgSnap) {
+    return Transform.translate(
+      offset: Offset(0.0, 10.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(15.0),
+            bottomRight: Radius.circular(15.0),
+          ),
+        ),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(this.context).size.width * 0.6,
+        ),
+        margin: EdgeInsets.only(top: 3.0),
+        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.reply, color: Colors.grey, size: 15),
+                Text(
+                  ' reply from ${chatMsgSnap['reply']['from']}',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 10.0,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 5.0),
+            Text(
+              '${chatMsgSnap['reply']['message']}',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// {chatMsgSnap['reply']['message']}
   Widget bottomBar(context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.0),

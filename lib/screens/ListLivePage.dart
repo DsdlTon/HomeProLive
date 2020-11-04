@@ -55,7 +55,6 @@ class _ListLivePageState extends State<ListLivePage> {
           _cartData = cartData;
           cartLen = _cartData.cartDetails.length;
         });
-        print('cartLen: $cartLen');
       });
     });
   }
@@ -120,29 +119,7 @@ class _ListLivePageState extends State<ListLivePage> {
                   ),
                 );
               } else if (snapshot.data.documents.length == 0) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      FloatUpAnimation(
-                        0.6,
-                        Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
-                      ),
-                      SizedBox(height: 10),
-                      FloatUpAnimation(
-                        0.8,
-                        Text(
-                          'No Current Streaming',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 18.0,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                return noStreamingContainer();
               } else {
                 return FloatUpAnimation(
                   0.8,
@@ -165,8 +142,9 @@ class _ListLivePageState extends State<ListLivePage> {
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
                             liveAdmin:
-                                'Homepro1',
-                            adminProfile: 'assets/logo.png',
+                                '${snapshot.data.documents[index]["broadcaster"]["username"]}',
+                            adminProfile:
+                                '${snapshot.data.documents[index]["broadcaster"]["profile"]["imageProfile"]}',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
                           ),
@@ -211,6 +189,32 @@ class _ListLivePageState extends State<ListLivePage> {
       style: TextStyle(
         color: Colors.white,
         fontSize: 8.0,
+      ),
+    );
+  }
+
+  Widget noStreamingContainer() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          FloatUpAnimation(
+            0.6,
+            Icon(Icons.live_tv, color: Colors.grey[400], size: 60),
+          ),
+          SizedBox(height: 10),
+          FloatUpAnimation(
+            0.8,
+            Text(
+              'No Current Streaming',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 18.0,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -365,8 +369,8 @@ class _ListLivePageState extends State<ListLivePage> {
                       children: <Widget>[
                         CircleAvatar(
                           radius: 14.0,
-                          backgroundImage: AssetImage(adminProfile),
-                          backgroundColor: Colors.blue[800],
+                          backgroundImage: NetworkImage("$adminProfile"),
+                          backgroundColor: Colors.transparent,
                         ),
                         SizedBox(width: 5.0),
                         Text(

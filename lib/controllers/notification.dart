@@ -10,6 +10,9 @@ import '../main.dart';
 
 class NotificationController {
   String routeName;
+  String title;
+  String liveAdmin;
+  DocumentSnapshot chatroomSnap;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -38,16 +41,14 @@ class NotificationController {
           String title = 'title';
           String body = 'body';
           if (Platform.isIOS) {
-          
+            //TODO: IoS Section
           } else {
             body = message['notification']['body'];
             title = message['notification']['title'];
             print('BEFORE ENTER SENTLOCAL');
             print('BODY: $body TITLE: $title');
             String chatroomId = message['data']['chatroomid'];
-            print('chatroomId1: $chatroomId');
             if (routeName != '/$chatroomId') {
-              print('chatroomId2: $chatroomId');
               sendLocalNotification(title, body, chatroomId);
             }
           }
@@ -70,10 +71,6 @@ class NotificationController {
     }
   }
 
-  String title;
-  String liveAdmin;
-  DocumentSnapshot chatroomSnap;
-
   Future<void> getChatroomDoc(channelName, username) async {
     await Firestore.instance
         .collection("Chatroom")
@@ -86,7 +83,7 @@ class NotificationController {
 
   void navigateToChatPage(chatroomId) {
     if (Platform.isIOS) {
-      
+      //TODO: IoS Section
     } else {
       print('Android navigateToChatPage($chatroomId)');
       int len = chatroomId.length;

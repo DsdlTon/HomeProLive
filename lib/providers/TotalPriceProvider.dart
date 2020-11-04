@@ -11,7 +11,6 @@ class TotalPriceProvider with ChangeNotifier {
 
   calculateTotalPrice(cartLen, cartsnap) {
     print('Enter calculateTotalPrice');
-
     initialPrice = 0;
     for (int i = 0; i < cartLen; i++) {
       double priceInDouble = double.parse(cartsnap[i].product.price);

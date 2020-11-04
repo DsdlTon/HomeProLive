@@ -171,8 +171,10 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                             title: '${snapshot.data.documents[index]["title"]}',
                             thumbnail:
                                 '${snapshot.data.documents[index]["thumbnail"]}',
-                            liveAdmin: 'Homepro1',
-                            adminProfile: 'assets/logo.png',
+                            liveAdmin:
+                                '${snapshot.data.documents[index]["broadcaster"]["username"]}',
+                            adminProfile:
+                                '${snapshot.data.documents[index]["broadcaster"]["profile"]["imageProfile"]}',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
                             pathVideo:
@@ -224,7 +226,13 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
   }
 
   Widget liveContent(
-      {thumbnail, liveAdmin, adminProfile, channelName, title, appId, pathVideo}) {
+      {thumbnail,
+      liveAdmin,
+      adminProfile,
+      channelName,
+      title,
+      appId,
+      pathVideo}) {
     return InkWell(
       onTap: () {
         print('Tap $liveAdmin');
@@ -377,8 +385,8 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                       children: <Widget>[
                         CircleAvatar(
                           radius: 14.0,
-                          backgroundImage: AssetImage(adminProfile),
-                          backgroundColor: Colors.orange[400],
+                          backgroundImage: NetworkImage("$adminProfile"),
+                          backgroundColor: Colors.transparent,
                         ),
                         SizedBox(width: 5.0),
                         Text(

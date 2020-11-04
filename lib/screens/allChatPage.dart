@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -92,13 +93,22 @@ class _AllChatPageState extends State<AllChatPage> {
         ),
         automaticallyImplyLeading: false,
         centerTitle: true,
-        leading: signOutButton(),
-        title: Text(
-          'Chats',
-          style: TextStyle(fontSize: 15),
+        leading: FloatUpAnimation(
+          0.5,
+          signOutButton(),
+        ),
+        title: FloatUpAnimation(
+          0.5,
+          Text(
+            'Chats',
+            style: TextStyle(fontSize: 15),
+          ),
         ),
         actions: <Widget>[
-          cartButton(),
+          FloatUpAnimation(
+            0.5,
+            cartButton(),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -140,6 +150,7 @@ class _AllChatPageState extends State<AllChatPage> {
                         snapshot.data.documents[index]['channelName'];
                     String usernameInFB =
                         snapshot.data.documents[index]['chatWith'];
+                    // print('//// ${snapshot.data.documents.length}');
 
                     return usernameInFB == username
                         ? GestureDetector(
@@ -169,6 +180,37 @@ class _AllChatPageState extends State<AllChatPage> {
               }
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget noChat() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.79,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            FloatUpAnimation(
+              0.2,
+              Icon(Icons.remove_circle_outline,
+                  color: Colors.grey[400], size: 60),
+            ),
+            SizedBox(height: 10),
+            FloatUpAnimation(
+              0.4,
+              Text(
+                'No Order History',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 18.0,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

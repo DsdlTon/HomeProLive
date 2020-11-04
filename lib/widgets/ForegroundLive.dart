@@ -69,17 +69,20 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     await Firestore.instance
         .collection("CurrentLive")
         .document(channelName)
-        .get()
+        .collection("ProductInLive")
+        .getDocuments()
         .then((snapshot) {
-      productSnap = snapshot['productInLive'];
+      productSnap = snapshot.documents;
     });
-    int productLen = productSnap.length;
-    for (int i = 0; i < productLen; i++) {
-      sku.add(productSnap[i]['sku']);
-    }
-    print('sku: $sku');
-    print('skuType: ${sku.runtimeType}');
 
+    //TODO: MOCKED DATA, DeleteLater
+    // sku.add('1');
+    // sku.add('2');
+    // sku.add('3');
+    productSnap.forEach((product) {
+      sku.add(product["sku"]);
+    });
+    print('///////skuList: $sku');
     return sku;
   }
 
@@ -108,7 +111,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     return _quantity;
   }
 
-  Future<List<dynamic>> getProductInfo(sku) async {
+  Future<List<dynamic>> getProductInfo([sku]) async {
     await ProductService.getProduct(sku).then((res) {
       setState(() {
         product = res;
@@ -204,6 +207,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   @override
   void dispose() {
     super.dispose();
+    sku.clear();
     FireStoreClass.deleteViewers(
         username: widget.username, channelName: widget.channelName);
     _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
@@ -457,14 +461,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       child: IconButton(
         icon: Icon(Icons.chat, color: Colors.white),
         onPressed: () {
-          print('From Foreground');
-          print('title: ${widget.title}');
-          print('adminProfile ${'assets/logo.png'}');
-          print('liveAdmin ${widget.liveAdmin}');
-          print('channelName ${widget.channelName}');
-          print('username ${widget.username}');
           FocusScope.of(context).unfocus();
-          Navigator.pushNamed(
+          Navigator.pushReplacementNamed(
             context,
             '/chatPage',
             arguments: ChatPage(
@@ -942,8 +940,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       children: <Widget>[
         CircleAvatar(
           radius: 14.0,
-          backgroundImage: AssetImage(widget.adminProfile),
-          backgroundColor: Colors.blue[800],
+          backgroundImage: NetworkImage("${widget.adminProfile}"),
+          backgroundColor: Colors.transparent,
         ),
         SizedBox(width: 5.0),
         Column(

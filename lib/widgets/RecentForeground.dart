@@ -75,15 +75,20 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     await Firestore.instance
         .collection("CurrentLive")
         .document(channelName)
-        .get()
+        .collection("ProductInLive")
+        .getDocuments()
         .then((snapshot) {
-      productSnap = snapshot['productInLive'];
+      productSnap = snapshot.documents;
     });
-    int productLen = productSnap.length;
-    for (int i = 0; i < productLen; i++) {
-      sku.add(productSnap[i]['sku']);
-    }
-    print('sku: $sku');
+
+    //TODO: MOCKED DATA, DeleteLater
+    // sku.add('1');
+    // sku.add('2');
+    // sku.add('3');
+    productSnap.forEach((product) {
+      sku.add(product["sku"]);
+    });
+    print('///////skuList: $sku');
     return sku;
   }
 
@@ -285,6 +290,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   @override
   void dispose() {
     super.dispose();
+    sku.clear();
     FireStoreClass.deleteViewers(
         username: widget.username, channelName: widget.channelName);
     _timer.cancel();
@@ -928,8 +934,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       children: <Widget>[
         CircleAvatar(
           radius: 14.0,
-          backgroundImage: AssetImage(widget.adminProfile),
-          backgroundColor: Colors.blue[800],
+          backgroundImage: NetworkImage("${widget.adminProfile}"),
+          backgroundColor: Colors.transparent,
         ),
         SizedBox(width: 5.0),
         Column(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/models/Cart.dart';
 import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/models/Order.dart';
@@ -13,7 +14,8 @@ class OrderListPage extends StatefulWidget {
 
 class _OrderListPageState extends State<OrderListPage> {
   Cart _cartData = Cart();
-  Order _orderData = Order();
+  List<double> totalPriceList = [];
+
   String username = '';
   String _accessToken;
   int cartLen = 0;
@@ -88,13 +90,22 @@ class _OrderListPageState extends State<OrderListPage> {
         ),
         automaticallyImplyLeading: false,
         centerTitle: true,
-        leading: signOutButton(),
-        title: Text(
-          'Order',
-          style: TextStyle(fontSize: 15),
+        leading: FloatUpAnimation(
+          0.5,
+          signOutButton(),
+        ),
+        title: FloatUpAnimation(
+          0.5,
+          Text(
+            'Order',
+            style: TextStyle(fontSize: 15),
+          ),
         ),
         actions: <Widget>[
-          cartButton(),
+          FloatUpAnimation(
+            0.5,
+            cartButton(),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -104,7 +115,11 @@ class _OrderListPageState extends State<OrderListPage> {
             future: getAllOrderInDB(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return orderPanel(snapshot);
+                if (snapshot.data.length == 0) {
+                  return noOrderHistory();
+                } else {
+                  return orderPanel(snapshot);
+                }
               } else {
                 return Container(
                   height: MediaQuery.of(context).size.height * 0.75,
@@ -120,6 +135,55 @@ class _OrderListPageState extends State<OrderListPage> {
     );
   }
 
+  Widget noOrderHistory() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.79,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            FloatUpAnimation(
+              0.2,
+              Icon(Icons.remove_circle_outline,
+                  color: Colors.grey[400], size: 60),
+            ),
+            SizedBox(height: 10),
+            FloatUpAnimation(
+              0.4,
+              Text(
+                'No Order History',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 18.0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // orderItem = snapshot.data.orders
+  // totalOrderLen = snapshot.data.orders.length;
+  // calculatePrice(orderItem, totalOrderLen) {
+  //   if (totalPriceList.length > totalOrderLen-1) {
+  //     return totalPriceList.clear();
+  //   }
+  //   print('orderItemLen ${orderItem.length}');
+  //   orderItem.forEach((orderitem) {
+  //     print('//// ${orderitem.productSku} has ${orderitem.quantity} pricePerItem ${orderitem.product.price}');
+  //     double priceDB = double.parse(orderitem.product.price);
+  //     double totalPrice = priceDB * orderitem.quantity;
+  //     totalPriceList.add(totalPrice);
+  //   });
+  //   print(totalPriceList);
+  //   print('totalPriceListLen $totalOrderLen');
+  //   return totalPriceList;
+  // }
+
   Widget orderPanel(snapshot) {
     return Container(
       child: ListView.builder(
@@ -130,6 +194,9 @@ class _OrderListPageState extends State<OrderListPage> {
         controller: new ScrollController(keepScrollOffset: false),
         itemCount: snapshot.data.orders.length,
         itemBuilder: (context, index) {
+          // print('totalOrderLen ${snapshot.data.orders.length}');
+          // calculatePrice(snapshot.data.orders[index].orderItem,
+          //     snapshot.data.orders.length);
           return orderCard(snapshot.data.orders, index);
         },
       ),
@@ -211,7 +278,7 @@ class _OrderListPageState extends State<OrderListPage> {
               ),
               orders[index].paymentStatus == false
                   ? Text(
-                      'Payment: waiting for payment',
+                      'Status: waiting for payment',
                       style: TextStyle(
                         height: 1.5,
                         color: Colors.black,
@@ -250,6 +317,14 @@ class _OrderListPageState extends State<OrderListPage> {
                   fontSize: 12,
                 ),
               ),
+              // Text(
+              //   'Total Price: ฿${totalPriceList[index]}',
+              //   style: TextStyle(
+              //     height: 1.5,
+              //     color: Colors.black,
+              //     fontSize: 12,
+              //   ),
+              // )
             ],
           ),
         ],
