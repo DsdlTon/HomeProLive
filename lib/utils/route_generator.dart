@@ -75,6 +75,7 @@ class RouteGenerator {
             adminProfile: recentLiveArgs.adminProfile,
             appId: recentLiveArgs.appId,
             pathVideo: recentLiveArgs.pathVideo,
+            view: recentLiveArgs.view,
             role: ClientRole.Audience,
           ),
         );

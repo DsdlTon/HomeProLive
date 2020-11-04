@@ -17,13 +17,15 @@ class RecentForegroundLive extends StatefulWidget {
   final String liveAdmin;
   final String username;
   final String channelName;
+  final String view;
 
   RecentForegroundLive(
       {this.title,
       this.channelName,
       this.adminProfile,
       this.liveAdmin,
-      this.username});
+      this.username,
+      this.view});
 
   @override
   _RecentForegroundLiveState createState() => _RecentForegroundLiveState();
@@ -965,9 +967,8 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                           child: CircularProgressIndicator(),
                         );
                       } else {
-                        int viewers = snapshot.data.documents.length;
                         return Text(
-                          viewers.toString(),
+                          widget.view,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 13,

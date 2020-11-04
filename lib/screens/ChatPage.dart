@@ -181,32 +181,34 @@ class _ChatPageState extends State<ChatPage> {
           ),
           bottomBar(context),
           //preview image
-          _uploadedFileURL != ''
-              ? Container(
-                  color: Colors.black,
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  child: Stack(
-                    children: [
-                      Align(
-                        alignment: Alignment.center,
-                        child: Image.file(_image),
-                      ),
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: IconButton(
-                          icon: Icon(Icons.cancel, color: Colors.white),
-                          onPressed: () {
-                            setState(() {
-                              _uploadedFileURL = '';
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : Container(),
+          _uploadedFileURL != '' ? showPreviewImage() : Container(),
+        ],
+      ),
+    );
+  }
+
+  Widget showPreviewImage() {
+    return Container(
+      color: Colors.black,
+      width: MediaQuery.of(this.context).size.width,
+      height: MediaQuery.of(this.context).size.height * 0.3,
+      child: Stack(
+        children: [
+          Align(
+            alignment: Alignment.center,
+            child: Image.file(_image),
+          ),
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              icon: Icon(Icons.cancel, color: Colors.white),
+              onPressed: () {
+                setState(() {
+                  _uploadedFileURL = '';
+                });
+              },
+            ),
+          ),
         ],
       ),
     );

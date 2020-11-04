@@ -1,4 +1,4 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
@@ -219,10 +219,15 @@ class _ListLivePageState extends State<ListLivePage> {
     );
   }
 
+
+
   Widget liveContent(
       {thumbnail, liveAdmin, adminProfile, channelName, title, appId}) {
     return InkWell(
       onTap: () {
+        Firestore.instance.collection('CurrentLive').document(channelName).updateData({
+          "clickToView": FieldValue.increment(1),
+        });
         Navigator.pushNamed(
           context,
           '/livePage',

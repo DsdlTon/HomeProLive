@@ -1,4 +1,5 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:test_live_app/animations/floatUpAnimation.dart';
 import 'package:test_live_app/controllers/api.dart';
@@ -177,6 +178,8 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                                 '${snapshot.data.documents[index]["broadcaster"]["profile"]["imageProfile"]}',
                             channelName:
                                 '${snapshot.data.documents[index]["channelName"]}',
+                            view:
+                                '${snapshot.data.documents[index]["clickToView"]}',
                             pathVideo:
                                 '${snapshot.data.documents[index]["pathVideo"]}',
                           ),
@@ -232,10 +235,17 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
       channelName,
       title,
       appId,
+      view,
       pathVideo}) {
     return InkWell(
       onTap: () {
-        print('Tap $liveAdmin');
+        //TODO: pass old view value instead of new one
+        Firestore.instance
+            .collection('CurrentLive')
+            .document(channelName)
+            .updateData({
+          "clickToView": FieldValue.increment(1),
+        });
         Navigator.pushNamed(
           context,
           '/recentLivePage',
@@ -246,6 +256,7 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
             channelName: channelName,
             username: username,
             appId: appId,
+            view: view,
             pathVideo: pathVideo,
             role: ClientRole.Audience,
           ),
@@ -345,10 +356,8 @@ class _ListRecentlyLivePageState extends State<ListRecentlyLivePage> {
                                       ),
                                     );
                                   } else {
-                                    int viewers =
-                                        snapshot.data.documents.length;
                                     return Text(
-                                      viewers.toString(),
+                                      view,
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 13,

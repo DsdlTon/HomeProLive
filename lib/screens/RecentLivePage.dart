@@ -10,6 +10,7 @@ class RecentLivePage extends StatefulWidget {
   final String adminProfile;
   final String liveAdmin;
   final String appId;
+  final String view;
   final String pathVideo;
 
   final ClientRole role;
@@ -24,6 +25,7 @@ class RecentLivePage extends StatefulWidget {
     this.liveAdmin,
     this.appId,
     this.pathVideo,
+    this.view,
   }) : super(key: key);
 
   @override
@@ -45,6 +47,7 @@ class _RecentLivePageState extends State<RecentLivePage> {
     print('adminProfile: ${widget.adminProfile}');
     print('liveAdmin: ${widget.liveAdmin}');
     print('appId: ${widget.appId}');
+    print('view: ${widget.view}');
     print('pathVideo: ${widget.pathVideo}');
   }
 
@@ -72,6 +75,7 @@ class _RecentLivePageState extends State<RecentLivePage> {
             controller: _pageController,
             children: [
               RecentForegroundLive(
+                view: widget.view,
                 title: widget.title,
                 channelName: widget.channelName,
                 adminProfile: widget.adminProfile,

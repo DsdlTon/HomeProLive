@@ -49,6 +49,14 @@ class FireStoreClass {
         '-------------- save username $username in $liveAdmin channal -------------------');
   }
 
+  static Future<DocumentSnapshot> getClickToView(channelName) async {
+    DocumentSnapshot snapshot = await Firestore.instance
+        .collection('CurrentLive')
+        .document(channelName)
+        .get();
+    return snapshot;
+  }
+
   static Stream<QuerySnapshot> getViewer(liveAdmin, channelName) {
     return _db
         .collection("CurrentLive")
