@@ -6,10 +6,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:test_live_app/controllers/api.dart';
 import 'package:test_live_app/controllers/firebaseDB.dart';
 import 'package:test_live_app/controllers/notification.dart';
 
 import 'LivePage.dart';
+import 'ProductDetailPage.dart';
 
 class ChatPage extends StatefulWidget {
   final String title;
@@ -33,15 +35,17 @@ class _ChatPageState extends State<ChatPage> {
   TextEditingController chatroomController = new TextEditingController();
   bool isNewChatRoom = true;
   bool isLive;
-
   File _image;
   String _uploadedFileURL = '';
   String path;
   final picker = ImagePicker();
-
   String adminProfile;
   String liveAdmin;
   String appId;
+
+  List<String> skuList = [];
+  List productSnap;
+  List<dynamic> product = [];
 
   Future getLiveDoc(channelName) async {
     print('enter getLiveDoc');
@@ -50,6 +54,35 @@ class _ChatPageState extends State<ChatPage> {
         .document(channelName)
         .get();
     return snapshot;
+  }
+
+  Future<List<String>> getProductToShowInLive(channelName) async {
+    print('enter getProductToShowInLive');
+    await Firestore.instance
+        .collection("CurrentLive")
+        .document(channelName)
+        .collection("ProductInLive")
+        .getDocuments()
+        .then((snapshot) {
+      productSnap = snapshot.documents;
+    });
+
+    productSnap.forEach((product) {
+      skuList.add(product["sku"]);
+    });
+    print('skuList: $skuList, ${skuList.runtimeType}');
+    return skuList;
+  }
+
+  Future<List<dynamic>> getProductInfo([sku]) async {
+    print('Enter getProductInfo');
+    await ProductService.getProduct(sku).then((res) {
+      setState(() {
+        product = res;
+      });
+      print('product: $product');
+    });
+    return product;
   }
 
   //---------------------------------------------------------
@@ -65,6 +98,9 @@ class _ChatPageState extends State<ChatPage> {
         liveAdmin = snapshot.data["broadcaster"]["username"];
         appId = snapshot.data["appId"];
       });
+    });
+    getProductToShowInLive(widget.channelName).then((sku) {
+      // getProductInfo(sku);
     });
     NotificationController.instance
         .setRouteName('/${widget.channelName}${widget.username}');
@@ -115,13 +151,12 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> checkIsLive(channelName) async {
-    print('ENTER ISLIVE');
+    print('ENTER checkIsLive');
     return await Firestore.instance
         .collection("CurrentLive")
         .document(channelName)
         .get()
         .then((data) {
-      print('setState');
       setState(() {
         isLive = data["onLive"];
         print("isLive: $isLive");
@@ -540,7 +575,6 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-// {chatMsgSnap['reply']['message']}
   Widget bottomBar(context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.0),
@@ -557,6 +591,14 @@ class _ChatPageState extends State<ChatPage> {
       ),
       child: Row(
         children: <Widget>[
+          IconButton(
+            icon: Icon(Icons.list),
+            iconSize: 25.0,
+            color: Colors.white,
+            onPressed: () {
+              showProductBottomSheet(context: context);
+            },
+          ),
           IconButton(
             icon: Icon(Icons.image),
             iconSize: 25.0,
@@ -592,6 +634,134 @@ class _ChatPageState extends State<ChatPage> {
             ),
           ),
           sentButton(),
+        ],
+      ),
+    );
+  }
+
+  showProductBottomSheet({context}) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white.withOpacity(0.8),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, state) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.25,
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(10.0),
+              child: FutureBuilder(
+                  future: getProductInfo(skuList),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      if (snapshot.data.length != 0) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height * 0.28,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (context, index) {
+                              return productCard(snapshot, index, context);
+                            },
+                          ),
+                        );
+                      } else {
+                        return Container(
+                          child: Center(
+                            child: Text('No Product Avalible'),
+                          ),
+                        );
+                      }
+                    } else {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          backgroundColor: Colors.blue[800],
+                        ),
+                      );
+                    }
+                  }),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget productCard(snapshot, index, context) {
+    return GestureDetector(
+      onTap: () {
+        print('Tap ${snapshot.data[index]['title']}');
+        Navigator.pushNamed(
+          context,
+          '/productDetailPage',
+          arguments: ProductDetailPage(
+            sku: product[index]["sku"],
+            channelName: widget.channelName,
+          ),
+        );
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.25,
+        margin: EdgeInsets.only(right: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 0.1,
+              blurRadius: 1,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: showProductInfo(snapshot, index, context),
+      ),
+    );
+  }
+
+  Widget showProductInfo(snapshot, index, context) {
+    return Container(
+      padding: EdgeInsets.all(5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            height: MediaQuery.of(context).size.height * 0.1,
+            margin: EdgeInsets.only(bottom: 5),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5),
+              child: Image.network(
+                snapshot.data[index]["image"],
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Text(
+            '${snapshot.data[index]['title']}',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 11,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 3),
+            child: Text(
+              'QTY: ${snapshot.data[index]['quantity']}',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 11,
+              ),
+            ),
+          ),
+          Text(
+            '฿${snapshot.data[index]['price']}',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 11,
+            ),
+          ),
         ],
       ),
     );

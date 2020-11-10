@@ -123,12 +123,8 @@ class _AllChatPageState extends State<AllChatPage> {
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height * 0.8,
                   child: Center(
-                    child: Column(
-                      children: <Widget>[
-                        CircularProgressIndicator(
-                          backgroundColor: Colors.blue[800],
-                        ),
-                      ],
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.blue[800],
                     ),
                   ),
                 );

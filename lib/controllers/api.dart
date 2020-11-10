@@ -63,7 +63,7 @@ class ProductService {
   }
 
   static Future<List<dynamic>> getProduct(sku) async {
-    print('ENTER GETPRODUCT');
+    print('enter getProduct');
     Map<String, List<String>> data = {
       "sku_list": sku,
     };

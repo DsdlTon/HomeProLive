@@ -88,6 +88,7 @@ class RouteGenerator {
           settings: settings,
           builder: (_) => ProductDetailPage(
             sku: productDetailArgs.sku,
+            channelName: productDetailArgs.channelName,
           ),
         );
       case '/checkoutPage':

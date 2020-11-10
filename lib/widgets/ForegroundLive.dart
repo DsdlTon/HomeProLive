@@ -35,7 +35,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   int _keyboardVisibilitySubscriberId;
   bool _keyboardState;
 
-  List<String> sku = [];
+  List<String> skuList = [];
   List productSnap;
   List<dynamic> product = [];
   String _accessToken;
@@ -43,6 +43,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   Cart _cartData = Cart();
   int cartLen = 0;
   int _quantity = 0;
+  int oldQuantity = 0;
 
   KeyboardVisibilityNotification _keyboardVisibility =
       KeyboardVisibilityNotification();
@@ -75,15 +76,10 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       productSnap = snapshot.documents;
     });
 
-    //TODO: MOCKED DATA, DeleteLater
-    // sku.add('1');
-    // sku.add('2');
-    // sku.add('3');
     productSnap.forEach((product) {
-      sku.add(product["sku"]);
+      skuList.add(product["sku"]);
     });
-    print('///////skuList: $sku');
-    return sku;
+    return skuList;
   }
 
   Future<int> getQuantityofItem(_accessToken, sku) async {
@@ -130,8 +126,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       "sku": sku.toString(),
       "quantity": _quantity.toString(),
     };
-    print('Headers: $headers');
-    print('body: $body');
+
     await CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
@@ -140,8 +135,8 @@ class _ForegroundLiveState extends State<ForegroundLive> {
             _cartData = cartData;
             cartLen = _cartData.cartDetails.length;
           });
-          print('cartLen: $cartLen');
         });
+
         Fluttertoast.showToast(
           msg: "Added $_quantity $title to your Cart.",
           toastLength: Toast.LENGTH_LONG,
@@ -168,13 +163,13 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   @protected
   void initState() {
     super.initState();
+
     getAccessToken().then((accessToken) {
       getUserCartData().then((cartData) {
         setState(() {
           _cartData = cartData;
           cartLen = _cartData.cartDetails.length;
         });
-        print('cartLen: $cartLen');
       });
     });
     getProductToShowInLive(widget.channelName).then((sku) {
@@ -207,7 +202,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   @override
   void dispose() {
     super.dispose();
-    sku.clear();
+    skuList.clear();
     FireStoreClass.deleteViewers(
         username: widget.username, channelName: widget.channelName);
     _keyboardVisibility.removeListener(_keyboardVisibilitySubscriberId);
@@ -568,7 +563,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                               child: Row(
                                 children: <Widget>[
                                   productInFoPreview(index),
-                                  productAddToCartButton(index),
+                                  selectedProductButton(index),
                                 ],
                               ),
                             ),
@@ -773,15 +768,27 @@ class _ForegroundLiveState extends State<ForegroundLive> {
   Widget buyNowButton(sku, quantityInCart, title) {
     return GestureDetector(
       onTap: () {
-        if (quantityInCart != 0) {
-          addProductToCart(sku, quantityInCart, title)
-              .then((value) => Navigator.pushNamed(context, '/cartPage'));
+        if (quantityInCart != oldQuantity) {
+          if (quantityInCart != 0) {
+            addProductToCart(sku, quantityInCart, title).then((value) {
+              Navigator.pushNamed(context, '/cartPage');
+            });
+          } else {
+            Fluttertoast.showToast(
+              msg: "Please add Quantity of Product.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 13.0,
+            );
+          }
         } else {
           Fluttertoast.showToast(
-            msg: "Please add Quantity of Product.",
+            msg: "This Product is Already in your cart",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.yellow,
             textColor: Colors.white,
             fontSize: 13.0,
           );
@@ -821,14 +828,25 @@ class _ForegroundLiveState extends State<ForegroundLive> {
       child: GestureDetector(
         onTap: () {
           print('Tap ADD To Cart');
-          if (quantityInCart != 0) {
-            addProductToCart(sku, quantityInCart, title);
+          if (quantityInCart != oldQuantity) {
+            if (quantityInCart != 0) {
+              addProductToCart(sku, quantityInCart, title);
+            } else {
+              Fluttertoast.showToast(
+                msg: "Please add Quantity of Product.",
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 13.0,
+              );
+            }
           } else {
             Fluttertoast.showToast(
-              msg: "Please add Quantity of Product.",
+              msg: "This Product is Already in your cart",
               toastLength: Toast.LENGTH_LONG,
               gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.yellow,
               textColor: Colors.white,
               fontSize: 13.0,
             );
@@ -870,7 +888,9 @@ class _ForegroundLiveState extends State<ForegroundLive> {
         builder: (BuildContext context, snapshot) {
           if (!snapshot.hasData) {
             return Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                backgroundColor: Colors.blue[800],
+              ),
             );
           } else {
             return ListView.builder(
@@ -967,8 +987,14 @@ class _ForegroundLiveState extends State<ForegroundLive> {
                         widget.liveAdmin, widget.channelName),
                     builder: (BuildContext context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: CircularProgressIndicator(),
+                        return Container(
+                          width: 15,
+                          height: 15,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.blue[800],
+                            ),
+                          ),
                         );
                       } else {
                         int viewers = snapshot.data.documents.length;
@@ -1000,6 +1026,7 @@ class _ForegroundLiveState extends State<ForegroundLive> {
           '/productDetailPage',
           arguments: ProductDetailPage(
             sku: product[index]["sku"],
+            channelName: widget.channelName,
           ),
         );
       },
@@ -1049,17 +1076,19 @@ class _ForegroundLiveState extends State<ForegroundLive> {
     );
   }
 
-  Widget productAddToCartButton(index) {
+  Widget selectedProductButton(index) {
     return Expanded(
       child: Container(
         alignment: Alignment.centerRight,
         child: IconButton(
           onPressed: () {
             if (product[index]['quantity'] != 0) {
-              getQuantityofItem(
-                _accessToken,
-                product[index]["sku"],
-              ).then((quantityInCart) {
+              getQuantityofItem(_accessToken, product[index]["sku"])
+                  .then((quantityInCart) {
+                //TODO: setState temp = quantityInCart
+                setState(() {
+                  oldQuantity = quantityInCart;
+                });
                 showQuantitySelection(
                   selectedProductSku: product[index]["sku"],
                   selectedProductTitle: product[index]["title"],

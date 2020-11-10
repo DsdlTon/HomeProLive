@@ -31,9 +31,15 @@ class RecentForegroundLive extends StatefulWidget {
   _RecentForegroundLiveState createState() => _RecentForegroundLiveState();
 }
 
-class _RecentForegroundLiveState extends State<RecentForegroundLive> {
+class _RecentForegroundLiveState extends State<RecentForegroundLive>
+    with SingleTickerProviderStateMixin {
+  // AnimationController _animationController;
+  // Animation<Color> animationOne;
+  // Animation<Color> animationTwo;
+
   var commentSnapshot;
   int _quantity = 0;
+  int oldQuantity = 0;
   String _accessToken;
 
   int commentIndex = 0;
@@ -104,12 +110,10 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     await CartService.getItemQuantity(headers, body).then((quantity) {
       print('_Quantity Before ifElse: $_quantity');
       if (_quantity == null) {
-        print('ENTER IF');
         setState(() {
           _quantity = 0;
         });
       } else {
-        print('ENTER ELSE');
         setState(() {
           _quantity = quantity;
         });
@@ -287,6 +291,29 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     getProductToShowInLive(widget.channelName).then((sku) {
       getProductInfo(sku);
     });
+
+    // LOADER ANIMATION--------------------------------
+    // _animationController = AnimationController(
+    //   duration: Duration(milliseconds: 1300),
+    //   vsync: this,
+    // );
+
+    // animationOne = ColorTween(begin: Colors.grey, end: Colors.grey.shade100)
+    //     .animate(_animationController);
+    // animationTwo = ColorTween(begin: Colors.grey.shade100, end: Colors.grey)
+    //     .animate(_animationController);
+
+    // _animationController.forward();
+
+    // _animationController.addListener(() {
+    //   if (_animationController.status == AnimationStatus.completed) {
+    //     _animationController.reverse();
+    //   } else if (_animationController.status == AnimationStatus.dismissed) {
+    //     _animationController.forward();
+    //   }
+    //   setState(() {});
+    // });
+    // -------------------------------------------------
   }
 
   @override
@@ -325,6 +352,36 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       ),
     );
   }
+
+  // Widget shaderLoader() {
+  //   return Container(
+  //     child: Center(
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(8.0),
+  //         child: ShaderMask(
+  //           shaderCallback: (rect) {
+  //             return LinearGradient(
+  //                     colors: [animationOne.value, animationTwo.value])
+  //                 .createShader(rect);
+  //           },
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             children: <Widget>[
+  //               Container(width: 30, height: 3, color: Colors.white),
+  //               SizedBox(height: 2),
+  //               Container(width: 30, height: 3, color: Colors.white),
+  //               SizedBox(height: 2),
+  //               Container(width: 30, height: 3, color: Colors.white),
+  //               SizedBox(height: 2),
+  //               Container(width: 30 * 0.35, height: 3, color: Colors.white),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget liveHeader() {
     return Container(
@@ -604,7 +661,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                               child: Row(
                                 children: <Widget>[
                                   productInFoPreview(index),
-                                  productAddToCartButton(index),
+                                  selectedProductButton(index),
                                 ],
                               ),
                             ),
@@ -699,9 +756,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                                       product[index]['quantity']) {
                                     quantityInCart += 1;
                                   }
-                                  print(
-                                      'productQuantity: ${product[index]['quantity']}');
-                                  print('quantityInCart: $quantityInCart');
                                 });
                               },
                               child: Container(
@@ -809,16 +863,27 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
   Widget buyNowButton(sku, quantityInCart, title) {
     return GestureDetector(
       onTap: () {
-        if (quantityInCart != 0) {
-          addProductToCart(sku, quantityInCart, title).then((value) {
-            Navigator.pushNamed(context, '/cartPage');
-          });
+        if (quantityInCart != oldQuantity) {
+          if (quantityInCart != 0) {
+            addProductToCart(sku, quantityInCart, title).then((value) {
+              Navigator.pushNamed(context, '/cartPage');
+            });
+          } else {
+            Fluttertoast.showToast(
+              msg: "Please add Quantity of Product.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 13.0,
+            );
+          }
         } else {
           Fluttertoast.showToast(
-            msg: "Please add Quantity of Product.",
+            msg: "This Product is Already in your cart",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.yellow,
             textColor: Colors.white,
             fontSize: 13.0,
           );
@@ -858,14 +923,25 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
       child: GestureDetector(
         onTap: () {
           print('Tap ADD To Cart');
-          if (quantityInCart != 0) {
-            addProductToCart(sku, quantityInCart, title);
+          if (quantityInCart != oldQuantity) {
+            if (quantityInCart != 0) {
+              addProductToCart(sku, quantityInCart, title);
+            } else {
+              Fluttertoast.showToast(
+                msg: "Please add Quantity of Product.",
+                toastLength: Toast.LENGTH_LONG,
+                gravity: ToastGravity.BOTTOM,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 13.0,
+              );
+            }
           } else {
             Fluttertoast.showToast(
-              msg: "Please add Quantity of Product.",
+              msg: "This Product is Already in your cart",
               toastLength: Toast.LENGTH_LONG,
               gravity: ToastGravity.BOTTOM,
-              backgroundColor: Colors.red,
+              backgroundColor: Colors.yellow,
               textColor: Colors.white,
               fontSize: 13.0,
             );
@@ -907,7 +983,6 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
         child: ListView.builder(
             shrinkWrap: true,
             physics: BouncingScrollPhysics(),
-            // reverse: true,
             itemCount: pushedComment.length,
             itemBuilder: (BuildContext context, index) {
               return RichText(
@@ -963,8 +1038,14 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
                         widget.liveAdmin, widget.channelName),
                     builder: (BuildContext context, snapshot) {
                       if (!snapshot.hasData) {
-                        return Center(
-                          child: CircularProgressIndicator(),
+                        return Container(
+                          width: 15,
+                          height: 15,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.blue[800],
+                            ),
+                          ),
                         );
                       } else {
                         return Text(
@@ -995,6 +1076,7 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
           '/productDetailPage',
           arguments: ProductDetailPage(
             sku: product[index]["sku"],
+            channelName: widget.channelName,
           ),
         );
       },
@@ -1044,17 +1126,19 @@ class _RecentForegroundLiveState extends State<RecentForegroundLive> {
     );
   }
 
-  Widget productAddToCartButton(index) {
+  Widget selectedProductButton(index) {
     return Expanded(
       child: Container(
         alignment: Alignment.centerRight,
         child: IconButton(
           onPressed: () {
             if (product[index]['quantity'] != 0) {
-              getQuantityofItem(
-                _accessToken,
-                product[index]["sku"],
-              ).then((quantityInCart) {
+              getQuantityofItem(_accessToken, product[index]["sku"])
+                  .then((quantityInCart) {
+                //TODO: setState temp = quantityInCart
+                setState(() {
+                  oldQuantity = quantityInCart;
+                });
                 showQuantitySelection(
                   selectedProductSku: product[index]["sku"],
                   selectedProductTitle: product[index]["title"],

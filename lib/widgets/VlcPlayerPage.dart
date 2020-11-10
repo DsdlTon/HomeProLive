@@ -35,7 +35,7 @@ class _VlcPlayerPageState extends State<VlcPlayerPage> {
       controller: controller,
       placeholder: Center(
         child: CircularProgressIndicator(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.blue[800],
         ),
       ),
     );

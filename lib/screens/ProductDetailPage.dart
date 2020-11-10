@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,8 +10,10 @@ import '../controllers/api.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String sku;
+  final String channelName;
 
-  const ProductDetailPage({Key key, this.sku}) : super(key: key);
+  const ProductDetailPage({Key key, this.sku, this.channelName})
+      : super(key: key);
 
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
@@ -18,6 +23,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Product product;
   String _accessToken;
   int _quantity = 0;
+  int oldQuantity = 0;
 
   Cart _cartData = Cart();
   int cartLen = 0;
@@ -42,18 +48,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> addProductToCart(sku, _quantity, title) async {
     print("Enter Add to Cart");
-
     final headers = {
       "access-token": _accessToken,
     };
+
     final body = {
       "sku": sku.toString(),
       "quantity": _quantity.toString(),
     };
     print('Headers: $headers');
-    print('HeadersType: ${headers.runtimeType}');
     print('body: $body');
-    print('bodyType: ${body.runtimeType}');
+
     CartService.addToCart(headers, body).then((res) {
       print('res: $res');
       if (res == true) {
@@ -224,6 +229,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return GestureDetector(
       onTap: () {
         getQuantityofItem(_accessToken, sku).then((quantityInCart) {
+          setState(() {
+            oldQuantity = quantityInCart;
+          });
           showBuyNowQuantitySelection(
             selectedProductSku: product.sku,
             selectedProductTitle: product.title,
@@ -270,6 +278,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           print(_accessToken);
           print(sku);
           getQuantityofItem(_accessToken, sku).then((quantityInCart) {
+            setState(() {
+              oldQuantity = quantityInCart;
+            });
             showAddtoCartQuantitySelection(
               selectedProductSku: product.sku,
               selectedProductTitle: product.title,
@@ -310,14 +321,25 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget confirmQuantity(quantityInCart) {
     return GestureDetector(
       onTap: () {
-        if (quantityInCart != 0) {
-          addProductToCart(product.sku, quantityInCart, product.title);
+        if (quantityInCart != oldQuantity) {
+          if (quantityInCart != 0) {
+            addProductToCart(product.sku, quantityInCart, product.title);
+          } else {
+            Fluttertoast.showToast(
+              msg: "Please add Quantity of Product.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 13.0,
+            );
+          }
         } else {
           Fluttertoast.showToast(
-            msg: "Please add Quantity of Product.",
+            msg: "This Product is Already in your cart",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.yellow,
             textColor: Colors.white,
             fontSize: 13.0,
           );
@@ -698,7 +720,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     color: quantityInCart > 0
                                         ? Colors.black
                                         : Colors.grey[300],
-                                        
                                   ),
                                 ),
                               ),
@@ -757,15 +778,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget confirmQuantityAndNavigate(quantityInCart) {
     return GestureDetector(
       onTap: () {
-        if (quantityInCart != 0) {
-          addProductToCart(product.sku, quantityInCart, product.title)
-              .then((value) => Navigator.pushNamed(context, '/cartPage'));
+        if (quantityInCart != oldQuantity) {
+          if (quantityInCart != 0) {
+            addProductToCart(product.sku, quantityInCart, product.title)
+                .then((_) {
+              Navigator.pushNamed(context, '/cartPage');
+            });
+          } else {
+            Fluttertoast.showToast(
+              msg: "Please add Quantity of Product.",
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 13.0,
+            );
+          }
         } else {
           Fluttertoast.showToast(
-            msg: "Please add Quantity of Product.",
+            msg: "This Product is Already in your cart",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.yellow,
             textColor: Colors.white,
             fontSize: 13.0,
           );

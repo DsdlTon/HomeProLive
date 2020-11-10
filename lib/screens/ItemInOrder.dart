@@ -94,7 +94,9 @@ class _ItemInOrderState extends State<ItemInOrder> {
                 return Container(
                   height: MediaQuery.of(context).size.height * 0.75,
                   child: Center(
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.blue[800],
+                    ),
                   ),
                 );
               }
