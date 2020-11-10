@@ -730,11 +730,14 @@ class _ChatPageState extends State<ChatPage> {
           Container(
             height: MediaQuery.of(context).size.height * 0.1,
             margin: EdgeInsets.only(bottom: 5),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: Image.network(
-                snapshot.data[index]["image"],
-                fit: BoxFit.cover,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: Image.network(
+                  snapshot.data[index]["image"],
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -744,6 +747,8 @@ class _ChatPageState extends State<ChatPage> {
               color: Colors.black,
               fontSize: 11,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 3),
